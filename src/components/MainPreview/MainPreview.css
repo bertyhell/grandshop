@@ -1,0 +1,8 @@
+.m-main-preview {
+	height: 100vh;
+	width: 100%;
+	background-size: contain;
+	background-color: #888;
+	background-position: center;
+	background-repeat: no-repeat;
+}

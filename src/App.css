@@ -1,0 +1,7 @@
+.App {
+  width: 100vw;
+}
+
+.App > * {
+  height: 100vh;
+}
