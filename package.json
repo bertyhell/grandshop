@@ -1,0 +1,34 @@
+{
+  "name": "grandshop",
+  "version": "0.0.1",
+  "description": "Photoshop for your grandparents",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "lint": "tslint --project ./tsconfig.json",
+    "format": "tslint --project ./tsconfig.json --fix"
+  },
+  "keywords": [
+    "photoshop",
+    "easy",
+    "imagemagick",
+    "grandparents",
+    "image",
+    "manipulation"
+  ],
+  "author": "Bert Verhelst, Laurens Hellinger",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://gitlab.com/bertyhell/grandshop/issues"
+  },
+  "homepage": "https://gitlab.com/bertyhell/grandshop#readme",
+  "dependencies": {
+    "imagemagick": "^0.1.3"
+  },
+  "devDependencies": {
+    "@types/imagemagick": "0.0.30",
+    "electron": "^7.1.7",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.4"
+  }
+}
