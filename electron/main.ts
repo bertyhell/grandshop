@@ -1,7 +1,7 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow } = require('electron');
-// import { app, BrowserWindow, dialog } from 'electron';
 const path = require('path');
+const { app, BrowserWindow, dialog } = require('electron');
+require('electron-reload')(path.join(__dirname, '..'));
 const isDev = require('electron-is-dev');
 const gm = require('gm').subClass({
   appPath: path.join(__dirname, '..', 'lib', 'GraphicsMagick-1.3.33-Q16') + path.sep,
@@ -23,7 +23,7 @@ function createWindow() {
     }
   });
 
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   mainWindow.loadURL(
       isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`
@@ -66,7 +66,7 @@ app.on('activate', () => {
 });
 
 exports.openFileDialog = () => {
-  // dialog.showOpenDialogSync(mainWindow);
+  dialog.showOpenDialogSync(mainWindow);
 };
 
 exports.transformImage = (thickness: number, color: string) => {

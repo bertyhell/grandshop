@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 
-import { transformImage } from '../../electron-helpers/interop-web';
+import { openFileDialog, transformImage } from '../../electron-helpers/interop-electron';
 
 import './ControlsSidebar.scss';
 import Button from '../../components/Button/Button';
@@ -13,7 +13,7 @@ interface ControlsSidebarProps {
 }
 
 const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = () => {
-  const [thickness, setThickness] = useState<string>('30');
+  const [thickness, setThickness] = useState<string>('100');
   const [color, setColor] = useState<string>('#225eff');
 
   const applyBorder = () => {
@@ -26,8 +26,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = () => {
 
   return (
       <div className="m-controls-sidebar">
-        <Button onClick={() => {
-        }} label="Open afbeelding"/>
+        <Button onClick={() => openFileDialog()} label="Open afbeelding"/>
         <ImageModification label="Rand 1">
           <FormField label="Dikte" labelFor="thickness">
             <Input id="thickness" type="text" value={thickness} onChange={setThickness}/>

@@ -38,6 +38,7 @@ const ColorInput: FunctionComponent<ColorInputProps> = ({
     colorPicker.current.on('color:change', (color: { hexString: string }) => {
       onChange(color.hexString);
     });
+  // eslint-disable-next-line
   }, [el, onChange]);
 
   useEffect(() => {

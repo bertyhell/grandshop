@@ -1,6 +1,6 @@
-const { remote } = (window as any).require('electron');
+// const { remote } = (window as any).require('electron');
 
-const mainProcess = remote.require('./main.js');
+// const mainProcess = remote.require('./main.js');
 
 export function openFileDialog() {
   // mainProcess.openFileDialog();
@@ -8,5 +8,5 @@ export function openFileDialog() {
 }
 
 export function transformImage(thickness: number, color: string) {
-  mainProcess.transformImage(thickness, color);
+  // mainProcess.transformImage(thickness, color);
 }

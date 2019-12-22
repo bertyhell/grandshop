@@ -1,7 +1,16 @@
 {
   "name": "grandshop",
   "version": "0.1.0",
-  "private": true,
+  "description": "Photoshop for your grandparents",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "compile": "tsc -w -p tsconfig-electron.json",
+    "client-start": "react-scripts start",
+    "client-build": "react-scripts build",
+    "client-test": "react-scripts test",
+    "client-eject": "react-scripts eject"
+  },
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.4.0",
@@ -10,6 +19,8 @@
     "@types/node": "^12.12.21",
     "@types/react": "^16.9.17",
     "@types/react-dom": "^16.9.4",
+    "electron-is-dev": "^1.1.0",
+    "gm": "^1.23.1",
     "node-sass": "^4.13.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
@@ -19,12 +30,30 @@
     "classnames": "latest",
     "@jaames/iro": "latest"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+  "devDependencies": {
+    "@types/classnames": "^2.2.9",
+    "electron": "^7.1.7",
+    "electron-reload": "^1.5.0",
+    "tslint": "^5.20.1",
+    "tslint-config-airbnb": "^5.11.1",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.0.1",
+    "typescript": "^3.7.4"
   },
+  "keywords": [
+    "photoshop",
+    "easy",
+    "imagemagick",
+    "grandparents",
+    "image",
+    "manipulation"
+  ],
+  "author": "Bert Verhelst, Laurens Hellinger",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://gitlab.com/bertyhell/grandshop/issues"
+  },
+  "homepage": "https://gitlab.com/bertyhell/grandshop#readme",
   "eslintConfig": {
     "extends": "react-app"
   },
@@ -39,8 +68,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@types/classnames": "^2.2.9"
   }
 }
