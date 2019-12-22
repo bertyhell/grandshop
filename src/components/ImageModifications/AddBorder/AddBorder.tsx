@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import classnames from 'classnames';
 
 import './AddBorder.scss';
@@ -6,8 +6,7 @@ import ImageModification from '../../ImageModification/ImageModification';
 import FormField from '../../FormField/FormField';
 import Input from '../../Input/Input';
 import ColorInput from '../../ColorInput/ColorInput';
-import Button from '../../Button/Button';
-import { applyModifications, ImageModificationInfo } from '../../../helpers/interop-electron';
+import { ImageModificationInfo } from '../../../helpers/interop-electron';
 
 interface AddBorderProps {
   className?: string;
@@ -15,6 +14,7 @@ interface AddBorderProps {
   onApply: (modification: ImageModificationInfo) => void,
   isOpen: boolean,
   onToggle: () => void,
+  onDelete: () => void,
 }
 
 const AddBorder: FunctionComponent<AddBorderProps> = ({
@@ -22,30 +22,29 @@ const AddBorder: FunctionComponent<AddBorderProps> = ({
                                                         title,
                                                         onApply,
                                                         isOpen,
-                                                        onToggle
+                                                        onToggle,
+                                                        onDelete
                                                       }) => {
 
   const [thickness, setThickness] = useState<string>('100');
   const [color, setColor] = useState<string>('#225eff');
 
   useEffect(() => {
-    applyBorder();
-  });
-
-  const applyBorder = () => {
-    try {
-      onApply({
-            name: 'addBorder',
-            arguments: [parseInt(thickness, 10), color]
-          }
-      );
-    } catch (err) {
-      // show toast
-    }
-  };
+    onApply({
+          name: 'addBorder',
+          arguments: [parseInt(thickness, 10), color]
+        }
+    );
+  }, [thickness, color]);
 
   return (
-      <ImageModification label={title} className={classnames('c-add-border', className)} isOpen={isOpen} onToggle={onToggle}>
+      <ImageModification
+          label={title}
+          className={classnames('c-add-border', className)}
+          isOpen={isOpen}
+          onToggle={onToggle}
+          onDelete={onDelete}
+      >
         <FormField label="Dikte" labelFor="thickness">
           <Input id="thickness" type="text" value={thickness} onChange={(value: string) => {
             setThickness(value);
@@ -56,7 +55,6 @@ const AddBorder: FunctionComponent<AddBorderProps> = ({
             setColor(value);
           }}/>
         </FormField>
-        <Button onClick={() => applyBorder()} label="Rand toepassen"/>
       </ImageModification>
   );
 };

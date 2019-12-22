@@ -27,10 +27,25 @@
       display: none;
     }
   }
+
+  .c-button-wrapper {
+    position: absolute;
+    right: -1px;
+    top: -1px;
+    height: calc(100% + 2px);
+
+    > * {
+      height: 100%;
+      margin-left: 10px;
+    }
+  }
 }
 
 .c-accordion-header {
   padding: 10px 10px;
+  display: flex;
+  justify-content: space-between;
+  position: relative;
 }
 
 .c-accordion-header-title {

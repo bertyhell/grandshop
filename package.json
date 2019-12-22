@@ -30,13 +30,15 @@
     "react-dom": "^16.12.0",
     "react-redux": "^7.1.3",
     "react-scripts": "3.3.0",
+    "react-select": "^3.0.8",
     "redux": "^4.0.4",
     "redux-devtools-extension": "latest",
     "redux-thunk": "latest",
     "resizable-panels-react": "latest",
     "typescript": "^3.7.4",
-    "uuid": "^3.3.3",
-    "react-select": "latest"
+    "use-debounce": "^3.3.0",
+    "use-previous": "^1.0.0",
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "@types/classnames": "^2.2.9",

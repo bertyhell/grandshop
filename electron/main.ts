@@ -50,15 +50,21 @@ function createWindow() {
   // // and load the index.html of the app.
   // mainWindow.loadFile('public/index.html');
 
+  mainWindow.maximize();
+
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
-  mainWindow.on('closed', () => {
-    var data = {
+  mainWindow.on('closed', async () => {
+    // Store the last window postion and dimensions
+    fs.writeFileSync(windowStateFileName, JSON.stringify({
       bounds: mainWindow.getBounds()
-    };
-    fs.writeFileSync(windowStateFileName, JSON.stringify(data));
+    }));
+
+    // Remove temp files
+    await fs.emptyDir(path.resolve(appFolder, 'tmp'));
+
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
@@ -107,7 +113,9 @@ async function selectOriginalImage(event: Electron.IpcMainEvent, options: Electr
 async function saveImage(event: Electron.IpcMainEvent, options: Electron.SaveDialogOptions) {
   let response: Electron.SaveDialogReturnValue | undefined = undefined;
   try {
-    response = await dialog.showSaveDialog(mainWindow, options);
+    const parts = path.parse(ImageManager.getOriginalImageName());
+    const defaultFileName = parts.name + '-' + new Date().toLocaleDateString().replace(/[^0-9]+/g, '-') + parts.ext;
+    response = await dialog.showSaveDialog(mainWindow, { ...options, defaultPath: defaultFileName });
     if (response.canceled || !response.filePath) {
       return;
     }// TODO allow the user to enter a different extension, then use gm to save the file in that extension

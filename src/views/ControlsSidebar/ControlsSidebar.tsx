@@ -1,7 +1,8 @@
-import React, { FunctionComponent, ReactElement, ReactNode, useEffect, useReducer } from 'react';
+import React, { FunctionComponent, ReactElement, ReactNode, useEffect, useReducer, useState } from 'react';
 import getUuid from 'uuid/v1';
 import compact from 'lodash-es/compact';
 import { connect } from 'react-redux';
+import { useDebounce } from 'use-debounce';
 
 import { applyModifications, ImageModificationInfo, saveImage, selectOriginalImage } from '../../helpers/interop-electron';
 import Button from '../../components/Button/Button';
@@ -12,6 +13,8 @@ import AddBorder from '../../components/ImageModifications/AddBorder/AddBorder';
 import { format } from '../../helpers/format';
 
 import './ControlsSidebar.scss';
+import get from 'lodash-es/get';
+import usePrevious from 'use-previous';
 
 interface ControlsSidebarProps {
   originalImageUrl: string | null;
@@ -21,27 +24,23 @@ interface ControlsSidebarProps {
 interface ActiveModifier {
   name: string;
   title: string;
-  node: ReactNode;
   info: ImageModificationInfo | null;
   isOpen: boolean;
+  key: string;
 }
 
 const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
                                                                     originalImageUrl,
                                                                     modifiedImageUrl
                                                                   }) => {
-
-  const IMAGE_MODIFIER_COMPONENTS: { [modifierName: string]: ReactElement } = {
-    addBorder: <AddBorder
-        title=""
-        onApply={() => {
-        }}
-        onToggle={() => {
-        }}
-        isOpen={true}/>
-  };
+  const [selectedOption, setSelectedOption] = useState<string>('');
 
   const IMAGE_MODIFIER_OPTIONS: SelectOption[] = [
+    {
+      label: "Kies een bewerking",
+      value: "",
+      disabled: true,
+    },
     {
       label: "Voeg een gekleurde rand toe",
       value: "addBorder"
@@ -56,6 +55,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
       | { type: 'ADD', name: string }
       | { type: 'UPDATE', info: ImageModificationInfo, index: number }
       | { type: 'TOGGLE', index: number }
+      | { type: 'DELETE', index: number }
 
   const getModifierTitle = (activeModifiers: ActiveModifier[], modifierName: string): string => {
     return format(IMAGE_MODIFIER_TITLES[modifierName], activeModifiers.filter(mod => mod.name === modifierName).length + 1);
@@ -63,24 +63,16 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 
   function activeModifiersReducer(activeModifiers: ActiveModifier[], action: ActiveModifierAction): ActiveModifier[] {
     let modifiers: ActiveModifier[] | undefined;
+    let key = getUuid();
     switch (action.type) {
       case 'ADD':
         const title: string = getModifierTitle(activeModifiers, action.name);
         const newModifier = {
           title,
-          node: React.cloneElement(
-              IMAGE_MODIFIER_COMPONENTS[action.name],
-              {
-                title,
-                onApply: (modifierInfo: ImageModificationInfo) => handleApplyModifier(modifierInfo, activeModifiers.length),
-                onToggle: () => toggleModifier(activeModifiers.length),
-                isOpen: true
-              }
-          ),
           info: null,
           name: action.name,
-          isOpen: false,
-          id: getUuid(),
+          isOpen: true,
+          key
         };
         return [
           ...activeModifiers.map(mod => {
@@ -92,35 +84,65 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 
       case 'UPDATE':
         modifiers = [...activeModifiers];
-        modifiers[action.index].info = action.info;
+        modifiers[action.index] = {
+          ...modifiers[action.index],
+          info: action.info
+        };
         return modifiers;
 
       case 'TOGGLE':
-        modifiers = [...activeModifiers];
-        modifiers[action.index].isOpen = !modifiers[action.index].isOpen;
+        console.log('toggle before ' + get(activeModifiers, `[${action.index}].title`, null) + ' ' + get(activeModifiers, `[${action.index}].isOpen`, null));
+        const originalIsOpen: boolean = get(activeModifiers, `[${action.index}].isOpen`, false);
+        modifiers = [
+          ...activeModifiers.map(mod => {
+            mod.isOpen = false; // Close all previous modifiers when adding a new one
+            return mod;
+          })
+        ];
+        modifiers[action.index] = {
+          ...modifiers[action.index],
+          isOpen: !originalIsOpen
+        };
+        console.log('toggle after ' + modifiers[action.index].title + ' ' + modifiers[action.index].isOpen);
+        return modifiers;
+
+      case 'DELETE':
+        modifiers = [
+          ...activeModifiers
+        ];
+        modifiers.splice(action.index, 1);
         return modifiers;
     }
   }
 
   const [activeModifiers, modifyActiveModifiers] = useReducer<React.Reducer<ActiveModifier[], ActiveModifierAction>>(activeModifiersReducer, []);
+  const [debouncedActiveModifiers] = useDebounce(activeModifiers, 500);
+  const previousActiveModifiers = usePrevious<ActiveModifier[] | null>(activeModifiers);
 
   useEffect(() => {
-    const modifications: ImageModificationInfo[] = compact(activeModifiers.map((m: ActiveModifier) => m.info));
-    if (modifications && modifications.length) {
+    const modifications: ImageModificationInfo[] = compact(debouncedActiveModifiers.map((m: ActiveModifier) => m.info));
+
+    // check previous state to see if we need to run the applyModifications function because all modifiers were removed
+    if (modifications && (modifications.length || (previousActiveModifiers && previousActiveModifiers.length !== modifications.length))) {
       applyModifications(modifications); // TODO add spinner while modifications are in progress
     }
-  }, [activeModifiers]);
+  }, [debouncedActiveModifiers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleApplyModifier = (modifierInfo: ImageModificationInfo, index: number) => {
     modifyActiveModifiers({ type: 'UPDATE', info: modifierInfo, index });
   };
 
-  const toggleModifier = (index: number) => {
+  const handleToggleModifier = (index: number) => {
     modifyActiveModifiers({ type: 'TOGGLE', index });
+  };
+
+  const handleDeleteModifier = (index: number) => {
+    modifyActiveModifiers({ type: 'DELETE', index });
   };
 
   const handleModifierSelectionChanged = (name: string) => {
     modifyActiveModifiers({ type: 'ADD', name });
+    setSelectedOption('');
   };
 
   return (
@@ -153,13 +175,23 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
           <div className="m-button-wrapper">
             <Select
               options={IMAGE_MODIFIER_OPTIONS}
-              placeholder="Select een bewerking"
               onChange={handleModifierSelectionChanged}
+              value={selectedOption}
             />
           </div>
           <div className="m-modification-controls">
-            {activeModifiers.map((m: ActiveModifier) => {
-              return m.node;
+            {activeModifiers.map((m: ActiveModifier, index: number) => {
+              switch (m.name) {
+                case 'addBorder':
+                  return <AddBorder
+                      title={m.title}
+                      onApply={(info) => handleApplyModifier(info, index)}
+                      isOpen={m.isOpen}
+                      onToggle={() => handleToggleModifier(index)}
+                      onDelete={() => handleDeleteModifier(index)}
+                      key={m.key}/>
+              }
+              return null;
             })}
           </div>
         </>

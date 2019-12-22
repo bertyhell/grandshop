@@ -1,4 +1,6 @@
 /// <reference path="../node_modules/@types/gm/index.d.ts" />
+import { ParsedPath } from "path";
+
 const CustomError = require('./helpers/error').default;
 
 const path = require('path');
@@ -15,6 +17,7 @@ interface ImageModificationInfo {
 }
 
 exports.default = class ImageManager {
+  private static originalImageName: string;
   private static originalImagePath: string;
   private static modifiedImagePath: string;
   private static imageModifications: ImageModificationInfo[] = [];
@@ -45,8 +48,18 @@ exports.default = class ImageManager {
   }
 
   public static setOriginalImagePath(absoluteFilePath: string) {
+    const pathParts: ParsedPath = path.parse(absoluteFilePath);
+    this.originalImageName = pathParts.name + pathParts.ext;
     this.originalImagePath = this.getNewImagePath(absoluteFilePath);
     fs.copyFileSync(absoluteFilePath, this.originalImagePath);
+  }
+
+  public static getOriginalImagePath(): string {
+    return this.originalImagePath;
+  }
+
+  public static getOriginalImageName(): string {
+    return this.originalImageName;
   }
 
   public static getModifiedImagePath(): string {

@@ -11,6 +11,7 @@ export interface ButtonProps {
   children?: ReactNode;
   disabled?: boolean;
   label?: string;
+  block?: boolean;
 
   onClick?(event: MouseEvent<HTMLElement>): void;
 
@@ -26,13 +27,15 @@ const Button: FunctionComponent<ButtonProps> = ({
                                                   className,
                                                   disabled,
                                                   label,
+                                                  block = true,
                                                   onClick,
                                                   title,
                                                   type = 'primary'
                                                 }) => (
     <button
         className={classnames(className, 'c-button', {
-          [`c-button-${type}`]: type
+          [`c-button-${type}`]: type,
+          [`c-button-block`]: block,
         })}
         onClick={disabled ? () => {
         } : onClick}
