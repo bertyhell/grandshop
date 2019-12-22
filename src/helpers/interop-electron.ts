@@ -10,7 +10,7 @@ interface CallFunctionRequest {
 }
 
 export interface ImageModificationInfo {
-  name: 'addBorder'; // TODO add more modifications
+  name: 'addBorder' | 'sepia';
   arguments: any;
 }
 

@@ -12,7 +12,7 @@ const gm = require('gm').subClass({
 const getUuid = require('uuid/v1');
 
 interface ImageModificationInfo {
-  name: 'addBorder'; // TODO add more modifications
+  name: 'addBorder' | 'sepai';
   arguments: any;
 }
 
@@ -79,6 +79,28 @@ exports.default = class ImageManager {
             .borderColor(color)
             .border(thickness, thickness)
             .write(modifiedImagePath, (err: Error) => { // TODO see if we can avoid saving and loading the image for every modification (gm streams maybe?)
+              if (err) {
+                console.error(err);
+                reject(err);
+              } else {
+                resolve(modifiedImagePath);
+              }
+            });
+        return
+      } catch (err) {
+        console.error(err);
+        reject(err);
+      }
+    });
+  }
+
+  private static sepia(): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      try {
+        const modifiedImagePath = this.getNewImagePath(this.originalImagePath);
+        gm(this.modifiedImagePath)
+            .sepia()
+            .write(modifiedImagePath, (err: Error) => {
               if (err) {
                 console.error(err);
                 reject(err);

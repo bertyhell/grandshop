@@ -1,0 +1,14 @@
+.o-form-field {
+  padding: 10px 0 10px;
+
+  .o-form-field-label {
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .o-form-field-label {
+    .required {
+      margin-left: 5px;
+    }
+  }
+}
