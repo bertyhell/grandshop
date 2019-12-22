@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
-import './MainPreview.css';
+
+import './MainPreview.scss';
 
 interface MainPreviewProps {}
 

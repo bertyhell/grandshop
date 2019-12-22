@@ -1,0 +1,30 @@
+.App {
+  width: 100vw;
+
+  > div {
+    height: 100vh;
+  }
+
+  > div {
+    > div:not(.resizable-fragment) {
+      position: relative;
+      background-color: #eee;
+
+      &:after {
+        content: '||';
+        border: solid 1px #666;
+        border-width: 0 1px;
+        margin: -10px 0 0 3.5px;
+        height: 20px;
+        width: 4px;
+        overflow: hidden;
+        //background-color: red;
+        color: transparent;
+        top: 50%;
+        left: 4px;
+        transform: translateX(-50%);
+        position: absolute;
+      }
+    }
+  }
+}

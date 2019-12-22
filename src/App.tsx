@@ -1,26 +1,24 @@
 import React from 'react';
+import './App.scss';
 import ResizablePanels from 'resizable-panels-react';
-import './App.css';
-import ControlsSidebar from './components/ControlsSidebar/ControlsSidebar';
-import LeftSidebar from './components/LeftSidebar/LeftSidebar';
-import MainPreview from './components/MainPreview/MainPreview';
+import MainPreview from './views/MainPreview/MainPreview';
+import ControlsSidebar from './views/ControlsSidebar/ControlsSidebar';
 
-function App() {
-	return (
-		<div className="App">
-			<ResizablePanels
-				displayDirection="row"
-				panelsSize={[20, 50, 30]}
-				sizeUnitMeasure="%"
-				resizerColor="#353b48"
-				resizerSize="15px"
-			>
-				<LeftSidebar />
-				<MainPreview />
-				<ControlsSidebar />
-			</ResizablePanels>
-		</div>
-	);
-}
+const App: React.FC = () => {
+  return (
+      <div className="App">
+        <ResizablePanels
+            className="m-resizeable-panels"
+            displayDirection="row"
+            panelsSize={[60, 40]}
+            sizeUnitMeasure="%"
+            resizerSize="15px"
+        >
+          <MainPreview />
+          <ControlsSidebar />
+        </ResizablePanels>
+      </div>
+  );
+};
 
 export default App;
