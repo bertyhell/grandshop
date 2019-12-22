@@ -1,4 +1,4 @@
-import React, { FunctionComponent, MutableRefObject, useEffect, useRef } from 'react';
+import React, { createRef, FunctionComponent, MutableRefObject, RefObject, useEffect, useRef } from 'react';
 import iro from '@jaames/iro';
 
 import classnames from 'classnames';
@@ -8,6 +8,7 @@ import './ColorInput.scss';
 interface IroColorPicker {
   on: (action: string, callback: Function) => void;
   color: {
+    hexString: string;
     set: (value: any) => void;
     setState: (state: any) => void;
   }
@@ -26,32 +27,30 @@ const ColorInput: FunctionComponent<ColorInputProps> = ({
                                                           }
                                                         }) => {
   let colorPicker: MutableRefObject<IroColorPicker | null> = useRef<IroColorPicker | null>(null);
-  let el: HTMLDivElement | null = null;
+  let el: RefObject<HTMLDivElement> = createRef<HTMLDivElement>();
 
   useEffect(() => {
-    // create a new iro color picker and pass component props to it
-    colorPicker.current = new iro.ColorPicker(el, { color: value });
-    // call onColorChange prop whenever the color changes
-    if (!colorPicker.current) {
+    if (!el.current) {
       return;
     }
-    colorPicker.current.on('color:change', (color: { hexString: string }) => {
-      onChange(color.hexString);
-    });
-  // eslint-disable-next-line
-  }, [el, onChange]);
-
-  useEffect(() => {
     if (!colorPicker.current) {
-      return;
+      // create a new iro color picker and pass component props to it
+      colorPicker.current = new iro.ColorPicker(el.current, { color: value });
+      // call onColorChange prop whenever the color changes
+      if (!colorPicker.current) {
+        return;
+      }
+      colorPicker.current.on('color:change', (color: { hexString: string }) => {
+        onChange(color.hexString);
+      });
+    } else if(value !== colorPicker.current.color.hexString) {
+      colorPicker.current.color.set(value);
     }
-    colorPicker.current.color.set(value);
-    // this.colorPicker.setState(colorPickerState);
   });
 
   return <div className={classnames('o-color-input', className)}>
     <div
-        ref={refEl => el = refEl}
+        ref={el}
     />
     <div className="a-color-preview" style={{backgroundColor: value}}/>
   </div>;

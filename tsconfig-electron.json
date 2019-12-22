@@ -23,7 +23,7 @@
     "esModuleInterop": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
+    "module": "es2015",
     "isolatedModules": false
   },
   "include": [

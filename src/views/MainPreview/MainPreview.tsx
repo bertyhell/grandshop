@@ -1,15 +1,32 @@
 import React, { FunctionComponent, useState } from 'react';
 
 import './MainPreview.scss';
+import { selectModifiedImageUrl, selectOriginalImageUrl } from '../../store/selectors';
+import { connect } from 'react-redux';
+import { AppState } from '../../store/types';
 
-interface MainPreviewProps {}
+interface MainPreviewProps {
+  originalImageUrl: string | null;
+  modifiedImageUrl: string | null;
+}
 
-const MainPreview: FunctionComponent<MainPreviewProps> = () => {
-	const [originalImageSource, setOriginalImageSource] = useState<string>('https://source.unsplash.com/random/500x300');
-
-	return <div className="m-main-preview">
-		<div className="a-original-preview-wrapper" style={{ backgroundImage: `url(${originalImageSource})` }}/>
-	</div>;
+const MainPreview: FunctionComponent<MainPreviewProps> = ({
+                                                            originalImageUrl,
+                                                            modifiedImageUrl
+                                                          }) => {
+  return <div className="m-main-preview">
+    {(modifiedImageUrl || originalImageUrl) &&
+    <div
+      className="a-preview-wrapper"
+      style={{ backgroundImage: `url('file://${modifiedImageUrl || originalImageUrl}')` }}
+    />
+    }
+  </div>;
 };
 
-export default MainPreview;
+const mapStateToProps = (state: { app: AppState }) => ({
+  originalImageUrl: selectOriginalImageUrl(state),
+  modifiedImageUrl: selectModifiedImageUrl(state)
+});
+
+export default connect(mapStateToProps)(MainPreview);

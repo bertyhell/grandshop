@@ -1,8 +1,15 @@
 .m-main-preview {
 	height: 100vh;
 	width: 100%;
-	background-size: contain;
+	padding: 20px;
 	background-color: #888;
-	background-position: center;
-	background-repeat: no-repeat;
+	box-sizing: border-box;
+
+	.a-preview-wrapper {
+		width: 100%;
+		height: 100%;
+		background-size: contain;
+		background-position: center;
+		background-repeat: no-repeat;
+	}
 }

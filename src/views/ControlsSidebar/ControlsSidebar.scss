@@ -1,8 +1,13 @@
 .m-controls-sidebar {
   padding: 10px;
-  max-height: 100vh;
-  overflow-y: auto;
-  box-sizing: border-box;
   background-color: #eeeeee;
-  min-height: 100vh;
+  box-sizing: border-box;
+
+  .m-modification-controls {
+    margin: 10px 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    min-height: calc(100vh - 80px - 40px);
+  }
 }
