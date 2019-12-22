@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import'./LeftSidebar.css';
-import { openFileDialog } from 'electron-helpers/interop';
+import { openFileDialog } from 'electron-helpers/interop-web';
 
 interface LeftSidebarProps {
 }

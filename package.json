@@ -31,14 +31,21 @@
     "@testing-library/react": "^9.4.0",
     "@testing-library/user-event": "^7.2.1",
     "electron-is-dev": "^1.1.0",
+    "gm": "^1.23.1",
     "imagemagick": "^0.1.3",
     "node-sass": "^4.13.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-scripts": "3.3.0",
-    "resizable-panels-react": "^2.0.8"
+    "resizable-panels-react": "^2.0.8",
+    "typescript": "^3.7.4"
   },
   "devDependencies": {
+    "@types/jest": "^24.0.24",
+    "@types/node": "^12.12.21",
+    "@types/react": "^16.9.17",
+    "@types/react-dom": "^16.9.4",
+    "@types/gm": "^1.18.6",
     "@types/imagemagick": "0.0.30",
     "electron": "^7.1.7",
     "prettier": "^1.19.1",
