@@ -123,10 +123,6 @@ async function saveImage(event: Electron.IpcMainEvent, options: Electron.SaveDia
   }
 }
 
-// function convertPathToRelative(filePath: string) {
-//   return filePath.substring(path.resolve(__dirname, '..').length + 1);
-// }
-
 function convertPathToUrl(filePath: string) {
   return filePath.replace(/\\+/g, '/');
 }
