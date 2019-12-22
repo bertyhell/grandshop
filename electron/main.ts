@@ -17,7 +17,7 @@ require('electron-reload')(appFolder, {
   ignored: [/node_modules|[/\\]\./, /tmp/]
 });
 
-interface ImageModification {
+interface ImageModificationInfo {
   name: 'addBorder'; // TODO add more modifications
   arguments: any;
 }
@@ -124,10 +124,13 @@ async function saveImage(event: Electron.IpcMainEvent, options: Electron.SaveDia
 }
 
 function convertPathToUrl(filePath: string) {
+  if (!filePath) {
+    return filePath;
+  }
   return filePath.replace(/\\+/g, '/');
 }
 
-async function applyModifications(event: Electron.IpcMainEvent, modifications: ImageModification[]) {
+async function applyModifications(event: Electron.IpcMainEvent, modifications: ImageModificationInfo[]) {
   const modifiedImageUrl = await ImageManager.updateModifications(modifications);
   event.sender.send('mainprocess-response', {
     func: 'setModifiedImageUrl',

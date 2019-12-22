@@ -1,18 +1,15 @@
 /// <reference path="../../node_modules/electron/electron.d.ts" />
 import { setModifiedImageUrlAction, setOriginalImageUrlAction } from '../store/actions';
 import store from '../store/store';
-import ImageModification from '../components/ImageModification/ImageModification';
 
 const { ipcRenderer } = (window as any).require('electron');
-
-// const mainProcess = remote.require('./main.js');
 
 interface CallFunctionRequest {
   func: 'applyModifications' | 'selectOriginalImage',
   funcArgs: any[];
 }
 
-export interface ImageModification {
+export interface ImageModificationInfo {
   name: 'addBorder'; // TODO add more modifications
   arguments: any;
 }
@@ -58,6 +55,6 @@ export function saveImage(options: Electron.SaveDialogOptions = {}) {
   callMainFunction('saveImage', [options]);
 }
 
-export function applyModifications(modifications: ImageModification[]) {
+export function applyModifications(modifications: ImageModificationInfo[]) {
   callMainFunction('applyModifications', [modifications]);
 }

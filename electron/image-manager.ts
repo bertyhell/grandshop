@@ -9,7 +9,7 @@ const gm = require('gm').subClass({
 });
 const getUuid = require('uuid/v1');
 
-interface ImageModification {
+interface ImageModificationInfo {
   name: 'addBorder'; // TODO add more modifications
   arguments: any;
 }
@@ -17,10 +17,10 @@ interface ImageModification {
 exports.default = class ImageManager {
   private static originalImagePath: string;
   private static modifiedImagePath: string;
-  private static imageModifications: ImageModification[] = [];
+  private static imageModifications: ImageModificationInfo[] = [];
   private static tmpFolder: string = path.resolve(__dirname, '..', 'tmp') + path.sep;
 
-  public static async updateModifications(modifications: ImageModification[]): Promise<string> {
+  public static async updateModifications(modifications: ImageModificationInfo[]): Promise<string> {
     try {
       this.imageModifications = modifications; // TODO diff modifications and only render new images instead of running all modifications on every change
       this.modifiedImagePath = this.originalImagePath;

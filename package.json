@@ -35,7 +35,8 @@
     "redux-thunk": "latest",
     "resizable-panels-react": "latest",
     "typescript": "^3.7.4",
-    "uuid": "^3.3.3"
+    "uuid": "^3.3.3",
+    "react-select": "latest"
   },
   "devDependencies": {
     "@types/classnames": "^2.2.9",
@@ -44,6 +45,7 @@
     "@types/lodash": "^4.14.149",
     "@types/lodash-es": "^4.17.3",
     "@types/react-redux": "^7.1.5",
+    "@types/react-select": "^3.0.8",
     "@types/uuid": "^3.4.6",
     "electron": "7.1.7",
     "electron-reload": "^1.5.0",
