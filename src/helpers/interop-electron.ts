@@ -20,6 +20,7 @@ export interface ImageModification {
 const callableFunctions = {
   setOriginalImageUrl: (url: string) => {
     store.dispatch(setOriginalImageUrlAction(url));
+    store.dispatch(setModifiedImageUrlAction(null));
   },
   setModifiedImageUrl: (url: string) => {
     store.dispatch(setModifiedImageUrlAction(url));

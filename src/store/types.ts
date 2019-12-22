@@ -6,16 +6,12 @@ export enum AppActionTypes {
 }
 
 export interface SetOriginalImageUrlAction extends Action {
-  url: string;
+  url: string | null;
 }
 
 export interface SetModifiedImageUrlAction extends Action {
-  url: string;
+  url: string | null;
 }
-
-export type AppAction =
-    | SetOriginalImageUrlAction
-    | SetModifiedImageUrlAction;
 
 export interface AppState {
   readonly originalImageUrl: string | null;
