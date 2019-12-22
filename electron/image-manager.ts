@@ -12,7 +12,7 @@ const gm = require('gm').subClass({
 const getUuid = require('uuid/v1');
 
 interface ImageModificationInfo {
-  name: 'addBorder' | 'sepai';
+  name: 'addBorder' | 'sepia' | 'brightness';
   arguments: any;
 }
 
@@ -100,6 +100,28 @@ exports.default = class ImageManager {
         const modifiedImagePath = this.getNewImagePath(this.originalImagePath);
         gm(this.modifiedImagePath)
             .sepia()
+            .write(modifiedImagePath, (err: Error) => {
+              if (err) {
+                console.error(err);
+                reject(err);
+              } else {
+                resolve(modifiedImagePath);
+              }
+            });
+        return
+      } catch (err) {
+        console.error(err);
+        reject(err);
+      }
+    });
+  }
+
+  private static brightness(brightness: number): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      try {
+        const modifiedImagePath = this.getNewImagePath(this.originalImagePath);
+        gm(this.modifiedImagePath)
+            .modulate(brightness)
             .write(modifiedImagePath, (err: Error) => {
               if (err) {
                 console.error(err);

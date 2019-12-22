@@ -16,6 +16,7 @@ import './ControlsSidebar.scss';
 import get from 'lodash-es/get';
 import usePrevious from 'use-previous';
 import Sepia from '../../components/ImageModifications/Sepia/Sepia';
+import Brightness from '../../components/ImageModifications/Brightness/Brightness';
 
 interface ControlsSidebarProps {
   originalImageUrl: string | null;
@@ -49,12 +50,17 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
     {
       label: "Voeg een sepia effect toe",
       value: "sepia"
+    },
+    {
+      label: "Pas de helderheid aan",
+      value: "brightness"
     }
   ];
 
   const IMAGE_MODIFIER_TITLES: { [modifierName: string]: string } = {
     addBorder: "Rand {0}",
-    sepia: "Sepia {0}"
+    sepia: "Sepia {0}",
+    brightness: "Helderheid {0}",
   };
 
   type ActiveModifierAction =
@@ -198,6 +204,14 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
                       key={m.key}/>;
                 case 'sepia':
                   return <Sepia
+                      title={m.title}
+                      onApply={(info) => handleApplyModifier(info, index)}
+                      isOpen={m.isOpen}
+                      onToggle={() => handleToggleModifier(index)}
+                      onDelete={() => handleDeleteModifier(index)}
+                      key={m.key}/>;
+                case 'brightness':
+                  return <Brightness
                       title={m.title}
                       onApply={(info) => handleApplyModifier(info, index)}
                       isOpen={m.isOpen}

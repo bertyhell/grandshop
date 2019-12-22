@@ -10,7 +10,7 @@ interface CallFunctionRequest {
 }
 
 export interface ImageModificationInfo {
-  name: 'addBorder' | 'sepia';
+  name: 'addBorder' | 'sepia' | 'brightness';
   arguments: any;
 }
 
