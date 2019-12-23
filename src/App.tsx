@@ -1,15 +1,27 @@
 import React from 'react';
-import './App.scss';
+import { ToastContainer } from 'react-toastify';
 import ResizablePanels from 'resizable-panels-react';
+import { Provider } from 'react-redux';
+import 'react-toastify/dist/ReactToastify.css';
+
 import MainPreview from './views/MainPreview/MainPreview';
 import ControlsSidebar from './views/ControlsSidebar/ControlsSidebar';
-import { Provider } from 'react-redux';
 import store from './store/store';
+
+import './App.scss';
 
 const App: React.FC = () => {
   return (
       <Provider store={store}>
-        <div className="App">
+        <div className="m-app">
+          <ToastContainer
+              // autoClose={7000}
+              className="c-alert-stack"
+              closeButton={false}
+              closeOnClick={false}
+              draggable={false}
+              position="bottom-left"
+          />
           <ResizablePanels
               className="m-resizeable-panels"
               displayDirection="row"

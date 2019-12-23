@@ -4,13 +4,15 @@ import { ImageModificationInfo } from '../src/shared/types';
 import { State } from 'gm';
 import { Readable } from "stream";
 const getUuid = require('uuid/v1');
+const isDev = require('electron-is-dev');
 
 const CustomError = require('./helpers/error').default;
 
 const path = require('path');
 const fs = require('fs-extra');
 const gm = require('gm').subClass({
-  appPath: path.resolve(__dirname, '..', 'lib', 'GraphicsMagick-1.3.33-Q16') + path.sep,
+  // The lib folder is stored under resources if the app is packaged and under the root folder if the app is running in development
+  appPath: path.resolve(__dirname, '..', ...(isDev ? ['lib'] : ['resources', 'lib']), 'GraphicsMagick-1.3.33-Q16') + path.sep,
   imageMagick: true
 });
 

@@ -1,11 +1,12 @@
-.App {
+.m-app {
   width: 100vw;
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
 
-  > div {
+  > div:last-child {
     height: 100vh;
-  }
 
-  > div {
     > div:not(.resizable-fragment) {
       position: relative;
       background-color: #e0e0e0;
@@ -25,6 +26,43 @@
         transform: translateX(-50%);
         position: absolute;
       }
+    }
+  }
+
+  .Toastify {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    z-index: 10;
+
+    .c-alert {
+      max-width: 300px;
+    }
+
+    li {
+      margin-top: 10px;
+    }
+
+    .Toastify__toast {
+      color: #333;
+      border-radius: 4px;
+      padding: 0 15px;
+    }
+
+    .Toastify__toast--info {
+      background: #72bcdb;
+    }
+
+    .Toastify__toast--success {
+      background: #7bfc93;
+    }
+
+    .Toastify__toast--warning {
+      background: #fff0a1;
+    }
+
+    .Toastify__toast--error {
+      background: #ffa689;
     }
   }
 }

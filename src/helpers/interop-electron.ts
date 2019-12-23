@@ -2,6 +2,8 @@
 import { setModifiedImageAction, setOriginalImageAction } from '../store/actions';
 import store from '../store/store';
 import { ElectronCallFunction, ElectronCallFunctionRequest, ImageModificationInfo, RendererCallFunctionRequest } from '../shared/types';
+import toastService from '../services/toast-service';
+import { AlertType } from '../components/Alert/Alert';
 
 const { ipcRenderer } = (window as any).require('electron');
 
@@ -13,8 +15,8 @@ const callableFunctions = {
   setModifiedImage: (url: string) => {
     store.dispatch(setModifiedImageAction(url));
   },
-  showNotification: (message: string, status: 'success' | 'warn' | 'error') => {
-    // TODO show notification toasts
+  showNotification: (message: string, status: AlertType) => {
+    (toastService[status] || toastService['info'])(message);
   },
 };
 

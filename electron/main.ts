@@ -15,7 +15,7 @@ const fs = require('fs-extra');
 const isDev = require('electron-is-dev');
 
 const appFolder: string = path.resolve(__dirname, '..');
-const windowStateFileName: string = path.resolve(appFolder, 'last-window-state.json');
+// const windowStateFileName: string = path.resolve(appFolder, 'last-window-state.json');
 require('electron-reload')(appFolder, {
   ignored: [/node_modules|[/\\]\./, /tmp/]
 });
@@ -39,18 +39,14 @@ function createWindow() {
       webSecurity: false
     }
   });
-
-  // mainWindow.webContents.openDevTools();
+  mainWindow.maximize();
 
   mainWindow.loadURL(
       isDev ?
           'http://localhost:3000' :
           `file://${path.resolve(__dirname, '../build/index.html')}`
   );
-  // // and load the index.html of the app.
-  // mainWindow.loadFile('public/index.html');
 
-  mainWindow.maximize();
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
@@ -95,8 +91,9 @@ app.on('activate', () => {
 });
 
 async function openImage(event: Electron.IpcMainEvent, options: Electron.OpenDialogSyncOptions) {
+  let response: Electron.OpenDialogReturnValue | undefined = undefined;
   try {
-    const response: Electron.OpenDialogReturnValue = await dialog.showOpenDialog(mainWindow, options);
+    response = await dialog.showOpenDialog(mainWindow, options);
     if (response.canceled || !response.filePaths || !response.filePaths.length) {
       return;
     }
@@ -106,10 +103,9 @@ async function openImage(event: Electron.IpcMainEvent, options: Electron.OpenDia
     // Pass the original image as a base64 string to the client for preview
     callRendererFunction(event, 'setOriginalImage', [originalImageBuffer.toString('base64')]);
   } catch (err) {
-    // TODO show toast to user
-    const error = new CustomError('Failed to open image', err, {dialogOptions: options});
+    const error = new CustomError('Failed to open file', err, { dialogOptions: options, dialogResponse: response });
+    callRendererFunction(event, 'showNotification', ['Het openen van de afbeelding is mislukt', 'error', error]);
     console.error(error);
-    throw error;
   }
 }
 
@@ -127,7 +123,9 @@ async function saveImage(event: Electron.IpcMainEvent, options: Electron.SaveDia
 
     callRendererFunction(event, 'showNotification', ['Afbeelding is opgeslagen', 'success']);
   } catch (err) {
-    console.error(new CustomError('Failed to save file', err, { dialogOptions: options, dialogResponse: response }))
+    const error = new CustomError('Failed to save file', err, { dialogOptions: options, dialogResponse: response });
+    callRendererFunction(event, 'showNotification', ['Het opslaan van de afbeelding is mislukt', 'error', error]);
+    console.error(error);
   }
 }
 
@@ -135,19 +133,15 @@ function callRendererFunction(event: Electron.IpcMainEvent, func: RendererCallFu
   event.sender.send('mainprocess-response', { func, funcArgs } as RendererCallFunctionRequest)
 }
 
-// function convertPathToUrl(filePath: string) {
-//   if (!filePath) {
-//     return filePath;
-//   }
-//   return filePath.replace(/\\+/g, '/');
-// }
-
 async function applyModifications(event: Electron.IpcMainEvent, modifications: ImageModificationInfo[]) {
-  const modifiedImageBuffer: Buffer = await ImageManager.updateModifications(modifications);
-  event.sender.send('mainprocess-response', {
-    func: 'setModifiedImage',
-    funcArgs: [modifiedImageBuffer.toString('base64')]
-  } as RendererCallFunctionRequest)
+  try {
+    const modifiedImageBuffer: Buffer = await ImageManager.updateModifications(modifications);
+    callRendererFunction(event, 'setModifiedImage', [modifiedImageBuffer.toString('base64')]);
+  } catch (err) {
+    const error = new CustomError('Failed to apply modifications to image', err, { modifications });
+    callRendererFunction(event, 'showNotification', ['Het toepassen van de laatste bewerking is mislukt', 'error', error]);
+    console.error(error);
+  }
 }
 
 const callableFunctions = {

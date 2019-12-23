@@ -1,0 +1,42 @@
+.c-alert {
+  background: #FFF;
+  border-radius: 0.3rem;
+  border: 1px solid #aaa;
+  padding: 1.2rem 1.6rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.c-alert-message {
+  margin: 4px 0;
+}
+
+.c-alert-floating {
+  border-radius: 3px;
+  display: flex;
+  padding: 1.6rem;
+  transform: translateX(-50%);
+  z-index: 100;
+  min-width: 15rem;
+}
+
+.c-alert-info {
+  background: #F2F9FA;
+  border-color: darken(#F2F9FA, 10%);
+}
+
+.c-alert-danger {
+  background: #FEF2F0;
+  border-color: darken(#FEF2F0, 10%);
+}
+
+.c-alert-warn {
+  background: #feeacf;
+  border-color: darken(#feeacf, 10%);
+}
+
+.c-alert-success {
+  background: #EFF9F6;
+  border-color: darken(#EFF9F6, 10%);
+}

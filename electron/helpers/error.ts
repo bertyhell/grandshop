@@ -37,4 +37,4 @@ exports.default = class CustomError {
         },
         2);
   }
-}
+};
