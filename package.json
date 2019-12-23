@@ -11,7 +11,7 @@
     "client-test": "react-scripts test",
     "client-eject": "react-scripts eject",
     "--prepack": "npm run client-build",
-    "pack": "electron-builder --dir -c.extraMetadata.main=electron/main.js",
+    "pack": "copyfiles electron/**/*.js build && electron-builder --dir -c.extraMetadata.main=electron/main.js",
     "dist": "electron-builder -c.extraMetadata.main=electron/main.js"
   },
   "dependencies": {
@@ -54,6 +54,7 @@
     "@types/react-redux": "^7.1.5",
     "@types/react-select": "^3.0.8",
     "@types/uuid": "^3.4.6",
+    "copyfiles": "^2.1.1",
     "electron": "7.1.7",
     "electron-builder": "^21.2.0",
     "tslint": "^5.20.1",

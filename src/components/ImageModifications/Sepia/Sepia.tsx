@@ -15,13 +15,13 @@ interface SepiaProps {
 }
 
 const Sepia: FunctionComponent<SepiaProps> = ({
-                                                        className,
-                                                        title,
-                                                        onApply,
-                                                        isOpen,
-                                                        onToggle,
-                                                        onDelete
-                                                      }) => {
+                                                className,
+                                                title,
+                                                onApply,
+                                                isOpen,
+                                                onToggle,
+                                                onDelete
+                                              }) => {
   useEffect(() => {
     onApply({
           name: 'sepia',
@@ -32,12 +32,12 @@ const Sepia: FunctionComponent<SepiaProps> = ({
 
   return (
       <ImageModification
-    label={title}
-    className={classnames('c-sepia', className)}
-    isOpen={isOpen}
-    onToggle={onToggle}
-    onDelete={onDelete}
-    />
+          label={title}
+          className={classnames('c-sepia', className)}
+          isOpen={isOpen}
+          onToggle={onToggle}
+          onDelete={onDelete}
+      />
   );
 };
 

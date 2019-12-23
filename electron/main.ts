@@ -26,13 +26,13 @@ let mainWindow: any;
 
 function createWindow() {
   // Create the browser window.
-  let data: any;
-  try {
-    data = JSON.parse(fs.readFileSync(windowStateFileName, 'utf8'));
-  } catch (e) {
-  }
+  // let data: any;
+  // try {
+  //   data = JSON.parse(fs.readFileSync(windowStateFileName, 'utf8'));
+  // } catch (e) {
+  // }
   mainWindow = new BrowserWindow({
-    ...((data && data.bounds) ? data.bounds : { width: 800, height: 600 }),
+    // ...((data && data.bounds) ? data.bounds : { width: 800, height: 600 }),
     webPreferences: {
       preload: path.resolve(__dirname, 'preload.js'),
       nodeIntegration: true,
@@ -58,9 +58,9 @@ function createWindow() {
   // Emitted when the window is closed.
   mainWindow.on('closed', async () => {
     // Store the last window postion and dimensions
-    fs.writeFileSync(windowStateFileName, JSON.stringify({
-      bounds: mainWindow.getBounds()
-    }));
+    // fs.writeFileSync(windowStateFileName, JSON.stringify({
+    //   bounds: mainWindow.getBounds()
+    // }));
 
     // Remove temp files
     await fs.emptyDir(path.resolve(appFolder, 'tmp'));
