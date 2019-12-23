@@ -16,9 +16,7 @@ const isDev = require('electron-is-dev');
 
 const appFolder: string = path.resolve(__dirname, '..');
 // const windowStateFileName: string = path.resolve(appFolder, 'last-window-state.json');
-require('electron-reload')(appFolder, {
-  ignored: [/node_modules|[/\\]\./, /tmp/]
-});
+require('electron-reload')(appFolder);
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -59,7 +57,7 @@ function createWindow() {
     // }));
 
     // Remove temp files
-    await fs.emptyDir(path.resolve(appFolder, 'tmp'));
+    await ImageManager.cleanTempFiles();
 
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
@@ -135,7 +133,15 @@ function callRendererFunction(event: Electron.IpcMainEvent, func: RendererCallFu
 
 async function applyModifications(event: Electron.IpcMainEvent, modifications: ImageModificationInfo[]) {
   try {
-    const modifiedImageBuffer: Buffer = await ImageManager.updateModifications(modifications);
+
+    const notify = (message: string) => callRendererFunction(event, 'showNotification', [message, 'info', {
+      message
+    }]);
+    const modifiedImageBuffer: Buffer = await ImageManager.updateModifications(modifications, notify);
+
+    callRendererFunction(event, 'showNotification', ['returning base64 string', 'info', {
+      modifications
+    }]);
     callRendererFunction(event, 'setModifiedImage', [modifiedImageBuffer.toString('base64')]);
   } catch (err) {
     const error = new CustomError('Failed to apply modifications to image', err, { modifications });

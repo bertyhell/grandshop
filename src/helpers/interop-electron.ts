@@ -4,6 +4,7 @@ import store from '../store/store';
 import { ElectronCallFunction, ElectronCallFunctionRequest, ImageModificationInfo, RendererCallFunctionRequest } from '../shared/types';
 import toastService from '../services/toast-service';
 import { AlertType } from '../components/Alert/Alert';
+import { CustomError } from '../shared/error';
 
 const { ipcRenderer } = (window as any).require('electron');
 
@@ -15,9 +16,9 @@ const callableFunctions = {
   setModifiedImage: (url: string) => {
     store.dispatch(setModifiedImageAction(url));
   },
-  showNotification: (message: string, status: AlertType) => {
-    (toastService[status] || toastService['info'])(message);
-  },
+  showNotification: (message: string, status: AlertType, innerException: CustomError) => {
+    (toastService[status] || toastService['info'])(message, { innerException });
+  }
 };
 
 ipcRenderer.on('mainprocess-response', (event: any, arg: RendererCallFunctionRequest) => {

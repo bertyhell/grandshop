@@ -5,6 +5,8 @@ import { State } from 'gm';
 import { Readable } from "stream";
 const getUuid = require('uuid/v1');
 const isDev = require('electron-is-dev');
+const { app } = require('electron');
+const promiseUtils = require('blend-promise-utils');
 
 const CustomError = require('./helpers/error').default;
 
@@ -12,9 +14,16 @@ const path = require('path');
 const fs = require('fs-extra');
 const gm = require('gm').subClass({
   // The lib folder is stored under resources if the app is packaged and under the root folder if the app is running in development
-  appPath: path.resolve(__dirname, '..', ...(isDev ? ['lib'] : ['resources', 'lib']), 'GraphicsMagick-1.3.33-Q16') + path.sep,
+  appPath: path.resolve(__dirname, '..', ...(isDev ? ['lib'] : ['..', 'lib']), 'GraphicsMagick-1.3.33-Q16') + path.sep,
   imageMagick: true
 });
+
+const tempFolder: string = app.getPath("temp");
+
+const convertExePath = path.resolve(__dirname, '..', ...(isDev ? ['lib'] : ['..', 'lib']), 'GraphicsMagick-1.3.33-Q16') + path.sep + 'convert.exe';
+if (!fs.existsSync(convertExePath)) {
+  throw 'Can\'t find image modification library at: ' + convertExePath;
+}
 
 exports.default = class ImageManager {
   private static originalImagePathParts: ParsedPath;
@@ -24,16 +33,19 @@ exports.default = class ImageManager {
   private static modifiedImagePath: string;
   private static modifiedImageBuffer: Buffer;
 
-  private static tmpFolder: string = path.resolve(__dirname, '..', 'tmp') + path.sep;
+  private static tempPaths: string[]  = [];
 
   private static imageModifications: ImageModificationInfo[] = [];
 
-  public static async updateModifications(modifications: ImageModificationInfo[]): Promise<Buffer> {
+  public static async updateModifications(modifications: ImageModificationInfo[], notify: (message: string) => void): Promise<Buffer> {
     try {
       this.imageModifications = modifications; // TODO diff modifications and only render new images instead of running all modifications on every change
+      notify('before gmstate');
       let gmState = gm(this.originalImagePath);
+      notify('after gmstate');
       for (const modification of this.imageModifications) {
-        try {
+        notify('start for');
+        // try {
           const func: ((gmState: State, ...args: any[]) => State) | null = this[modification.name];
           if (!func) {
             throw new CustomError('requested to execute unsupported image modification', null, {
@@ -42,14 +54,19 @@ exports.default = class ImageManager {
             });
           }
           gmState = await func.bind(ImageManager)(gmState, ...modification.arguments);
-        } catch (err) {
-          console.error(new CustomError('Failed to execute modification', err, { modification }));
-        }
+        notify('end for');
+        // } catch (err) {
+        //   console.error(new CustomError('Failed to execute modification', err, { modification }));
+        // }
       }
+      notify('before write');
       this.modifiedImagePath = await this.writeGmState(gmState);
+      notify('after write');
       this.modifiedImageBuffer = await fs.readFile(this.modifiedImagePath);
+      notify('after read to buffer');
       return this.modifiedImageBuffer;
     } catch (err) {
+      notify('after read to buffer: ' + JSON.stringify(err));
       throw new CustomError('Failed to apply image modifications', err, { modifications, originalImagePath: this.originalImagePath });
     }
   }
@@ -77,9 +94,17 @@ exports.default = class ImageManager {
     return this.modifiedImagePath;
   }
 
+  public static async cleanTempFiles(): Promise<void> {
+    await promiseUtils.mapLimit(this.tempPaths, 20, async (tempPath: string) => {
+      await fs.remove(tempPath);
+    });
+  }
+
   private static getNewImagePath(original: string): string {
     const pathParts = path.parse(original);
-    return path.resolve(this.tmpFolder, `${pathParts.name}-${getUuid()}${pathParts.ext}`);
+    const newPath = path.resolve(tempFolder, `${pathParts.name}-${getUuid()}${pathParts.ext}`);
+    this.tempPaths.push(newPath);
+    return newPath;
   }
 
   private static writeGmState(gmState: State): Promise<string> {
