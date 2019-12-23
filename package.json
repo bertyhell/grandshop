@@ -1,16 +1,14 @@
 {
   "name": "grandshop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Photoshop for your grandparents",
   "main": "electron/main.js",
   "scripts": {
-    "start": "electron .  --allow-file-access-from-files",
-    "compile": "tsc -w -p tsconfig-electron.json",
-    "client-start": "react-scripts start",
-    "client-build": "react-scripts build",
-    "client-test": "react-scripts test",
-    "client-eject": "react-scripts eject",
-    "--prepack": "npm run client-build",
+    "electron-start": "electron . --allow-file-access-from-files",
+    "react-start": "react-scripts start",
+    "react-build": "react-scripts build",
+    "prepack": "rimraf build electron-dist && npm run react-build && tsc -p tsconfig-electron.json",
+    "predist": "npm run prepack",
     "pack": "electron-builder --dir -c.extraMetadata.main=electron/main.js",
     "dist": "electron-builder -c.extraMetadata.main=electron/main.js"
   },
@@ -64,7 +62,8 @@
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "^3.7.4"
+    "typescript": "^3.7.4",
+    "rimraf": "^3.0.0"
   },
   "keywords": [
     "photoshop",
@@ -94,7 +93,23 @@
       "lib/**/*"
     ],
     "win": {
-      "target": "dir"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "dir",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
     },
     "mac": {
       "category": "public.app-category.graphics-design"

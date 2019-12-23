@@ -3,6 +3,7 @@ import { ParsedPath } from "path";
 import { ImageModificationInfo } from '../src/shared/types';
 import { State } from 'gm';
 import { Readable } from "stream";
+
 const getUuid = require('uuid/v1');
 const isDev = require('electron-is-dev');
 const { app } = require('electron');
@@ -33,40 +34,29 @@ exports.default = class ImageManager {
   private static modifiedImagePath: string;
   private static modifiedImageBuffer: Buffer;
 
-  private static tempPaths: string[]  = [];
+  private static tempPaths: string[] = [];
 
   private static imageModifications: ImageModificationInfo[] = [];
 
-  public static async updateModifications(modifications: ImageModificationInfo[], notify: (message: string) => void): Promise<Buffer> {
+  public static async updateModifications(modifications: ImageModificationInfo[]): Promise<Buffer> {
     try {
       this.imageModifications = modifications; // TODO diff modifications and only render new images instead of running all modifications on every change
-      notify('before gmstate');
       let gmState = gm(this.originalImagePath);
-      notify('after gmstate');
       for (const modification of this.imageModifications) {
-        notify('start for');
         // try {
-          const func: ((gmState: State, ...args: any[]) => State) | null = this[modification.name];
-          if (!func) {
-            throw new CustomError('requested to execute unsupported image modification', null, {
-              modification,
-              originalImagePath: this.originalImagePath
-            });
-          }
-          gmState = await func.bind(ImageManager)(gmState, ...modification.arguments);
-        notify('end for');
-        // } catch (err) {
-        //   console.error(new CustomError('Failed to execute modification', err, { modification }));
-        // }
+        const func: ((gmState: State, ...args: any[]) => State) | null = this[modification.name];
+        if (!func) {
+          throw new CustomError('requested to execute unsupported image modification', null, {
+            modification,
+            originalImagePath: this.originalImagePath
+          });
+        }
+        gmState = await func.bind(ImageManager)(gmState, ...modification.arguments);
       }
-      notify('before write');
       this.modifiedImagePath = await this.writeGmState(gmState);
-      notify('after write');
       this.modifiedImageBuffer = await fs.readFile(this.modifiedImagePath);
-      notify('after read to buffer');
       return this.modifiedImageBuffer;
     } catch (err) {
-      notify('after read to buffer: ' + JSON.stringify(err));
       throw new CustomError('Failed to apply image modifications', err, { modifications, originalImagePath: this.originalImagePath });
     }
   }
@@ -109,23 +99,29 @@ exports.default = class ImageManager {
 
   private static writeGmState(gmState: State): Promise<string> {
     return new Promise<string>((resolve, reject) => {
-      const modifiedImagePath = this.getNewImagePath(this.originalImagePath);
-      gmState.write(modifiedImagePath, async (err: Error | null, stdout: Readable, stderr: Readable, cmd: string) => {
-        if (err) {
-          reject(new CustomError(
-              'Failed to save image to disk',
-              err,
-              {
-                stdout: await this.streamToString(stdout),
-                stderr: await this.streamToString(stderr),
-                cmd,
-              }
-              )
-          );
-        } else {
-          resolve(modifiedImagePath);
-        }
-      });
+      try {
+        const modifiedImagePath = this.getNewImagePath(this.originalImagePath);
+        gmState.write(modifiedImagePath, async (err: Error | null, stdout: Readable, stderr: Readable, cmd: string) => {
+          if (err) {
+            reject(new CustomError(
+                'Failed to save image to disk',
+                err,
+                {
+                  stdout: await this.streamToString(stdout),
+                  stderr: await this.streamToString(stderr),
+                  cmd
+                })
+            );
+          } else {
+            resolve(modifiedImagePath);
+          }
+        });
+
+      } catch (err) {
+        reject(new CustomError(
+            'Failed to write image to disk',
+            err));
+      }
     });
   }
 

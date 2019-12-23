@@ -38,6 +38,7 @@ function createWindow() {
     }
   });
   mainWindow.maximize();
+  mainWindow.setMenu(null);
 
   mainWindow.loadURL(
       isDev ?
@@ -133,15 +134,7 @@ function callRendererFunction(event: Electron.IpcMainEvent, func: RendererCallFu
 
 async function applyModifications(event: Electron.IpcMainEvent, modifications: ImageModificationInfo[]) {
   try {
-
-    const notify = (message: string) => callRendererFunction(event, 'showNotification', [message, 'info', {
-      message
-    }]);
-    const modifiedImageBuffer: Buffer = await ImageManager.updateModifications(modifications, notify);
-
-    callRendererFunction(event, 'showNotification', ['returning base64 string', 'info', {
-      modifications
-    }]);
+    const modifiedImageBuffer: Buffer = await ImageManager.updateModifications(modifications);
     callRendererFunction(event, 'setModifiedImage', [modifiedImageBuffer.toString('base64')]);
   } catch (err) {
     const error = new CustomError('Failed to apply modifications to image', err, { modifications });
