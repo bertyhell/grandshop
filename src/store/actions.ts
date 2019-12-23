@@ -1,16 +1,16 @@
 import {
   AppActionTypes,
-  SetOriginalImageUrlAction,
-  SetModifiedImageUrlAction
+  SetOriginalImageAction,
+  SetModifiedImageAction
 } from './types';
 
-export const setOriginalImageUrlAction = (url: string | null): SetOriginalImageUrlAction => ({
-  url,
-  type: AppActionTypes.SET_ORIGINAL_IMAGE_URL
+export const setOriginalImageAction = (image: string | null): SetOriginalImageAction => ({
+  image,
+  type: AppActionTypes.SET_ORIGINAL_IMAGE
 });
 
 
-export const setModifiedImageUrlAction = (url: string | null): SetModifiedImageUrlAction => ({
-  url,
-  type: AppActionTypes.SET_MODIFIED_IMAGE_URL
+export const setModifiedImageAction = (image: string | null): SetModifiedImageAction => ({
+  image,
+  type: AppActionTypes.SET_MODIFIED_IMAGE
 });

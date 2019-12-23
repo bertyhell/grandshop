@@ -1,13 +1,13 @@
-import React, { FunctionComponent, ReactElement, ReactNode, useEffect, useReducer, useState } from 'react';
+import React, { FunctionComponent, useEffect, useReducer, useState } from 'react';
 import getUuid from 'uuid/v1';
 import compact from 'lodash-es/compact';
 import { connect } from 'react-redux';
 import { useDebounce } from 'use-debounce';
 
-import { applyModifications, ImageModificationInfo, saveImage, selectOriginalImage } from '../../helpers/interop-electron';
+import { applyModifications, saveImage, openImage } from '../../helpers/interop-electron';
 import Button from '../../components/Button/Button';
 import { AppState } from '../../store/types';
-import { selectModifiedImageUrl, selectOriginalImageUrl } from '../../store/selectors';
+import { selectModifiedImage, selectOriginalImage } from '../../store/selectors';
 import { Select, SelectOption } from '../../components/Select/Select';
 import AddBorder from '../../components/ImageModifications/AddBorder/AddBorder';
 import { format } from '../../helpers/format';
@@ -17,6 +17,7 @@ import get from 'lodash-es/get';
 import usePrevious from 'use-previous';
 import Sepia from '../../components/ImageModifications/Sepia/Sepia';
 import Brightness from '../../components/ImageModifications/Brightness/Brightness';
+import { ImageModificationInfo } from '../../shared/types';
 
 interface ControlsSidebarProps {
   originalImageUrl: string | null;
@@ -161,7 +162,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
       <div className="m-controls-sidebar">
         <div className="m-button-wrapper">
           <Button onClick={() => {
-            selectOriginalImage({
+            openImage({
               buttonLabel: "Openen",
               // defaultPath // TODO default to the users images folder
               filters: [
@@ -250,8 +251,8 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 };
 
 const mapStateToProps = (state: { app: AppState }) => ({
-  originalImageUrl: selectOriginalImageUrl(state),
-  modifiedImageUrl: selectModifiedImageUrl(state)
+  originalImageUrl: selectOriginalImage(state),
+  modifiedImageUrl: selectModifiedImage(state)
 });
 
 export default connect(mapStateToProps)(ControlsSidebar);

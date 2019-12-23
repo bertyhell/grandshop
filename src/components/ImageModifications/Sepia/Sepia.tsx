@@ -3,7 +3,7 @@ import classnames from 'classnames';
 
 import './Sepia.scss';
 import ImageModification from '../../ImageModification/ImageModification';
-import { ImageModificationInfo } from '../../../helpers/interop-electron';
+import { ImageModificationInfo } from '../../../shared/types';
 
 interface SepiaProps {
   className?: string;
@@ -32,16 +32,12 @@ const Sepia: FunctionComponent<SepiaProps> = ({
 
   return (
       <ImageModification
-          label={title}
-          className={classnames('c-sepia', className)}
-          isOpen={isOpen}
-          onToggle={onToggle}
-          onDelete={onDelete}
-      >
-        <span>
-          Deze bewerking heeft geen variabelen
-        </span>
-      </ImageModification>
+    label={title}
+    className={classnames('c-sepia', className)}
+    isOpen={isOpen}
+    onToggle={onToggle}
+    onDelete={onDelete}
+    />
   );
 };
 

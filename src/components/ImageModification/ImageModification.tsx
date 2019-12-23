@@ -7,7 +7,7 @@ import './ImageModification.scss';
 interface ImageModificationProps {
   className?: string;
   label?: string;
-  children: ReactNode;
+  children?: ReactNode;
   isOpen: boolean;
   onToggle: () => void;
   onDelete: () => void;
@@ -16,10 +16,10 @@ interface ImageModificationProps {
 const ImageModification: FunctionComponent<ImageModificationProps> = ({
                                                                         className,
                                                                         label,
-                                                                        children,
+                                                                        children = null,
                                                                         isOpen,
                                                                         onToggle,
-                                                                        onDelete,
+                                                                        onDelete
                                                                       }) => {
   return (
       <Accordion
@@ -29,9 +29,11 @@ const ImageModification: FunctionComponent<ImageModificationProps> = ({
           onToggle={onToggle}
           onDelete={onDelete}
       >
+        {children &&
         <div className="o-image-modification-controls">
           {children}
         </div>
+        }
       </Accordion>
   );
 };

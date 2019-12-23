@@ -2,6 +2,9 @@
 /// <reference path="../node_modules/@types/fs-extra/index.d.ts" />
 
 // Modules to control application life and create native browser window
+import { ElectronCallFunctionRequest, ImageModificationInfo, RendererCallFunction, RendererCallFunctionRequest } from '../src/shared/types';
+import { ParsedPath } from 'path';
+
 const ImageManager = require('./image-manager').default;
 const CustomError = require('./helpers/error').default;
 
@@ -16,11 +19,6 @@ const windowStateFileName: string = path.resolve(appFolder, 'last-window-state.j
 require('electron-reload')(appFolder, {
   ignored: [/node_modules|[/\\]\./, /tmp/]
 });
-
-interface ImageModificationInfo {
-  name: 'addBorder'; // TODO add more modifications
-  arguments: any;
-}
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -96,26 +94,29 @@ app.on('activate', () => {
   }
 });
 
-async function selectOriginalImage(event: Electron.IpcMainEvent, options: Electron.OpenDialogSyncOptions) {
-  const response: Electron.OpenDialogReturnValue = await dialog.showOpenDialog(mainWindow, options);
-  if (response.canceled || !response.filePaths || !response.filePaths.length) {
-    return;
-  }
-  // Store the original image path in the image manager
-  ImageManager.setOriginalImagePath(response.filePaths[0]); // TODO add multi image support
+async function openImage(event: Electron.IpcMainEvent, options: Electron.OpenDialogSyncOptions) {
+  try {
+    const response: Electron.OpenDialogReturnValue = await dialog.showOpenDialog(mainWindow, options);
+    if (response.canceled || !response.filePaths || !response.filePaths.length) {
+      return;
+    }
+    // Store the original image path in the image manager
+    const originalImageBuffer: Buffer = await ImageManager.setOriginalImagePath(response.filePaths[0]); // TODO add multi image support
 
-  // Pass the original image path to the client for preview
-  const relativeUrl = convertPathToUrl(response.filePaths[0]);
-  event.sender.send('mainprocess-response', {
-    func: 'setOriginalImageUrl',
-    funcArgs: [relativeUrl]
-  } as RendererCallFunctionRequest)
+    // Pass the original image as a base64 string to the client for preview
+    callRendererFunction(event, 'setOriginalImage', [originalImageBuffer.toString('base64')]);
+  } catch (err) {
+    // TODO show toast to user
+    const error = new CustomError('Failed to open image', err, {dialogOptions: options});
+    console.error(error);
+    throw error;
+  }
 }
 
 async function saveImage(event: Electron.IpcMainEvent, options: Electron.SaveDialogOptions) {
   let response: Electron.SaveDialogReturnValue | undefined = undefined;
   try {
-    const parts = path.parse(ImageManager.getOriginalImageName());
+    const parts: ParsedPath = ImageManager.getOriginalImagePathParts();
     const defaultFileName = parts.name + '-' + new Date().toLocaleDateString().replace(/[^0-9]+/g, '-') + parts.ext;
     response = await dialog.showSaveDialog(mainWindow, { ...options, defaultPath: defaultFileName });
     if (response.canceled || !response.filePath) {
@@ -124,48 +125,39 @@ async function saveImage(event: Electron.IpcMainEvent, options: Electron.SaveDia
     // Copy the last modified image to the desired location
     await fs.copyFile(ImageManager.getModifiedImagePath(), response.filePath);
 
-    event.sender.send('mainprocess-response', {
-      func: 'showNotification',
-      funcArgs: ['Afbeelding is opgeslagen', 'success']
-    } as RendererCallFunctionRequest)
+    callRendererFunction(event, 'showNotification', ['Afbeelding is opgeslagen', 'success']);
   } catch (err) {
     console.error(new CustomError('Failed to save file', err, { dialogOptions: options, dialogResponse: response }))
   }
 }
 
-function convertPathToUrl(filePath: string) {
-  if (!filePath) {
-    return filePath;
-  }
-  return filePath.replace(/\\+/g, '/');
+function callRendererFunction(event: Electron.IpcMainEvent, func: RendererCallFunction, funcArgs: any[]) {
+  event.sender.send('mainprocess-response', { func, funcArgs } as RendererCallFunctionRequest)
 }
 
+// function convertPathToUrl(filePath: string) {
+//   if (!filePath) {
+//     return filePath;
+//   }
+//   return filePath.replace(/\\+/g, '/');
+// }
+
 async function applyModifications(event: Electron.IpcMainEvent, modifications: ImageModificationInfo[]) {
-  const modifiedImageUrl = await ImageManager.updateModifications(modifications);
+  const modifiedImageBuffer: Buffer = await ImageManager.updateModifications(modifications);
   event.sender.send('mainprocess-response', {
-    func: 'setModifiedImageUrl',
-    funcArgs: [convertPathToUrl(modifiedImageUrl)]
+    func: 'setModifiedImage',
+    funcArgs: [modifiedImageBuffer.toString('base64')]
   } as RendererCallFunctionRequest)
 }
 
 const callableFunctions = {
-  selectOriginalImage,
+  openImage,
   saveImage,
   applyModifications
 };
 
-interface RendererCallFunctionRequest {
-  func: 'setOriginalImageUrl' | 'setModifiedImageUrl' | 'showNotification',
-  funcArgs: any[];
-}
-
-interface ElectronCallFunctionRequest {
-  func: 'selectOriginalImage' | 'applyModifications',
-  funcArgs: any[];
-}
-
 ipcMain.on('request-mainprocess-action', (event: Electron.IpcMainEvent, arg: ElectronCallFunctionRequest) => {
-  const func: Function | undefined = (callableFunctions as any)[arg.func];
+  const func: Function | undefined = callableFunctions[arg.func];
   if (func) {
     try {
       func(event, ...arg.funcArgs);
@@ -173,7 +165,7 @@ ipcMain.on('request-mainprocess-action', (event: Electron.IpcMainEvent, arg: Ele
       console.error('Failed to execute main function that was requested from the renderer thread', { event, arg, func })
     }
   } else {
-    console.error('Received func request on request-mainprocess-action, but function doesn\'t exist', { event, arg });
+    console.error('Received func request on request-mainprocess-action, but function doesn\'t exist1', { event, arg });
   }
 });
 

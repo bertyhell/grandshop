@@ -1,11 +1,11 @@
 import { AppState } from './types';
 
-const selectOriginalImageUrl = (state: {app: AppState}) => {
-  return state.app.originalImageUrl;
+const selectOriginalImage = (state: {app: AppState}) => {
+  return state.app.originalImage;
 };
 
-const selectModifiedImageUrl = (state: {app: AppState}) => {
-  return state.app.modifiedImageUrl;
+const selectModifiedImage = (state: {app: AppState}) => {
+  return state.app.modifiedImage;
 };
 
-export { selectOriginalImageUrl, selectModifiedImageUrl };
+export { selectOriginalImage, selectModifiedImage };

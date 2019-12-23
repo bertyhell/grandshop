@@ -1,12 +1,13 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import classnames from 'classnames';
 
-import './AddBorder.scss';
 import ImageModification from '../../ImageModification/ImageModification';
 import FormField from '../../FormField/FormField';
 import Input from '../../Input/Input';
 import ColorInput from '../../ColorInput/ColorInput';
-import { ImageModificationInfo } from '../../../helpers/interop-electron';
+import { ImageModificationInfo } from '../../../shared/types';
+
+import './AddBorder.scss';
 
 interface AddBorderProps {
   className?: string;
@@ -35,7 +36,7 @@ const AddBorder: FunctionComponent<AddBorderProps> = ({
           arguments: [parseInt(thickness, 10), color]
         }
     );
-  }, [thickness, color]);
+  }, [thickness, color]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
       <ImageModification

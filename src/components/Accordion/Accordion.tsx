@@ -31,9 +31,11 @@ export const Accordion: FunctionComponent<AccordionProps> = ({
             <Button label="Verwijder" onClick={onDelete} block={false} type="secondary"/>
           </div>
         </div>
+        {children &&
         <div className="c-accordion-body">
           <div className="c-accordion-item">{children}</div>
         </div>
+        }
       </div>
   );
 };

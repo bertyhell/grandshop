@@ -2,20 +2,20 @@ import { createReducer } from '../helpers/create-reducer';
 
 import initialState from './initial-state';
 import {
-  AppActionTypes, SetModifiedImageUrlAction, SetOriginalImageUrlAction
+  AppActionTypes, SetModifiedImageAction, SetOriginalImageAction
 } from './types';
 
 const Reducer = createReducer(initialState, {
-  [AppActionTypes.SET_ORIGINAL_IMAGE_URL]: (state, action: SetOriginalImageUrlAction) => {
+  [AppActionTypes.SET_ORIGINAL_IMAGE]: (state, action: SetOriginalImageAction) => {
     return {
       ...state,
-      originalImageUrl: action.url
+      originalImage: action.image
     };
   },
-  [AppActionTypes.SET_MODIFIED_IMAGE_URL]: (state, action: SetModifiedImageUrlAction) => {
+  [AppActionTypes.SET_MODIFIED_IMAGE]: (state, action: SetModifiedImageAction) => {
     return {
       ...state,
-      modifiedImageUrl: action.url
+      modifiedImage: action.image
     };
   }
 });

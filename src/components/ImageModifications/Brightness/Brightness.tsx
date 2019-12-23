@@ -1,12 +1,11 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import classnames from 'classnames';
 
-import './Brightness.scss';
 import ImageModification from '../../ImageModification/ImageModification';
-import { ImageModificationInfo } from '../../../helpers/interop-electron';
-import FormField from '../../FormField/FormField';
-import Input from '../../Input/Input';
 import { MultiRange } from '../../MultiRange/MultiRange';
+import { ImageModificationInfo } from '../../../shared/types';
+
+import './Brightness.scss';
 
 interface BrightnessProps {
   className?: string;

@@ -1,8 +1,8 @@
 import { AppState } from './types';
 
 const initialState: AppState = Object.freeze({
-  originalImageUrl: null,
-  modifiedImageUrl: null
+  originalImage: null,
+  modifiedImage: null
 });
 
 export default initialState;

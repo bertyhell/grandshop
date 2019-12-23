@@ -1,32 +1,29 @@
 import React, { FunctionComponent } from 'react';
 
 import './MainPreview.scss';
-import { selectModifiedImageUrl, selectOriginalImageUrl } from '../../store/selectors';
+import { selectModifiedImage, selectOriginalImage } from '../../store/selectors';
 import { connect } from 'react-redux';
 import { AppState } from '../../store/types';
 
 interface MainPreviewProps {
-  originalImageUrl: string | null;
-  modifiedImageUrl: string | null;
+  originalImage: string | null;
+  modifiedImage: string | null;
 }
 
 const MainPreview: FunctionComponent<MainPreviewProps> = ({
-                                                            originalImageUrl,
-                                                            modifiedImageUrl
+                                                            originalImage,
+                                                            modifiedImage
                                                           }) => {
   return <div className="m-main-preview">
-    {(modifiedImageUrl || originalImageUrl) &&
-    <div
-      className="a-preview-wrapper"
-      style={{ backgroundImage: `url('file://${modifiedImageUrl || originalImageUrl}')` }}
-    />
+    {(modifiedImage || originalImage) &&
+    <img src={'data:image/png;base64,' + (modifiedImage || originalImage)} alt="Een voorbeeld van de aangepaste afbeelding"/>
     }
   </div>;
 };
 
 const mapStateToProps = (state: { app: AppState }) => ({
-  originalImageUrl: selectOriginalImageUrl(state),
-  modifiedImageUrl: selectModifiedImageUrl(state)
+  originalImage: selectOriginalImage(state),
+  modifiedImage: selectModifiedImage(state)
 });
 
 export default connect(mapStateToProps)(MainPreview);
