@@ -9,10 +9,13 @@
     "client-start": "react-scripts start",
     "client-build": "react-scripts build",
     "client-test": "react-scripts test",
-    "client-eject": "react-scripts eject"
+    "client-eject": "react-scripts eject",
+    "--prepack": "npm run client-build",
+    "pack": "electron-builder --dir -c.extraMetadata.main=electron/main.js",
+    "dist": "electron-builder -c.extraMetadata.main=electron/main.js"
   },
   "dependencies": {
-    "@jaames/iro": "latest",
+    "@jaames/iro": "^4.5.3",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.4.0",
     "@testing-library/user-event": "^7.2.1",
@@ -20,11 +23,11 @@
     "@types/node": "^12.12.21",
     "@types/react": "^16.9.17",
     "@types/react-dom": "^16.9.4",
-    "classnames": "latest",
+    "classnames": "^2.2.6",
     "electron-is-dev": "^1.1.0",
     "fs-extra": "^8.1.0",
     "gm": "^1.23.1",
-    "lodash-es": "latest",
+    "lodash-es": "^4.17.15",
     "node-sass": "^4.13.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
@@ -32,14 +35,15 @@
     "react-scripts": "3.3.0",
     "react-select": "^3.0.8",
     "redux": "^4.0.4",
-    "redux-devtools-extension": "latest",
-    "redux-thunk": "latest",
-    "resizable-panels-react": "latest",
+    "redux-devtools-extension": "^2.13.8",
+    "redux-thunk": "^2.3.0",
+    "resizable-panels-react": "^2.0.8",
     "typescript": "^3.7.4",
     "use-debounce": "^3.3.0",
     "use-previous": "^1.0.0",
+    "electron-reload": "^1.5.0",
     "uuid": "^3.3.3",
-    "react-range": "latest"
+    "react-range": "^1.4.6"
   },
   "devDependencies": {
     "@types/classnames": "^2.2.9",
@@ -51,7 +55,7 @@
     "@types/react-select": "^3.0.8",
     "@types/uuid": "^3.4.6",
     "electron": "7.1.7",
-    "electron-reload": "^1.5.0",
+    "electron-builder": "^21.2.0",
     "tslint": "^5.20.1",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.18.0",
@@ -61,17 +65,49 @@
   "keywords": [
     "photoshop",
     "easy",
-    "imagemagick",
+    "graphicmagick",
     "grandparents",
     "image",
-    "manipulation"
+    "manipulation",
+    "graphics"
   ],
-  "author": "Bert Verhelst, Laurens Hellinger",
+  "build": {
+    "appId": "com.electron.grandshop",
+    "productName": "Grandshop",
+    "extends": null,
+    "directories": {
+      "buildResources": "electron-build",
+      "output": "electron-dist"
+    },
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "build/**/*",
+      "lib/**/*",
+      "public/**/*",
+      "electron/**/*.js"
+    ],
+    "win": {
+      "target": "dir"
+    },
+    "mac": {
+      "category": "public.app-category.graphics-design"
+    }
+  },
+  "author": {
+    "name": "Bert Verhelst",
+    "email": "verhelstbert@gmail.com"
+  },
+  "contributors": [
+    {
+      "name": "Laurens Hellinger"
+    }
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://gitlab.com/bertyhell/grandshop/issues"
   },
-  "homepage": "https://gitlab.com/bertyhell/grandshop#readme",
+  "homepage": "./",
   "eslintConfig": {
     "extends": "react-app"
   },

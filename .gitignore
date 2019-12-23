@@ -26,3 +26,4 @@ yarn-error.log*
 **/*.js
 **/*.js.map
 tmp
+electron-dist

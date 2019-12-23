@@ -45,7 +45,9 @@ function createWindow() {
   // mainWindow.webContents.openDevTools();
 
   mainWindow.loadURL(
-      isDev ? 'http://localhost:3000' : `file://${path.resolve(__dirname, '../build/index.html')}`
+      isDev ?
+          'http://localhost:3000' :
+          `file://${path.resolve(__dirname, '../build/index.html')}`
   );
   // // and load the index.html of the app.
   // mainWindow.loadFile('public/index.html');
