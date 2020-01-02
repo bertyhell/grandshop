@@ -43,11 +43,6 @@ const Brightness: FunctionComponent<BrightnessProps> = ({
           onDelete={onDelete}
       >
         <MultiRange min={0} max={400} step={1} values={[brightness]} onChange={(values: number[]) => setBrightness(values[0])}/>
-        {/*<FormField label="Helderheid" labelFor="brightness">*/}
-        {/*  <Input id="brightness" type="text" value={brightness} onChange={(value: string) => {*/}
-        {/*    setBrightness(value);*/}
-        {/*  }}/>*/}
-        {/*</FormField>*/}
       </ImageModification>
   );
 };

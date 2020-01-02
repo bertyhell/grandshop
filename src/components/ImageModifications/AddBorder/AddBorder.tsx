@@ -3,9 +3,9 @@ import classnames from 'classnames';
 
 import ImageModification from '../../ImageModification/ImageModification';
 import FormField from '../../FormField/FormField';
-import Input from '../../Input/Input';
 import ColorInput from '../../ColorInput/ColorInput';
 import { ImageModificationInfo } from '../../../shared/types';
+import { MultiRange } from '../../MultiRange/MultiRange';
 
 import './AddBorder.scss';
 
@@ -27,13 +27,13 @@ const AddBorder: FunctionComponent<AddBorderProps> = ({
                                                         onDelete
                                                       }) => {
 
-  const [thickness, setThickness] = useState<string>('100');
+  const [thickness, setThickness] = useState<number>(100);
   const [color, setColor] = useState<string>('#225eff');
 
   useEffect(() => {
     onApply({
           name: 'addBorder',
-          arguments: [parseInt(thickness, 10), color]
+          arguments: [thickness, color]
         }
     );
   }, [thickness, color]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -47,9 +47,7 @@ const AddBorder: FunctionComponent<AddBorderProps> = ({
           onDelete={onDelete}
       >
         <FormField label="Dikte" labelFor="thickness">
-          <Input id="thickness" type="text" value={thickness} onChange={(value: string) => {
-            setThickness(value);
-          }}/>
+          <MultiRange min={0} max={2000} step={1} values={[thickness]} onChange={(values: number[]) => setThickness(values[0])}/>
         </FormField>
         <FormField label="Kleur" labelFor="color">
           <ColorInput value={color} onChange={(value: string) => {

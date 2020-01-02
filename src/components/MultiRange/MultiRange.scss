@@ -1,4 +1,15 @@
 .c-input-range {
+  display: flex;
+  align-items: center;
+
+  > div:first-child {
+    flex-grow: 1;
+    margin-right: 20px;
+  }
+
+  > .o-input {
+    width: 50px;
+  }
 
   [role="slider"]:focus {
     outline: 0;

@@ -1,9 +1,12 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { getTrackBackground, Range } from 'react-range';
 
 import classnames from 'classnames';
 
 import './MultiRange.scss';
+import toastService from '../../services/toast-service';
+import Input from '../Input/Input';
+import { clamp } from 'lodash-es';
 
 export interface MultiRangeProps {
   className?: string;
@@ -21,13 +24,22 @@ export const MultiRange: FunctionComponent<MultiRangeProps> = ({
                                                                  className,
                                                                  id,
                                                                  disabled = false,
-                                                                 values = [0, 100],
+                                                                 values = [100],
                                                                  step = 0.1,
                                                                  min = 0,
                                                                  max = 100,
                                                                  allowOverlap = false,
                                                                  onChange = () => {},
                                                                }) => {
+  const handleThicknessInputChanged = (value: string) => {
+    try {
+      const val = parseInt(value, 10);
+      onChange([clamp(val, min, max)]);
+    } catch (err) {
+      toastService.warn('De waarde moet een geldig getal zijn');
+    }
+  };
+
   const classes = classnames('c-input-range', className, { 'c-input-range__disabled': disabled });
 
   const sortedValues = [...values];
@@ -85,6 +97,7 @@ export const MultiRange: FunctionComponent<MultiRangeProps> = ({
                 />
             )}
         />
+        <Input type="number" value={values[0].toString()} onChange={handleThicknessInputChanged} />
       </div>
   );
 };
