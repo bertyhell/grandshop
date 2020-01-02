@@ -15,7 +15,6 @@ export const setModifiedImageAction = (image: string | null): SetModifiedImageAc
 });
 
 export const setModificationInProgressAction = (modificationInProgress: boolean): SetModificationInProgressAction => {
-  console.log('set modificationInProgress action: ', modificationInProgress);
   return {
     modificationInProgress,
     type: AppActionTypes.SET_MODIFICATION_IN_PROGRESS

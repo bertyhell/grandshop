@@ -19,7 +19,6 @@ const Reducer = createReducer(initialState, {
     };
   },
   [AppActionTypes.SET_MODIFICATION_IN_PROGRESS]: (state, action: SetModificationInProgressAction) => {
-    console.log('reducer modificationInProgress: ', action.modificationInProgress);
     return {
       ...state,
       modificationInProgress: action.modificationInProgress

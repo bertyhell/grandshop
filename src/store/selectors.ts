@@ -9,7 +9,6 @@ const selectModifiedImage = (state: {app: AppState}) => {
 };
 
 const selectModificationInProgress = (state: {app: AppState}) => {
-  console.log('getting modificationInProgress: ', state.app.modificationInProgress);
   return state.app.modificationInProgress;
 };
 
