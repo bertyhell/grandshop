@@ -2,7 +2,7 @@ import { createReducer } from '../helpers/create-reducer';
 
 import initialState from './initial-state';
 import {
-  AppActionTypes, SetModifiedImageAction, SetOriginalImageAction
+  AppActionTypes, SetModificationInProgressAction, SetModifiedImageAction, SetOriginalImageAction
 } from './types';
 
 const Reducer = createReducer(initialState, {
@@ -16,6 +16,13 @@ const Reducer = createReducer(initialState, {
     return {
       ...state,
       modifiedImage: action.image
+    };
+  },
+  [AppActionTypes.SET_MODIFICATION_IN_PROGRESS]: (state, action: SetModificationInProgressAction) => {
+    console.log('reducer modificationInProgress: ', action.modificationInProgress);
+    return {
+      ...state,
+      modificationInProgress: action.modificationInProgress
     };
   }
 });

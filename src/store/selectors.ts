@@ -8,4 +8,9 @@ const selectModifiedImage = (state: {app: AppState}) => {
   return state.app.modifiedImage;
 };
 
-export { selectOriginalImage, selectModifiedImage };
+const selectModificationInProgress = (state: {app: AppState}) => {
+  console.log('getting modificationInProgress: ', state.app.modificationInProgress);
+  return state.app.modificationInProgress;
+};
+
+export { selectOriginalImage, selectModifiedImage, selectModificationInProgress };

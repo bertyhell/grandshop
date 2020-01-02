@@ -1,8 +1,8 @@
 /// <reference path="../../node_modules/electron/electron.d.ts" />
-import { setModifiedImageAction, setOriginalImageAction } from '../store/actions';
+import { setModificationInProgressAction, setModifiedImageAction, setOriginalImageAction } from '../store/actions';
 import store from '../store/store';
 import { ElectronCallFunction, ElectronCallFunctionRequest, ImageModificationInfo, RendererCallFunctionRequest } from '../shared/types';
-import toastService from '../services/toast-service';
+import toastService from './toast-service';
 import { AlertType } from '../components/Alert/Alert';
 import { CustomError } from '../shared/error';
 
@@ -15,6 +15,7 @@ const callableFunctions = {
   },
   setModifiedImage: (url: string) => {
     store.dispatch(setModifiedImageAction(url));
+    store.dispatch(setModificationInProgressAction(false));
   },
   showNotification: (message: string, status: AlertType, innerException: CustomError) => {
     (toastService[status] || toastService['info'])(message, { innerException });

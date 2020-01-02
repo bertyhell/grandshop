@@ -4,7 +4,7 @@ import compact from 'lodash-es/compact';
 import { connect } from 'react-redux';
 import { useDebounce } from 'use-debounce';
 
-import { applyModifications, saveImage, openImage } from '../../helpers/interop-electron';
+import { applyModifications, saveImage, openImage } from '../../services/interop-electron';
 import Button from '../../components/Button/Button';
 import { AppState } from '../../store/types';
 import { selectModifiedImage, selectOriginalImage } from '../../store/selectors';
@@ -18,10 +18,13 @@ import usePrevious from 'use-previous';
 import Sepia from '../../components/ImageModifications/Sepia/Sepia';
 import Brightness from '../../components/ImageModifications/Brightness/Brightness';
 import { ImageModificationInfo } from '../../shared/types';
+import { setModificationInProgressAction } from '../../store/actions';
+import { Dispatch } from 'redux';
 
 interface ControlsSidebarProps {
   originalImageUrl: string | null;
   modifiedImageUrl: string | null;
+  setModificationInProgress: (inProgress: boolean) => void;
 }
 
 interface ActiveModifier {
@@ -34,7 +37,8 @@ interface ActiveModifier {
 
 const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
                                                                     originalImageUrl,
-                                                                    modifiedImageUrl
+                                                                    modifiedImageUrl,
+                                                                    setModificationInProgress,
                                                                   }) => {
   const [selectedOption, setSelectedOption] = useState<string>('');
 
@@ -104,7 +108,6 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
         return modifiers;
 
       case 'TOGGLE':
-        console.log('toggle before ' + get(activeModifiers, `[${action.index}].title`, null) + ' ' + get(activeModifiers, `[${action.index}].isOpen`, null));
         const originalIsOpen: boolean = get(activeModifiers, `[${action.index}].isOpen`, false);
         modifiers = [
           ...activeModifiers.map(mod => {
@@ -116,7 +119,6 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
           ...modifiers[action.index],
           isOpen: !originalIsOpen
         };
-        console.log('toggle after ' + modifiers[action.index].title + ' ' + modifiers[action.index].isOpen);
         return modifiers;
 
       case 'DELETE':
@@ -137,6 +139,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 
     // check previous state to see if we need to run the applyModifications function because all modifiers were removed
     if (modifications && (modifications.length || (previousActiveModifiers && previousActiveModifiers.length !== modifications.length))) {
+      setModificationInProgress(true);
       applyModifications(modifications); // TODO add spinner while modifications are in progress
     }
   }, [debouncedActiveModifiers]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -253,4 +256,10 @@ const mapStateToProps = (state: { app: AppState }) => ({
   modifiedImageUrl: selectModifiedImage(state)
 });
 
-export default connect(mapStateToProps)(ControlsSidebar);
+const mapDispatchToProps = (dispatch: Dispatch) => {
+  return {
+    setModificationInProgress: (inProgress: boolean) => dispatch(setModificationInProgressAction(inProgress) as any),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ControlsSidebar);
