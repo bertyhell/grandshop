@@ -3,6 +3,10 @@ import getUuid from 'uuid/v1';
 import compact from 'lodash-es/compact';
 import { connect } from 'react-redux';
 import { useDebounce } from 'use-debounce';
+import { Dispatch } from 'redux';
+import usePrevious from 'use-previous';
+import get from 'lodash-es/get';
+import throttle from '@jcoreio/async-throttle';
 
 import { applyModifications, saveImage, openImage } from '../../services/interop-electron';
 import Button from '../../components/Button/Button';
@@ -13,13 +17,10 @@ import AddBorder from '../../components/ImageModifications/AddBorder/AddBorder';
 import { format } from '../../helpers/format';
 
 import './ControlsSidebar.scss';
-import get from 'lodash-es/get';
-import usePrevious from 'use-previous';
 import Sepia from '../../components/ImageModifications/Sepia/Sepia';
 import Brightness from '../../components/ImageModifications/Brightness/Brightness';
 import { ImageModificationInfo } from '../../shared/types';
 import { setModificationInProgressAction } from '../../store/actions';
-import { Dispatch } from 'redux';
 
 interface ControlsSidebarProps {
   originalImageUrl: string | null;
@@ -133,6 +134,9 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
   const [activeModifiers, modifyActiveModifiers] = useReducer<React.Reducer<ActiveModifier[], ActiveModifierAction>>(activeModifiersReducer, []);
   const [debouncedActiveModifiers] = useDebounce(activeModifiers, 500);
   const previousActiveModifiers = usePrevious<ActiveModifier[] | null>(activeModifiers);
+  const applyModificationsThrottled = throttle((modifications: ImageModificationInfo[]) => {
+    applyModifications(modifications);
+  }, 0);
 
   useEffect(() => {
     const modifications: ImageModificationInfo[] = compact(debouncedActiveModifiers.map((m: ActiveModifier) => m.info));
@@ -140,7 +144,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
     // check previous state to see if we need to run the applyModifications function because all modifiers were removed
     if (modifications && (modifications.length || (previousActiveModifiers && previousActiveModifiers.length !== modifications.length))) {
       setModificationInProgress(true);
-      applyModifications(modifications); // TODO add spinner while modifications are in progress
+      applyModificationsThrottled(modifications); // Do not apply new modifications if the previous modifications are not done yet
     }
   }, [debouncedActiveModifiers]); // eslint-disable-line react-hooks/exhaustive-deps
 
