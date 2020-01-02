@@ -38,7 +38,9 @@ function createWindow() {
     }
   });
   mainWindow.maximize();
-  mainWindow.setMenu(null);
+  if (!isDev) {
+    mainWindow.setMenu(null);
+  }
 
   mainWindow.loadURL(
       isDev ?
@@ -52,13 +54,10 @@ function createWindow() {
 
   // Emitted when the window is closed.
   mainWindow.on('closed', async () => {
-    // Store the last window postion and dimensions
+    // Store the last window position and dimensions
     // fs.writeFileSync(windowStateFileName, JSON.stringify({
     //   bounds: mainWindow.getBounds()
     // }));
-
-    // Remove temp files
-    await ImageManager.cleanTempFiles();
 
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
@@ -117,8 +116,8 @@ async function saveImage(event: Electron.IpcMainEvent, options: Electron.SaveDia
     if (response.canceled || !response.filePath) {
       return;
     }// TODO allow the user to enter a different extension, then use gm to save the file in that extension
-    // Copy the last modified image to the desired location
-    await fs.copyFile(ImageManager.getModifiedImagePath(), response.filePath);
+    // Write the modified buffer image to the save location
+    await fs.writeFile(response.filePath, ImageManager.getModifiedImageBuffer());
 
     callRendererFunction(event, 'showNotification', ['Afbeelding is opgeslagen', 'success']);
   } catch (err) {

@@ -2,7 +2,6 @@
 import { ParsedPath } from "path";
 import { ImageModificationInfo } from '../src/shared/types';
 import { State } from 'gm';
-import { Readable } from "stream";
 
 const getUuid = require('uuid/v1');
 const isDev = require('electron-is-dev');
@@ -15,8 +14,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const gm = require('gm').subClass({
   // The lib folder is stored under resources if the app is packaged and under the root folder if the app is running in development
-  appPath: path.resolve(__dirname, '..', ...(isDev ? ['lib'] : ['..', 'lib']), 'GraphicsMagick-1.3.33-Q16') + path.sep,
-  imageMagick: true
+  appPath: path.resolve(__dirname, '..', ...(isDev ? ['lib'] : ['..', 'lib']), 'GraphicsMagick-1.3.33-Q16') + path.sep
 });
 
 const tempFolder: string = app.getPath("temp");
@@ -31,34 +29,32 @@ exports.default = class ImageManager {
   private static originalImagePath: string;
   private static originalImageBuffer: Buffer;
 
-  private static modifiedImagePath: string;
   private static modifiedImageBuffer: Buffer;
-
-  private static tempPaths: string[] = [];
 
   private static imageModifications: ImageModificationInfo[] = [];
 
   public static async updateModifications(modifications: ImageModificationInfo[]): Promise<Buffer> {
-    try {
-      this.imageModifications = modifications; // TODO diff modifications and only render new images instead of running all modifications on every change
-      let gmState = gm(this.originalImagePath);
-      for (const modification of this.imageModifications) {
-        // try {
-        const func: ((gmState: State, ...args: any[]) => State) | null = this[modification.name];
-        if (!func) {
-          throw new CustomError('requested to execute unsupported image modification', null, {
-            modification,
-            originalImagePath: this.originalImagePath
-          });
+    return new Promise<Buffer>(async (resolve, reject) => {
+      try {
+        this.imageModifications = modifications; // TODO diff modifications and only render new images instead of running all modifications on every change
+        let gmState = gm(this.originalImageBuffer, this.originalImagePathParts.name + this.originalImagePathParts.ext);
+        for (const modification of this.imageModifications) {
+          // try {
+          const func: ((gmState: State, ...args: any[]) => State) | null = this[modification.name];
+          if (!func) {
+            throw new CustomError('requested to execute unsupported image modification', null, {
+              modification,
+              originalImagePath: this.originalImagePath
+            });
+          }
+          gmState = func.bind(ImageManager)(gmState, ...modification.arguments);
         }
-        gmState = await func.bind(ImageManager)(gmState, ...modification.arguments);
+        this.modifiedImageBuffer = await this.writeGmState(gmState);
+        resolve(this.modifiedImageBuffer);
+      } catch (err) {
+        reject(new CustomError('Failed to apply image modifications', err, { modifications, originalImagePath: this.originalImagePath }));
       }
-      this.modifiedImagePath = await this.writeGmState(gmState);
-      this.modifiedImageBuffer = await fs.readFile(this.modifiedImagePath);
-      return this.modifiedImageBuffer;
-    } catch (err) {
-      throw new CustomError('Failed to apply image modifications', err, { modifications, originalImagePath: this.originalImagePath });
-    }
+    });
   }
 
   public static async setOriginalImagePath(absoluteFilePath: string): Promise<Buffer> {
@@ -80,58 +76,22 @@ exports.default = class ImageManager {
     return this.modifiedImageBuffer;
   }
 
-  public static getModifiedImagePath(): string {
-    return this.modifiedImagePath;
-  }
-
-  public static async cleanTempFiles(): Promise<void> {
-    await promiseUtils.mapLimit(this.tempPaths, 20, async (tempPath: string) => {
-      await fs.remove(tempPath);
-    });
-  }
-
-  private static getNewImagePath(original: string): string {
-    const pathParts = path.parse(original);
-    const newPath = path.resolve(tempFolder, `${pathParts.name}-${getUuid()}${pathParts.ext}`);
-    this.tempPaths.push(newPath);
-    return newPath;
-  }
-
-  private static writeGmState(gmState: State): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
+  private static writeGmState(gmState: State): Promise<Buffer> {
+    return new Promise<Buffer>((resolve, reject) => {
       try {
-        const modifiedImagePath = this.getNewImagePath(this.originalImagePath);
-        gmState.write(modifiedImagePath, async (err: Error | null, stdout: Readable, stderr: Readable, cmd: string) => {
+        gmState.toBuffer(function(err: any, newBuffer: Buffer) {
           if (err) {
-            reject(new CustomError(
-                'Failed to save image to disk',
-                err,
-                {
-                  stdout: await this.streamToString(stdout),
-                  stderr: await this.streamToString(stderr),
-                  cmd
-                })
-            );
+            reject(new CustomError('Failed to write modified image to buffer', err));
           } else {
-            resolve(modifiedImagePath);
+            resolve(newBuffer);
           }
         });
-
       } catch (err) {
         reject(new CustomError(
             'Failed to write image to disk',
             err));
       }
     });
-  }
-
-  private static streamToString(stream: Readable) {
-    const chunks: any[] = [];
-    return new Promise((resolve, reject) => {
-      stream.on('data', chunk => chunks.push(chunk));
-      stream.on('error', reject);
-      stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
-    })
   }
 
   private static addBorder(gmState: State, thickness: number, color: string): State {
