@@ -61,7 +61,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
   const IMAGE_MODIFIER_TITLES: { [modifierName: string]: string } = {
     addBorder: "Rand {0}",
     sepia: "Sepia {0}",
-    brightness: "Helderheid {0}",
+    brightness: "Helderheid {0}"
   };
 
   type ActiveModifierAction =
@@ -182,6 +182,25 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
               ]
             });
           }} label="Afbeelding openen"/>
+          {modifiedImageUrl &&
+          <Button className="c-save-button" onClick={() => {
+            saveImage({
+              buttonLabel: "Opslaan",
+              // defaultPath // TODO default to the users images folder
+              filters: [
+                {
+                  name: 'Alle bestanden',
+                  extensions: ['*']
+                },
+                {
+                  name: 'Afbeeldingen',
+                  extensions: ['jpg', 'png', 'gif', 'tif', 'bmp', 'jpeg', 'webp']
+                }
+              ],
+              title: 'Kies de locatie en naam om je afbeelding op te slaan'
+            });
+          }} label="Afbeelding opslaan als"/>
+          }
         </div>
         {originalImageUrl &&
         <>
@@ -224,27 +243,6 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
             })}
           </div>
         </>
-        }
-        {modifiedImageUrl &&
-        <div className="m-button-wrapper">
-          <Button className="c-save-button" onClick={() => {
-            saveImage({
-              buttonLabel: "Opslaan",
-              // defaultPath // TODO default to the users images folder
-              filters: [
-                {
-                  name: 'Alle bestanden',
-                  extensions: ['*']
-                },
-                {
-                  name: 'Afbeeldingen',
-                  extensions: ['jpg', 'png', 'gif', 'tif', 'bmp', 'jpeg', 'webp']
-                }
-              ],
-              title: 'Kies de locatie en naam om je afbeelding op te slaan'
-            });
-          }} label="Afbeelding opslaan als"/>
-        </div>
         }
       </div>
   );

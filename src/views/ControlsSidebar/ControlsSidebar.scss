@@ -5,6 +5,16 @@
 
   .m-button-wrapper {
     padding: 10px 10px 0 10px;
+    display: flex;
+    align-items: center;
+
+    > * {
+      flex-grow: 1;
+
+      & + * {
+        margin-left: 10px;
+      }
+    }
 
     &:last-child {
       padding-bottom: 10px;
