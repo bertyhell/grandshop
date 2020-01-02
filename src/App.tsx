@@ -22,16 +22,20 @@ const App: React.FC = () => {
               draggable={false}
               position="bottom-left"
           />
-          <ResizablePanels
-              className="m-resizeable-panels"
-              displayDirection="row"
-              panelsSize={[60, 40]}
-              sizeUnitMeasure="%"
-              resizerSize="15px"
-          >
-            <MainPreview/>
-            <ControlsSidebar/>
-          </ResizablePanels>
+<ResizablePanels
+    className="m-resizeable-panels"
+    displayDirection="row"
+    panelsSize={[60, 40]}
+    sizeUnitMeasure="%"
+    resizerSize="15px"
+    onResize={() => {
+      console.log('resizing preview');
+      window.dispatchEvent(new Event('resize'));
+    }}
+>
+  <MainPreview/>
+  <ControlsSidebar/>
+</ResizablePanels>
         </div>
       </Provider>
   );
