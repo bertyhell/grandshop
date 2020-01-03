@@ -1,10 +1,10 @@
-/// <reference path="../../node_modules/electron/electron.d.ts" />
 import { setModificationInProgressAction, setModifiedImageAction, setOriginalImageAction } from '../store/actions';
 import store from '../store/store';
 import { ElectronCallFunction, ElectronCallFunctionRequest, ImageModificationInfo, RendererCallFunctionRequest } from '../shared/types';
 import toastService from './toast-service';
 import { AlertType } from '../components/Alert/Alert';
 import { CustomError } from '../shared/error';
+import { OpenDialogSyncOptions, SaveDialogOptions } from 'electron';
 
 const { ipcRenderer } = (window as any).require('electron');
 
@@ -42,11 +42,11 @@ function callMainFunction(name: ElectronCallFunction, args: any[]) {
   } as ElectronCallFunctionRequest);
 }
 
-export function openImage(options: Electron.OpenDialogSyncOptions = {}) {
+export function openImage(options: OpenDialogSyncOptions = {}) {
   callMainFunction('openImage', [options]);
 }
 
-export function saveImage(options: Electron.SaveDialogOptions = {}) {
+export function saveImage(options: SaveDialogOptions = {}) {
   callMainFunction('saveImage', [options]);
 }
 

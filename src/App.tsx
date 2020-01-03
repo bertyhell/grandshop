@@ -15,12 +15,11 @@ const App: React.FC = () => {
       <Provider store={store}>
         <div className="m-app">
           <ToastContainer
-              // autoClose={7000}
               className="c-alert-stack"
               closeButton={false}
               closeOnClick={false}
               draggable={false}
-              position="bottom-left"
+              position="top-left"
           />
 <ResizablePanels
     className="m-resizeable-panels"

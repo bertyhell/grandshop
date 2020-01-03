@@ -1,12 +1,13 @@
-/// <reference path="../node_modules/@types/gm/index.d.ts" />
+/// <reference path="../../node_modules/@types/gm/index.d.ts" />
 import { ParsedPath } from "path";
-import { ImageModificationInfo } from '../src/shared/types';
 import { State } from 'gm';
-import CustomError from './helpers/error';
-
 import path from 'path';
 import fs from 'fs-extra';
 import gm from 'gm';
+
+import { ImageModificationInfo } from '../shared/types';
+import CustomError from './helpers/error';
+import mods from '../shared/modifications/modifications';
 
 export default class ImageManager {
   private static originalImagePathParts: ParsedPath;
@@ -20,7 +21,7 @@ export default class ImageManager {
       try {
         let gmState = gm(this.originalImageBuffer, this.originalImagePathParts.name + this.originalImagePathParts.ext);
         for (const modification of modifications) {
-          const func: ((gmState: State, ...args: any[]) => State) | null = this[modification.name];
+          const func: ((gmState: State, ...args: any[]) => State) | null = mods[modification.name];
           if (!func) {
             throw new CustomError('requested to execute unsupported image modification', null, {
               modification,
@@ -72,19 +73,5 @@ export default class ImageManager {
             err));
       }
     });
-  }
-
-  private static addBorder(gmState: State, thickness: number, color: string): State {
-    return gmState
-        .borderColor(color)
-        .border(thickness, thickness);
-  }
-
-  private static sepia(gmState: State): State {
-    return gmState.sepia();
-  }
-
-  private static brightness(gmState: State, brightness: number): State {
-    return (gmState.modulate as any)(brightness);
   }
 };

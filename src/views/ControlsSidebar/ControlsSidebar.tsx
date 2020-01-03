@@ -1,26 +1,26 @@
 import React, { FunctionComponent, useEffect, useReducer, useState } from 'react';
 import getUuid from 'uuid/v1';
-import compact from 'lodash-es/compact';
 import { connect } from 'react-redux';
 import { useDebounce } from 'use-debounce';
 import { Dispatch } from 'redux';
 import usePrevious from 'use-previous';
+import compact from 'lodash-es/compact';
 import get from 'lodash-es/get';
+import map from 'lodash-es/map';
 import throttle from '@jcoreio/async-throttle';
 
 import { applyModifications, saveImage, openImage } from '../../services/interop-electron';
 import Button from '../../components/Button/Button';
 import { AppState } from '../../store/types';
 import { selectModifiedImage, selectOriginalImage } from '../../store/selectors';
+import { setModificationInProgressAction } from '../../store/actions';
 import { Select, SelectOption } from '../../components/Select/Select';
-import AddBorder from '../../components/ImageModifications/AddBorder/AddBorder';
 import { format } from '../../helpers/format';
+import { ImageModificationInfo } from '../../shared/types';
+import mods, { ModificationComponent } from '../../shared/modifications/components';
 
 import './ControlsSidebar.scss';
-import Sepia from '../../components/ImageModifications/Sepia/Sepia';
-import Brightness from '../../components/ImageModifications/Brightness/Brightness';
-import { ImageModificationInfo } from '../../shared/types';
-import { setModificationInProgressAction } from '../../store/actions';
+import { fromPairs } from 'lodash-es';
 
 interface ControlsSidebarProps {
   originalImageUrl: string | null;
@@ -39,7 +39,7 @@ interface ActiveModifier {
 const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
                                                                     originalImageUrl,
                                                                     modifiedImageUrl,
-                                                                    setModificationInProgress,
+                                                                    setModificationInProgress
                                                                   }) => {
   const [selectedOption, setSelectedOption] = useState<string>('');
 
@@ -49,25 +49,17 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
       value: "",
       disabled: true
     },
-    {
-      label: "Voeg een gekleurde rand toe",
-      value: "addBorder"
-    },
-    {
-      label: "Voeg een sepia effect toe",
-      value: "sepia"
-    },
-    {
-      label: "Pas de helderheid aan",
-      value: "brightness"
-    }
+    ...map(mods, (mod: ModificationComponent, modName: string) => {
+      return {
+        label: mod.label,
+        value: modName
+      }
+    })
   ];
 
-  const IMAGE_MODIFIER_TITLES: { [modifierName: string]: string } = {
-    addBorder: "Rand {0}",
-    sepia: "Sepia {0}",
-    brightness: "Helderheid {0}"
-  };
+  const IMAGE_MODIFIER_TITLES: { [modifierName: string]: string } = fromPairs(map(mods, (mod: ModificationComponent, modName: string) => {
+    return [modName, mod.title];
+  }));
 
   type ActiveModifierAction =
       | { type: 'ADD', name: string }
@@ -220,33 +212,18 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
           </div>
           <div className="m-modification-controls">
             {activeModifiers.map((m: ActiveModifier, index: number) => {
-              switch (m.name) {
-                case 'addBorder':
-                  return <AddBorder
-                      title={m.title}
-                      onApply={(info) => handleApplyModifier(info, index)}
-                      isOpen={m.isOpen}
-                      onToggle={() => handleToggleModifier(index)}
-                      onDelete={() => handleDeleteModifier(index)}
-                      key={m.key}/>;
-                case 'sepia':
-                  return <Sepia
-                      title={m.title}
-                      onApply={(info) => handleApplyModifier(info, index)}
-                      isOpen={m.isOpen}
-                      onToggle={() => handleToggleModifier(index)}
-                      onDelete={() => handleDeleteModifier(index)}
-                      key={m.key}/>;
-                case 'brightness':
-                  return <Brightness
-                      title={m.title}
-                      onApply={(info) => handleApplyModifier(info, index)}
-                      isOpen={m.isOpen}
-                      onToggle={() => handleToggleModifier(index)}
-                      onDelete={() => handleDeleteModifier(index)}
-                      key={m.key}/>;
+              if (!mods[m.name] || !mods[m.name].component) {
+                console.error('Failed to find component by name in list of modifications', { modificationInfo: m });
+                return null;
               }
-              return null;
+              const Component = mods[m.name].component;
+              return <Component
+                  title={m.title}
+                  onApply={(info: ImageModificationInfo) => handleApplyModifier(info, index)}
+                  isOpen={m.isOpen}
+                  onToggle={() => handleToggleModifier(index)}
+                  onDelete={() => handleDeleteModifier(index)}
+                  key={m.key}/>;
             })}
           </div>
         </>
@@ -262,7 +239,7 @@ const mapStateToProps = (state: { app: AppState }) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
-    setModificationInProgress: (inProgress: boolean) => dispatch(setModificationInProgressAction(inProgress) as any),
+    setModificationInProgress: (inProgress: boolean) => dispatch(setModificationInProgressAction(inProgress) as any)
   };
 };
 

@@ -1,0 +1,30 @@
+import AddBorder from './AddBorder/AddBorder';
+import Brightness from './Brightness/Brightness';
+import Sepia from './Sepia/Sepia';
+import { FunctionComponent } from 'react';
+
+export interface ModificationComponent {
+  component: FunctionComponent<any>, // React component to load for this modification
+  label: string, // Label shown in the modification dropdown list
+  title: string, // Text show as the title of the section in the controls sidebar
+}
+
+const modificationComponents: {[name: string]: ModificationComponent} = {
+  addBorder: {
+    component: AddBorder,
+    label: 'Voeg een gekleurde rand toe',
+    title: "Rand {0}",
+  },
+  brightness: {
+    component: Brightness,
+    label: 'Pas de helderheid aan',
+    title: "Helderheid {0}",
+  },
+  sepia: {
+    component: Sepia,
+    label: 'Voeg een sepia effect toe',
+    title: "Sepia {0}",
+  },
+};
+
+export default modificationComponents;

@@ -1,9 +1,9 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import classnames from 'classnames';
 
-import ImageModification from '../../ImageModification/ImageModification';
-import { MultiRange } from '../../MultiRange/MultiRange';
-import { ImageModificationInfo } from '../../../shared/types';
+import ImageModification from '../../../components/ImageModification/ImageModification';
+import { MultiRange } from '../../../components/MultiRange/MultiRange';
+import { ImageModificationInfo } from '../../types';
 
 import './Brightness.scss';
 

@@ -2,8 +2,8 @@ import React, { FunctionComponent, useEffect } from 'react';
 import classnames from 'classnames';
 
 import './Sepia.scss';
-import ImageModification from '../../ImageModification/ImageModification';
-import { ImageModificationInfo } from '../../../shared/types';
+import ImageModification from '../../../components/ImageModification/ImageModification';
+import { ImageModificationInfo } from '../../types';
 
 interface SepiaProps {
   className?: string;

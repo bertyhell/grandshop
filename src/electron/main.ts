@@ -1,8 +1,8 @@
-/// <reference path="../node_modules/electron/electron.d.ts" />
-/// <reference path="../node_modules/@types/fs-extra/index.d.ts" />
+/// <reference path="../../node_modules/electron/electron.d.ts" />
+/// <reference path="../../node_modules/@types/fs-extra/index.d.ts" />
 
 // Modules to control application life and create native browser window
-import { ElectronCallFunctionRequest, ImageModificationInfo, RendererCallFunction, RendererCallFunctionRequest } from '../src/shared/types';
+import { ElectronCallFunctionRequest, ImageModificationInfo, RendererCallFunction, RendererCallFunctionRequest } from '../shared/types';
 import { ParsedPath } from 'path';
 
 import ImageManager from './image-manager';
@@ -32,7 +32,6 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     // ...((data && data.bounds) ? data.bounds : { width: 800, height: 600 }),
     webPreferences: {
-      preload: path.resolve(__dirname, 'preload.js'),
       nodeIntegration: true,
       webSecurity: false
     }

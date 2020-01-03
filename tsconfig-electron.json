@@ -9,7 +9,7 @@
     "allowSyntheticDefaultImports": true,
     "strictNullChecks": true,
     "target": "esnext",
-    "baseUrl": "electron",
+    "baseUrl": "src/electron",
     "typeRoots": [
       "node_modules/@types"
     ],
@@ -26,9 +26,7 @@
     "isolatedModules": false
   },
   "include": [
-    "electron/**/*.ts"
-  ],
-  "exclude": [
-    "src"
+    "src/electron/**/*.ts",
+    "src/shared/modifications/**/*.ts"
   ]
 }

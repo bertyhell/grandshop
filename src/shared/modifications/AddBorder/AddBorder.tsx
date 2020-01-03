@@ -1,11 +1,11 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import classnames from 'classnames';
 
-import ImageModification from '../../ImageModification/ImageModification';
-import FormField from '../../FormField/FormField';
-import ColorInput from '../../ColorInput/ColorInput';
-import { ImageModificationInfo } from '../../../shared/types';
-import { MultiRange } from '../../MultiRange/MultiRange';
+import ImageModification from '../../../components/ImageModification/ImageModification';
+import FormField from '../../../components/FormField/FormField';
+import ColorInput from '../../../components/ColorInput/ColorInput';
+import { ImageModificationInfo } from '../../types';
+import { MultiRange } from '../../../components/MultiRange/MultiRange';
 
 import './AddBorder.scss';
 
