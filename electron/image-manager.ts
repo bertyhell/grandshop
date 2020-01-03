@@ -4,11 +4,11 @@ import { ImageModificationInfo } from '../src/shared/types';
 import { State } from 'gm';
 import CustomError from './helpers/error';
 
-const path = require('path');
-const fs = require('fs-extra');
-const gm = require('gm');
+import path from 'path';
+import fs from 'fs-extra';
+import gm from 'gm';
 
-exports.default = class ImageManager {
+export default class ImageManager {
   private static originalImagePathParts: ParsedPath;
   private static originalImagePath: string;
   private static originalImageBuffer: Buffer;

@@ -5,14 +5,14 @@
 import { ElectronCallFunctionRequest, ImageModificationInfo, RendererCallFunction, RendererCallFunctionRequest } from '../src/shared/types';
 import { ParsedPath } from 'path';
 
-const ImageManager = require('./image-manager').default;
-const CustomError = require('./helpers/error').default;
+import ImageManager from './image-manager';
+import CustomError from './helpers/error';
 
-const { app, BrowserWindow, dialog, ipcMain } = require('electron');
-const path = require('path');
-const fs = require('fs-extra');
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import path from 'path';
+import fs from 'fs-extra';
 
-const isDev = require('electron-is-dev');
+import isDev from 'electron-is-dev';
 
 const appFolder: string = path.resolve(__dirname, '..');
 // const windowStateFileName: string = path.resolve(appFolder, 'last-window-state.json');
