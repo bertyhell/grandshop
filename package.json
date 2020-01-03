@@ -1,6 +1,6 @@
 {
   "name": "grandshop",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Photoshop for your grandparents",
   "main": "build/electron/main.js",
   "scripts": {
@@ -13,8 +13,8 @@
     "react-build": "react-scripts build",
     "prepack": "rimraf build electron-dist && npm run react-build && npm run electron-build",
     "predist": "npm run prepack",
-    "pack": "electron-builder --dir -c.extraMetadata.main=electron/main.js",
-    "dist": "electron-builder -c.extraMetadata.main=electron/main.js"
+    "pack": "electron-builder --dir -c.extraMetadata.main=build/electron/main.js",
+    "dist": "electron-builder -c.extraMetadata.main=build/electron/main.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.7.7",
@@ -101,24 +101,12 @@
       "output": "electron-dist"
     },
     "files": [
-      "dist/**/*",
       "node_modules/**/*",
       "build/**/*",
-      "public/**/*",
-      "electron/**/*.js"
-    ],
-    "extraResources": [
-      "lib/**/*"
+      "public/**/*"
     ],
     "win": {
       "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
-        },
         {
           "target": "dir",
           "arch": [

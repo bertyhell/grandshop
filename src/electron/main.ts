@@ -37,19 +37,21 @@ function createWindow() {
     }
   });
   mainWindow.maximize();
-  if (!isDev) {
-    mainWindow.setMenu(null);
-  }
 
-  mainWindow.loadURL(
-      isDev ?
-          'http://localhost:3000' :
-          `file://${path.resolve(__dirname, '../build/index.html')}`
-  );
+  if (isDev) {
+    mainWindow.loadURL(
+        isDev ?
+            'http://localhost:3000' :
+            `file://${app.getAppPath()}/build/index.html`
+    );
+  } else {
+    mainWindow.setMenu(null);
+    mainWindow.loadFile(path.join(app.getAppPath(), '/build/index.html'));
+  }
 
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  // mainWindow.webContents.openDevTools();
 
   // Emitted when the window is closed.
   mainWindow.on('closed', async () => {
