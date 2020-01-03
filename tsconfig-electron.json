@@ -8,9 +8,8 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "strictNullChecks": true,
-    "target": "es5",
+    "target": "esnext",
     "baseUrl": "electron",
-    "jsx": "react",
     "typeRoots": [
       "node_modules/@types"
     ],

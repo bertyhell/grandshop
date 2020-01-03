@@ -1,7 +1,6 @@
+import { ReactNode } from 'react';
 import { isNil } from 'lodash-es';
-import React, { FunctionComponent, ReactNode } from 'react';
 import { toast, ToastOptions } from 'react-toastify';
-import Alert, { AlertProps } from '../components/Alert/Alert';
 import { CustomError } from '../shared/error';
 
 export enum ToastType {
@@ -15,13 +14,6 @@ type AlertMessage = string | string[] | ReactNode;
 type ToastServiceFn = (message: AlertMessage, options?: ToastOptions & { innerException?: CustomError }) => void;
 type ToastService = { [type in ToastType]: ToastServiceFn };
 
-interface ToastProps extends AlertProps {
-}
-
-// const Toast: FunctionComponent<ToastProps> = ({ ...rest }) => (
-//     <Alert {...rest} className="u-spacer-top"/>
-// );
-
 function showToast(
     alertMessage: AlertMessage,
     options: ToastOptions & { innerException?: CustomError } = {},
@@ -31,22 +23,10 @@ function showToast(
     return;
   }
 
-  // let message = alertMessage;
-  //
-  // if (Array.isArray(alertMessage)) {
-  //   const messages = alertMessage as string[];
-  //   message = (
-  //       <div>
-  //         {messages.map((message: string) => ({ message }))}
-  //       </div>
-  //   );
-  // }
-
-  const { innerException, ...toastOptions } = options;
+  const { innerException } = options;
   if (innerException) {
     console.error('Error in the main tread: ', innerException);
   }
-  // toast(<Toast message={message} type={alertType}/>, { autoClose: 7000, ...(toastOptions || {}) });
   toast[alertType](alertMessage);
 }
 

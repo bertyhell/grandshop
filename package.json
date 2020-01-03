@@ -2,17 +2,21 @@
   "name": "grandshop",
   "version": "0.2.0",
   "description": "Photoshop for your grandparents",
-  "main": "electron/main.js",
+  "main": "build/electron/main.js",
   "scripts": {
     "electron-start": "electron . --allow-file-access-from-files",
+    "electron-build": "babel electron --out-dir build/electron --extensions .ts --source-maps inline",
+    "electron-check-types": "tsc -p tsconfig-electron.json --noEmit",
     "react-start": "react-scripts start",
     "react-build": "react-scripts build",
-    "prepack": "rimraf build electron-dist && npm run react-build && tsc -p tsconfig-electron.json",
+    "prepack": "rimraf build electron-dist && npm run react-build && npm run electron-build",
     "predist": "npm run prepack",
     "pack": "electron-builder --dir -c.extraMetadata.main=electron/main.js",
     "dist": "electron-builder -c.extraMetadata.main=electron/main.js"
   },
   "dependencies": {
+    "@babel/runtime": "^7.7.7",
+    "@fortawesome/fontawesome-free": "^5.12.0",
     "@jaames/iro": "^4.5.3",
     "@jcoreio/async-throttle": "^1.1.2",
     "@testing-library/jest-dom": "^4.2.4",
@@ -40,7 +44,7 @@
     "redux": "^4.0.4",
     "redux-devtools-extension": "^2.13.8",
     "redux-thunk": "^2.3.0",
-    "resizable-panels-react": "git+https://github.com/bertyhell/ResizablePanelsReact.git#patch-1",
+    "resizable-panels-react": "git+https://github.com/bertyhell/ResizablePanelsReact.git#master",
     "typescript": "^3.7.4",
     "use-debounce": "^3.3.0",
     "use-previous": "^1.0.0",
@@ -48,6 +52,15 @@
     "viewerjs": "^1.5.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.7.7",
+    "@babel/core": "^7.7.7",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "@babel/plugin-proposal-numeric-separator": "^7.7.4",
+    "@babel/plugin-proposal-object-rest-spread": "^7.7.7",
+    "@babel/plugin-transform-modules-commonjs": "^7.7.5",
+    "@babel/plugin-transform-runtime": "^7.7.6",
+    "@babel/preset-env": "^7.7.7",
+    "@babel/preset-typescript": "^7.7.7",
     "@types/classnames": "^2.2.9",
     "@types/fs-extra": "^8.0.1",
     "@types/gm": "^1.18.6",
@@ -60,12 +73,12 @@
     "copyfiles": "^2.1.1",
     "electron": "7.1.7",
     "electron-builder": "^21.2.0",
+    "rimraf": "^3.0.0",
     "tslint": "^5.20.1",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "^3.7.4",
-    "rimraf": "^3.0.0"
+    "typescript": "^3.7.4"
   },
   "keywords": [
     "photoshop",

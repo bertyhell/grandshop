@@ -2,7 +2,7 @@
 import { ParsedPath } from "path";
 import { ImageModificationInfo } from '../src/shared/types';
 import { State } from 'gm';
-const CustomError = require('./helpers/error').default;
+import CustomError from './helpers/error';
 
 const path = require('path');
 const fs = require('fs-extra');

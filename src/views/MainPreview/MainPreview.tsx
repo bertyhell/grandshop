@@ -1,4 +1,4 @@
-import React, { createRef, FunctionComponent, MutableRefObject, RefObject, useEffect, useRef, useState } from 'react';
+import React, { createRef, FunctionComponent, MutableRefObject, RefObject, useEffect, useRef } from 'react';
 import 'viewerjs/dist/viewer.css';
 import Viewer from 'viewerjs';
 
@@ -7,7 +7,6 @@ import { selectModificationInProgress, selectModifiedImage, selectOriginalImage 
 import { connect } from 'react-redux';
 import { AppState } from '../../store/types';
 import Spinner from '../../components/Spinner/Spinner';
-
 
 declare const ResizeObserver: any;
 
@@ -64,9 +63,9 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
       },
       transition: false,
       fullscreen: false,
-      movable: false,
-      rotatable: false,
-      scalable: false,
+      movable: true,
+      rotatable: true,
+      scalable: true,
       zIndexInline: 1
     });
 

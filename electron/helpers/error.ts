@@ -1,6 +1,6 @@
 const uuid = require('uuid/v1');
 
-exports.default = class CustomError {
+export default class CustomError {
   public message: string;
   public innerException: any | null;
   public additionalInfo: any | null;
