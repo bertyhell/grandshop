@@ -97,7 +97,7 @@ export const MultiRange: FunctionComponent<MultiRangeProps> = ({
                 />
             )}
         />
-        <Input type="number" value={values[0].toString()} onChange={handleThicknessInputChanged} />
+        <Input type="text" value={values[0].toString()} onChange={handleThicknessInputChanged} />
       </div>
   );
 };

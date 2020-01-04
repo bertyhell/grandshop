@@ -1,7 +1,9 @@
+import { State } from 'gm';
+
 import { addBorder } from './AddBorder/modification';
 import { brightness } from './Brightness/modification';
 import { sepia } from './Sepia/modification';
-import { State } from 'gm';
+import { resize } from './Resize/modification';
 
 export type ModificationFunc = (gmState: State, ...params: any[]) => State;
 
@@ -10,6 +12,7 @@ const modificationFuncs: {[name: string]: ModificationFunc} = {
   addBorder,
   brightness,
   sepia,
+  resize,
 };
 
 export default modificationFuncs;

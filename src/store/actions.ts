@@ -3,14 +3,15 @@ import {
   SetOriginalImageAction,
   SetModifiedImageAction, SetModificationInProgressAction
 } from './types';
+import { ImageInfo } from '../shared/types';
 
-export const setOriginalImageAction = (image: string | null): SetOriginalImageAction => ({
-  image,
+export const setOriginalImageAction = (imageInfo: ImageInfo | null): SetOriginalImageAction => ({
+  imageInfo,
   type: AppActionTypes.SET_ORIGINAL_IMAGE
 });
 
-export const setModifiedImageAction = (image: string | null): SetModifiedImageAction => ({
-  image,
+export const setModifiedImageAction = (imageInfo: ImageInfo | null): SetModifiedImageAction => ({
+  imageInfo,
   type: AppActionTypes.SET_MODIFIED_IMAGE
 });
 

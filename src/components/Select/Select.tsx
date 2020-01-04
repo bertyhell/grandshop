@@ -18,7 +18,7 @@ export interface SelectProps {
   disabled?: boolean;
   loading?: boolean;
   clearable?: boolean;
-  value?: string;
+  value: string | null;
   placeholder?: string;
   onChange?: (value: string) => void;
 }
@@ -46,7 +46,7 @@ export const Select: FunctionComponent<SelectProps> = ({
           classNamePrefix="c-select"
           id={id}
           options={options}
-          defaultValue={options.find(option => option.value === value)}
+          value={options.find(option => option.value === value) || null}
           isMulti={false}
           isDisabled={disabled}
           isLoading={loading}

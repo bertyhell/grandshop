@@ -1,5 +1,7 @@
 import { Action } from 'redux';
 
+import { ImageInfo } from '../shared/types';
+
 export enum AppActionTypes {
   SET_ORIGINAL_IMAGE = '@@SET_MODIFIED_IMAGE',
   SET_MODIFIED_IMAGE = '@@SET_ORIGINAL_IMAGE',
@@ -7,11 +9,11 @@ export enum AppActionTypes {
 }
 
 export interface SetOriginalImageAction extends Action {
-  image: string | null;
+  imageInfo: ImageInfo | null;
 }
 
 export interface SetModifiedImageAction extends Action {
-  image: string | null;
+  imageInfo: ImageInfo | null;
 }
 
 export interface SetModificationInProgressAction extends Action {
@@ -19,7 +21,7 @@ export interface SetModificationInProgressAction extends Action {
 }
 
 export interface AppState {
-  readonly originalImage: string | null;
-  readonly modifiedImage: string | null;
+  readonly originalImage: ImageInfo | null;
+  readonly modifiedImage: ImageInfo | null;
   readonly modificationInProgress: boolean;
 }

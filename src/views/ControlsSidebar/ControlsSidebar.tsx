@@ -7,6 +7,8 @@ import usePrevious from 'use-previous';
 import compact from 'lodash-es/compact';
 import get from 'lodash-es/get';
 import map from 'lodash-es/map';
+import kebabCase from 'lodash-es/kebabCase';
+import fromPairs from 'lodash-es/fromPairs';
 import throttle from '@jcoreio/async-throttle';
 
 import { applyModifications, saveImage, openImage } from '../../services/interop-electron';
@@ -16,15 +18,16 @@ import { selectModifiedImage, selectOriginalImage } from '../../store/selectors'
 import { setModificationInProgressAction } from '../../store/actions';
 import { Select, SelectOption } from '../../components/Select/Select';
 import { format } from '../../helpers/format';
-import { ImageModificationInfo } from '../../shared/types';
 import mods, { ModificationComponent } from '../../shared/modifications/components';
+import { ImageModificationInfo } from '../../shared/modifications/types';
+import ImageModification from '../../components/ImageModification/ImageModification';
+import { ImageInfo } from '../../shared/types';
 
 import './ControlsSidebar.scss';
-import { fromPairs } from 'lodash-es';
 
 interface ControlsSidebarProps {
-  originalImageUrl: string | null;
-  modifiedImageUrl: string | null;
+  originalImage: ImageInfo | null;
+  modifiedImage: ImageInfo | null;
   setModificationInProgress: (inProgress: boolean) => void;
 }
 
@@ -37,18 +40,13 @@ interface ActiveModifier {
 }
 
 const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
-                                                                    originalImageUrl,
-                                                                    modifiedImageUrl,
+                                                                    originalImage,
+                                                                    modifiedImage,
                                                                     setModificationInProgress
                                                                   }) => {
-  const [selectedOption, setSelectedOption] = useState<string>('');
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const IMAGE_MODIFIER_OPTIONS: SelectOption[] = [
-    {
-      label: "Kies een bewerking",
-      value: "",
-      disabled: true
-    },
     ...map(mods, (mod: ModificationComponent, modName: string) => {
       return {
         label: mod.label,
@@ -140,6 +138,13 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
     }
   }, [debouncedActiveModifiers]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Reset the selected dropdown option back to the placeholder, to users know they can add another modifier
+  useEffect(() => {
+    if (selectedOption !== '') {
+      setSelectedOption('');
+    }
+  }, [selectedOption]);
+
   const handleApplyModifier = (modifierInfo: ImageModificationInfo, index: number) => {
     modifyActiveModifiers({ type: 'UPDATE', info: modifierInfo, index });
   };
@@ -154,7 +159,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 
   const handleModifierSelectionChanged = (name: string) => {
     modifyActiveModifiers({ type: 'ADD', name });
-    setSelectedOption('');
+    setSelectedOption(name);
   };
 
   return (
@@ -181,7 +186,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
               ]
             });
           }} label="Afbeelding openen"/>
-          {modifiedImageUrl &&
+          {modifiedImage &&
           <Button className="c-save-button" onClick={() => {
             saveImage({
               buttonLabel: "Opslaan",
@@ -201,13 +206,14 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
           }} label="Afbeelding opslaan als"/>
           }
         </div>
-        {originalImageUrl &&
+        {originalImage &&
         <>
           <div className="m-button-wrapper">
             <Select
               options={IMAGE_MODIFIER_OPTIONS}
               onChange={handleModifierSelectionChanged}
-              value={selectedOption}
+              value={null}
+              placeholder={activeModifiers.length ? 'Kies nog een bewerking' : 'Kies een bewerking'}
             />
           </div>
           <div className="m-modification-controls">
@@ -217,13 +223,19 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
                 return null;
               }
               const Component = mods[m.name].component;
-              return <Component
-                  title={m.title}
-                  onApply={(info: ImageModificationInfo) => handleApplyModifier(info, index)}
+              return <ImageModification
+                  label={m.title}
+                  className={'c-' + kebabCase(m.name)}
                   isOpen={m.isOpen}
                   onToggle={() => handleToggleModifier(index)}
                   onDelete={() => handleDeleteModifier(index)}
-                  key={m.key}/>;
+                  key={m.key}
+              >
+                <Component
+                    imageInfo={modifiedImage || originalImage}
+                    onApply={(info: ImageModificationInfo) => handleApplyModifier(info, index)}
+                />
+              </ImageModification>
             })}
           </div>
         </>
@@ -233,8 +245,8 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 };
 
 const mapStateToProps = (state: { app: AppState }) => ({
-  originalImageUrl: selectOriginalImage(state),
-  modifiedImageUrl: selectModifiedImage(state)
+  originalImage: selectOriginalImage(state),
+  modifiedImage: selectModifiedImage(state)
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => {

@@ -1,23 +1,25 @@
 /// <reference path="../../node_modules/@types/gm/index.d.ts" />
 import { ParsedPath } from "path";
-import { State } from 'gm';
+import { State, Dimensions } from 'gm';
 import path from 'path';
 import fs from 'fs-extra';
 import gm from 'gm';
 
-import { ImageModificationInfo } from '../shared/types';
 import CustomError from './helpers/error';
 import mods from '../shared/modifications/modifications';
+import { ImageModificationInfo } from '../shared/modifications/types';
 
 export default class ImageManager {
   private static originalImagePathParts: ParsedPath;
   private static originalImagePath: string;
   private static originalImageBuffer: Buffer;
+  private static originalImageDimensions: Dimensions;
 
   private static modifiedImageBuffer: Buffer;
+  private static modifiedImageDimensions: Dimensions;
 
-  public static updateModifications(modifications: ImageModificationInfo[]): Promise<Buffer> {
-    return new Promise<Buffer>(async (resolve, reject) => {
+  public static updateModifications(modifications: ImageModificationInfo[]): Promise<{buffer: Buffer, dimensions: Dimensions}> {
+    return new Promise(async (resolve, reject) => {
       try {
         let gmState = gm(this.originalImageBuffer, this.originalImagePathParts.name + this.originalImagePathParts.ext);
         for (const modification of modifications) {
@@ -31,18 +33,26 @@ export default class ImageManager {
           gmState = func.bind(ImageManager)(gmState, ...modification.arguments);
         }
         this.modifiedImageBuffer = await this.writeGmState(gmState);
-        resolve(this.modifiedImageBuffer);
+        this.modifiedImageDimensions = await this.getDimensions(gmState);
+        resolve({
+          buffer: this.modifiedImageBuffer,
+          dimensions: this.modifiedImageDimensions,
+        });
       } catch (err) {
         reject(new CustomError('Failed to apply image modifications', err, { modifications, originalImagePath: this.originalImagePath }));
       }
     });
   }
 
-  public static async setOriginalImagePath(absoluteFilePath: string): Promise<Buffer> {
+  public static async setOriginalImagePath(absoluteFilePath: string): Promise<{buffer: Buffer, dimensions: Dimensions}> {
     this.originalImagePathParts = path.parse(absoluteFilePath);
     this.originalImagePath = absoluteFilePath;
     this.originalImageBuffer = await fs.readFile(absoluteFilePath);
-    return this.originalImageBuffer;
+    this.originalImageDimensions = await this.getDimensions(gm(this.originalImageBuffer, this.originalImagePathParts.name + this.originalImagePathParts.ext));
+    return {
+      buffer: this.originalImageBuffer,
+      dimensions: this.originalImageDimensions,
+    };
   }
 
   public static getOriginalImagePath(): string {
@@ -72,6 +82,18 @@ export default class ImageManager {
             'Failed to write image to disk',
             err));
       }
+    });
+  }
+
+  private static async getDimensions(gmState: State): Promise<Dimensions> {
+    return new Promise((resolve, reject) => {
+      gmState.size((err: any, dim: Dimensions) => {
+        if (err) {
+          reject(new CustomError('Failed to get dimensions from image', err));
+        } else {
+          resolve(dim);
+        }
+      });
     });
   }
 };

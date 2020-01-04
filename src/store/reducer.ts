@@ -9,13 +9,13 @@ const Reducer = createReducer(initialState, {
   [AppActionTypes.SET_ORIGINAL_IMAGE]: (state, action: SetOriginalImageAction) => {
     return {
       ...state,
-      originalImage: action.image
+      originalImage: action.imageInfo
     };
   },
   [AppActionTypes.SET_MODIFIED_IMAGE]: (state, action: SetModifiedImageAction) => {
     return {
       ...state,
-      modifiedImage: action.image
+      modifiedImage: action.imageInfo
     };
   },
   [AppActionTypes.SET_MODIFICATION_IN_PROGRESS]: (state, action: SetModificationInProgressAction) => {

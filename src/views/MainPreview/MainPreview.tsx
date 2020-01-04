@@ -7,12 +7,14 @@ import { selectModificationInProgress, selectModifiedImage, selectOriginalImage 
 import { connect } from 'react-redux';
 import { AppState } from '../../store/types';
 import Spinner from '../../components/Spinner/Spinner';
+import { getImageSource } from '../../helpers/base64';
+import { ImageInfo } from '../../shared/types';
 
 declare const ResizeObserver: any;
 
 interface MainPreviewProps {
-  originalImage: string | null;
-  modifiedImage: string | null;
+  originalImage: ImageInfo | null;
+  modifiedImage: ImageInfo | null;
   modificationInProgress: boolean;
 }
 
@@ -23,10 +25,6 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
                                                           }) => {
   let el: RefObject<HTMLImageElement> = createRef<HTMLImageElement>();
   let viewer: MutableRefObject<any | null> = useRef<any | null>(null);
-
-  const getImageSource = () => {
-    return 'data:image/png;base64,' + (modifiedImage || originalImage);
-  };
 
   const updateViewer = () => {
     if (viewer.current) {
@@ -82,7 +80,7 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
     {(modifiedImage || originalImage) &&
     <img className="o-image-viewer"
          ref={el}
-         src={getImageSource()}
+         src={getImageSource(modifiedImage?.base64 || originalImage?.base64)}
          alt="Een voorbeeld van de aangepaste afbeelding"/>
     }
     {modificationInProgress &&

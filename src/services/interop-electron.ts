@@ -1,20 +1,29 @@
+import { OpenDialogSyncOptions, SaveDialogOptions } from 'electron';
+import { Dimensions } from 'gm';
+
 import { setModificationInProgressAction, setModifiedImageAction, setOriginalImageAction } from '../store/actions';
 import store from '../store/store';
-import { ElectronCallFunction, ElectronCallFunctionRequest, ImageModificationInfo, RendererCallFunctionRequest } from '../shared/types';
+import { ElectronCallFunction, ElectronCallFunctionRequest, RendererCallFunctionRequest } from '../shared/types';
 import toastService from './toast-service';
 import { AlertType } from '../components/Alert/Alert';
 import { CustomError } from '../shared/error';
-import { OpenDialogSyncOptions, SaveDialogOptions } from 'electron';
+import { ImageModificationInfo } from '../shared/modifications/types';
 
 const { ipcRenderer } = (window as any).require('electron');
 
 const callableFunctions = {
-  setOriginalImage: (url: string) => {
-    store.dispatch(setOriginalImageAction(url));
+  setOriginalImage: (base64: string, dimensions: Dimensions) => {
+    store.dispatch(setOriginalImageAction({
+      base64,
+      dimensions,
+    }));
     store.dispatch(setModifiedImageAction(null));
   },
-  setModifiedImage: (url: string) => {
-    store.dispatch(setModifiedImageAction(url));
+  setModifiedImage: (base64: string, dimensions: Dimensions) => {
+    store.dispatch(setModifiedImageAction({
+      base64,
+      dimensions,
+    }));
     store.dispatch(setModificationInProgressAction(false));
   },
   showNotification: (message: string, status: AlertType, innerException: CustomError) => {

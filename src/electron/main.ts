@@ -2,7 +2,7 @@
 /// <reference path="../../node_modules/@types/fs-extra/index.d.ts" />
 
 // Modules to control application life and create native browser window
-import { ElectronCallFunctionRequest, ImageModificationInfo, RendererCallFunction, RendererCallFunctionRequest } from '../shared/types';
+import { ElectronCallFunctionRequest, RendererCallFunction, RendererCallFunctionRequest } from '../shared/types';
 import { ParsedPath } from 'path';
 
 import ImageManager from './image-manager';
@@ -13,6 +13,8 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import isDev from 'electron-is-dev';
+import { ImageModificationInfo } from '../shared/modifications/types';
+import { Dimensions } from 'gm';
 
 const appFolder: string = path.resolve(__dirname, '..');
 // const windowStateFileName: string = path.resolve(appFolder, 'last-window-state.json');
@@ -97,10 +99,13 @@ async function openImage(event: Electron.IpcMainEvent, options: Electron.OpenDia
       return;
     }
     // Store the original image path in the image manager
-    const originalImageBuffer: Buffer = await ImageManager.setOriginalImagePath(response.filePaths[0]); // TODO add multi image support
+    const originalImageInfo: { buffer: Buffer, dimensions: Dimensions } = await ImageManager.setOriginalImagePath(response.filePaths[0]); // TODO add multi image support
 
     // Pass the original image as a base64 string to the client for preview
-    callRendererFunction(event, 'setOriginalImage', [originalImageBuffer.toString('base64')]);
+    callRendererFunction(event, 'setOriginalImage', [
+      originalImageInfo.buffer.toString('base64'),
+      originalImageInfo.dimensions
+    ]);
   } catch (err) {
     const error = new CustomError('Failed to open file', err, { dialogOptions: options, dialogResponse: response });
     callRendererFunction(event, 'showNotification', ['Het openen van de afbeelding is mislukt', 'error', error]);
@@ -134,8 +139,11 @@ function callRendererFunction(event: Electron.IpcMainEvent, func: RendererCallFu
 
 async function applyModifications(event: Electron.IpcMainEvent, modifications: ImageModificationInfo[]) {
   try {
-    const modifiedImageBuffer: Buffer = await ImageManager.updateModifications(modifications);
-    callRendererFunction(event, 'setModifiedImage', [modifiedImageBuffer.toString('base64')]);
+    const modifiedImageInfo: { buffer: Buffer, dimensions: Dimensions } = await ImageManager.updateModifications(modifications);
+    callRendererFunction(event, 'setModifiedImage', [
+      modifiedImageInfo.buffer.toString('base64'),
+      modifiedImageInfo.dimensions
+    ]);
   } catch (err) {
     const error = new CustomError('Failed to apply modifications to image', err, { modifications });
     callRendererFunction(event, 'showNotification', ['Het toepassen van de laatste bewerking is mislukt', 'error', error]);

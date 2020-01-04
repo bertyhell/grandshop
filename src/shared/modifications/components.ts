@@ -1,7 +1,9 @@
+import { FunctionComponent } from 'react';
+
 import AddBorder from './AddBorder/AddBorder';
 import Brightness from './Brightness/Brightness';
 import Sepia from './Sepia/Sepia';
-import { FunctionComponent } from 'react';
+import Resize from './Resize/Resize';
 
 export interface ModificationComponent {
   component: FunctionComponent<any>, // React component to load for this modification
@@ -24,6 +26,11 @@ const modificationComponents: {[name: string]: ModificationComponent} = {
     component: Sepia,
     label: 'Voeg een sepia effect toe',
     title: "Sepia {0}",
+  },
+  resize: {
+    component: Resize,
+    label: 'Afbeelding verkleinen (bestandsgrootte)',
+    title: "Verkleinen {0}",
   },
 };
 
