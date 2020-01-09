@@ -4,6 +4,7 @@ import AddBorder from './AddBorder/AddBorder';
 import Brightness from './Brightness/Brightness';
 import Sepia from './Sepia/Sepia';
 import Resize from './Resize/Resize';
+import Annotate from './Annotate/Annotate';
 
 export interface ModificationComponent {
   component: FunctionComponent<any>, // React component to load for this modification
@@ -31,6 +32,11 @@ const modificationComponents: {[name: string]: ModificationComponent} = {
     component: Resize,
     label: 'Afbeelding verkleinen (bestandsgrootte)',
     title: "Verkleinen {0}",
+  },
+  annotate: {
+    component: Annotate,
+    label: 'Tekst toevoegen onder de afbeelding',
+    title: "Bijschrift {0}",
   },
 };
 

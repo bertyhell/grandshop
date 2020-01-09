@@ -5,7 +5,8 @@ export interface ImageModificationInfo {
       | 'addBorder'
       | 'sepia'
       | 'brightness'
-      | 'resize';
+      | 'resize'
+      | 'annotate';
   arguments: any;
 }
 
