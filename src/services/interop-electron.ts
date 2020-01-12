@@ -24,7 +24,9 @@ const callableFunctions = {
       base64,
       dimensions,
     }));
-    store.dispatch(setModificationInProgressAction(false));
+  },
+  setModificationInProgress: (inProgress: boolean) => {
+    store.dispatch(setModificationInProgressAction(inProgress));
   },
   showNotification: (message: string, status: AlertType, innerException: CustomError) => {
     (toastService[status] || toastService['info'])(message, { innerException });

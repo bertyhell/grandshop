@@ -15,6 +15,7 @@ import fs from 'fs-extra';
 import isDev from 'electron-is-dev';
 import { ImageModificationInfo } from '../shared/modifications/types';
 import { Dimensions } from 'gm';
+import throttle from "@jcoreio/async-throttle";
 
 const appFolder: string = path.resolve(__dirname, '..');
 // const windowStateFileName: string = path.resolve(appFolder, 'last-window-state.json');
@@ -143,19 +144,21 @@ function callRendererFunction(event: Electron.IpcMainEvent, func: RendererCallFu
   event.sender.send('mainprocess-response', { func, funcArgs } as RendererCallFunctionRequest)
 }
 
-async function applyModifications(event: Electron.IpcMainEvent, modifications: ImageModificationInfo[]) {
+const applyModifications = throttle(async (event: Electron.IpcMainEvent, modifications: ImageModificationInfo[]) => {
   try {
+    callRendererFunction(event, 'setModificationInProgress', [true]);
     const modifiedImageInfo: { buffer: Buffer, dimensions: Dimensions } = await ImageManager.updateModifications(modifications);
     callRendererFunction(event, 'setModifiedImage', [
       modifiedImageInfo.buffer.toString('base64'),
       modifiedImageInfo.dimensions
     ]);
+    callRendererFunction(event, 'setModificationInProgress', [false]);
   } catch (err) {
     const error = new CustomError('Failed to apply modifications to image', err, { modifications });
     callRendererFunction(event, 'showNotification', ['Het toepassen van de laatste bewerking is mislukt', 'error', error]);
     console.error(error);
   }
-}
+}, 0);
 
 const callableFunctions = {
   openImage,

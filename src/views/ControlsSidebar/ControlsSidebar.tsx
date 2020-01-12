@@ -12,7 +12,7 @@ import { applyModifications, saveImage, openImage } from '../../services/interop
 import Button from '../../components/Button/Button';
 import { AppState } from '../../store/types';
 import { selectModifiedImage, selectOriginalImage } from '../../store/selectors';
-import { setModificationInProgressAction, setModifiedImageAction } from '../../store/actions';
+import { setModifiedImageAction } from '../../store/actions';
 import { Select, SelectOption } from '../../components/Select/Select';
 import { format } from '../../helpers/format';
 import mods, { ModificationComponent } from '../../shared/modifications/components';
@@ -26,7 +26,6 @@ import { isEqual } from 'lodash-es';
 interface ControlsSidebarProps {
   originalImage: FrontendImageInfo | null;
   modifiedImage: FrontendImageInfo | null;
-  setModificationInProgress: (inProgress: boolean) => void;
   setModifiedImage: (image: FrontendImageInfo | null) => void;
 }
 
@@ -45,7 +44,6 @@ interface ActiveModifier {
 const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
                                                                     originalImage,
                                                                     modifiedImage,
-                                                                    setModificationInProgress,
                                                                     setModifiedImage,
                                                                   }) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -129,8 +127,6 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
       // No modifications, remove modified image, so the original image will be shown
       setModifiedImage(null);
     } else if (!isEqual(previousActiveModifiers, modifierState.activeModifiers)) {
-      // Send the modifications to nodejs so we can update the image
-      setModificationInProgress(true);
       const modifications: ImageModificationInfo[] = compact(modifierState.activeModifiers.map((m: ActiveModifier) => m.info));
       applyModifications(modifications); // Do not apply new modifications if the previous modifications are not done yet
     }
@@ -249,7 +245,6 @@ const mapStateToProps = (state: { app: AppState }) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
-    setModificationInProgress: (inProgress: boolean) => dispatch(setModificationInProgressAction(inProgress) as any),
     setModifiedImage: (image: FrontendImageInfo | null) => dispatch(setModifiedImageAction(image) as any)
   };
 };

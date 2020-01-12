@@ -5,6 +5,7 @@ export type RendererCallFunction =
     | 'setOriginalImageDimensions'
     | 'setModifiedImage'
     | 'setModifiedImageDimensions'
+    | 'setModificationInProgress'
     | 'showNotification';
 
 export interface RendererCallFunctionRequest {

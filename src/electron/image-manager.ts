@@ -19,7 +19,7 @@ export default class ImageManager {
   private static modifiedImageBuffer: Buffer;
   private static modifiedImageDimensions: Dimensions;
 
-  public static updateModifications = throttle((modifications: ImageModificationInfo[]): Promise<ImageInfo> => {
+  public static updateModifications = (modifications: ImageModificationInfo[]): Promise<ImageInfo> => {
     return new Promise(async (resolve, reject) => {
       try {
         ImageManager.modifiedImageBuffer = ImageManager.originalImageBuffer;
@@ -56,7 +56,7 @@ export default class ImageManager {
         );
       }
     });
-  }, 0);
+  };
 
   public static async setOriginalImagePath(absoluteFilePath: string): Promise<{ buffer: Buffer, dimensions: Dimensions }> {
     this.originalImagePathParts = path.parse(absoluteFilePath);
