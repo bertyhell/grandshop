@@ -36,9 +36,15 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       webSecurity: false
-    }
+    },
+    backgroundColor: '#888888',
+    show: false,
   });
-  mainWindow.maximize();
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.maximize();
+    mainWindow.show()
+  });
 
   if (isDev) {
     mainWindow.loadURL(

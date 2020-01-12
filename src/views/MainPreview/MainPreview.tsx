@@ -72,7 +72,6 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
   }, [el]);
 
   useEffect(() => {
-    console.log('updating viewer');
     updateViewer();
   }, [modifiedImage]); // eslint-disable-line react-hooks/exhaustive-deps
 

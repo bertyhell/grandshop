@@ -25,5 +25,4 @@ export interface ElectronCallFunctionRequest {
 export interface ImageInfo {
   base64: string;
   dimensions: Dimensions;
-
 }
