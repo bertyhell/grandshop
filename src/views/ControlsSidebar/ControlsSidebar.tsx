@@ -5,7 +5,6 @@ import { useDebounce } from 'use-debounce';
 import { Dispatch } from 'redux';
 import usePrevious from 'use-previous';
 import compact from 'lodash-es/compact';
-import get from 'lodash-es/get';
 import map from 'lodash-es/map';
 import kebabCase from 'lodash-es/kebabCase';
 import fromPairs from 'lodash-es/fromPairs';
@@ -15,7 +14,7 @@ import { applyModifications, saveImage, openImage } from '../../services/interop
 import Button from '../../components/Button/Button';
 import { AppState } from '../../store/types';
 import { selectModifiedImage, selectOriginalImage } from '../../store/selectors';
-import { setModificationInProgressAction } from '../../store/actions';
+import { setModificationInProgressAction, setModifiedImageAction } from '../../store/actions';
 import { Select, SelectOption } from '../../components/Select/Select';
 import { format } from '../../helpers/format';
 import mods, { ModificationComponent } from '../../shared/modifications/components';
@@ -24,25 +23,32 @@ import ImageModification from '../../components/ImageModification/ImageModificat
 import { ImageInfo } from '../../shared/types';
 
 import './ControlsSidebar.scss';
+import { isEqual } from 'lodash-es';
 
 interface ControlsSidebarProps {
   originalImage: ImageInfo | null;
   modifiedImage: ImageInfo | null;
   setModificationInProgress: (inProgress: boolean) => void;
+  setModifiedImage: (image: ImageInfo | null) => void;
+}
+
+interface ModifierState {
+  openStates: boolean[];
+  activeModifiers: ActiveModifier[];
 }
 
 interface ActiveModifier {
   name: string;
   title: string;
   info: ImageModificationInfo | null;
-  isOpen: boolean;
   key: string;
 }
 
 const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
                                                                     originalImage,
                                                                     modifiedImage,
-                                                                    setModificationInProgress
+                                                                    setModificationInProgress,
+                                                                    setModifiedImage,
                                                                   }) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
@@ -69,74 +75,71 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
     return format(IMAGE_MODIFIER_TITLES[modifierName], activeModifiers.filter(mod => mod.name === modifierName).length + 1);
   };
 
-  function activeModifiersReducer(activeModifiers: ActiveModifier[], action: ActiveModifierAction): ActiveModifier[] {
-    let modifiers: ActiveModifier[] | undefined;
+  function activeModifiersReducer(modifierState: ModifierState, action: ActiveModifierAction): ModifierState {
+    let newModifiers: ActiveModifier[] | undefined = [...modifierState.activeModifiers];
+    let newOpenStates: boolean[] | undefined = [...modifierState.openStates];
+
     let key = getUuid();
     switch (action.type) {
       case 'ADD':
-        const title: string = getModifierTitle(activeModifiers, action.name);
-        const newModifier = {
+        const title: string = getModifierTitle(modifierState.activeModifiers, action.name);
+        newModifiers.push({
           title,
           info: null,
           name: action.name,
-          isOpen: true,
           key
-        };
-        return [
-          ...activeModifiers.map(mod => {
-            mod.isOpen = false; // Close all previous modifiers when adding a new one
-            return mod;
-          }),
-          newModifier
+        });
+        newOpenStates =  [
+          ...modifierState.openStates.map(c => false), // Collapse all other modifiers when add a new one
+          true
         ];
+        break;
 
       case 'UPDATE':
-        modifiers = [...activeModifiers];
-        modifiers[action.index] = {
-          ...modifiers[action.index],
+        newModifiers = [...modifierState.activeModifiers];
+        newModifiers[action.index] = {
+          ...newModifiers[action.index],
           info: action.info
         };
-        return modifiers;
+        break;
 
       case 'TOGGLE':
-        const originalIsOpen: boolean = get(activeModifiers, `[${action.index}].isOpen`, false);
-        modifiers = [
-          ...activeModifiers.map(mod => {
-            mod.isOpen = false; // Close all previous modifiers when adding a new one
-            return mod;
-          })
-        ];
-        modifiers[action.index] = {
-          ...modifiers[action.index],
-          isOpen: !originalIsOpen
-        };
-        return modifiers;
+        newOpenStates[action.index] = !newOpenStates[action.index];
+        break;
 
       case 'DELETE':
-        modifiers = [
-          ...activeModifiers
-        ];
-        modifiers.splice(action.index, 1);
-        return modifiers;
+        newModifiers.splice(action.index, 1);
+        newOpenStates.splice(action.index, 1);
+        break;
+    }
+
+    return {
+      activeModifiers: newModifiers,
+      openStates: newOpenStates
     }
   }
 
-  const [activeModifiers, modifyActiveModifiers] = useReducer<React.Reducer<ActiveModifier[], ActiveModifierAction>>(activeModifiersReducer, []);
-  const [debouncedActiveModifiers] = useDebounce(activeModifiers, 500);
-  const previousActiveModifiers = usePrevious<ActiveModifier[] | null>(activeModifiers);
+  const [modifierState, changeModifierState] = useReducer<React.Reducer<ModifierState, ActiveModifierAction>>(activeModifiersReducer, {
+    openStates: [],
+    activeModifiers: []
+  });
+  const previousActiveModifiers = usePrevious<ActiveModifier[] | null>(modifierState.activeModifiers);
   const applyModificationsThrottled = throttle((modifications: ImageModificationInfo[]) => {
     applyModifications(modifications);
   }, 0);
 
   useEffect(() => {
-    const modifications: ImageModificationInfo[] = compact(debouncedActiveModifiers.map((m: ActiveModifier) => m.info));
-
     // check previous state to see if we need to run the applyModifications function because all modifiers were removed
-    if (modifications && (modifications.length || (previousActiveModifiers && previousActiveModifiers.length !== modifications.length))) {
+    if (!modifierState.activeModifiers || !modifierState.activeModifiers.length) {
+      // No modifications, remove modified image, so the original image will be shown
+      setModifiedImage(null);
+    } else if (!isEqual(previousActiveModifiers, modifierState.activeModifiers)) {
+      // Send the modifications to nodejs so we can update the image
       setModificationInProgress(true);
+      const modifications: ImageModificationInfo[] = compact(modifierState.activeModifiers.map((m: ActiveModifier) => m.info));
       applyModificationsThrottled(modifications); // Do not apply new modifications if the previous modifications are not done yet
     }
-  }, [debouncedActiveModifiers]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [modifierState.activeModifiers]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset the selected dropdown option back to the placeholder, to users know they can add another modifier
   useEffect(() => {
@@ -146,19 +149,19 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
   }, [selectedOption]);
 
   const handleApplyModifier = (modifierInfo: ImageModificationInfo, index: number) => {
-    modifyActiveModifiers({ type: 'UPDATE', info: modifierInfo, index });
+    changeModifierState({ type: 'UPDATE', info: modifierInfo, index });
   };
 
   const handleToggleModifier = (index: number) => {
-    modifyActiveModifiers({ type: 'TOGGLE', index });
+    changeModifierState({ type: 'TOGGLE', index });
   };
 
   const handleDeleteModifier = (index: number) => {
-    modifyActiveModifiers({ type: 'DELETE', index });
+    changeModifierState({ type: 'DELETE', index });
   };
 
   const handleModifierSelectionChanged = (name: string) => {
-    modifyActiveModifiers({ type: 'ADD', name });
+    changeModifierState({ type: 'ADD', name });
     setSelectedOption(name);
   };
 
@@ -213,11 +216,11 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
               options={IMAGE_MODIFIER_OPTIONS}
               onChange={handleModifierSelectionChanged}
               value={null}
-              placeholder={activeModifiers.length ? 'Kies nog een bewerking' : 'Kies een bewerking'}
+              placeholder={modifierState.activeModifiers.length ? 'Kies nog een bewerking' : 'Kies een bewerking'}
             />
           </div>
           <div className="m-modification-controls">
-            {activeModifiers.map((m: ActiveModifier, index: number) => {
+            {modifierState.activeModifiers.map((m: ActiveModifier, index: number) => {
               if (!mods[m.name] || !mods[m.name].component) {
                 console.error('Failed to find component by name in list of modifications', { modificationInfo: m });
                 return null;
@@ -226,7 +229,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
               return <ImageModification
                   label={m.title}
                   className={'c-' + kebabCase(m.name)}
-                  isOpen={m.isOpen}
+                  isOpen={modifierState.openStates[index]}
                   onToggle={() => handleToggleModifier(index)}
                   onDelete={() => handleDeleteModifier(index)}
                   key={m.key}
@@ -251,7 +254,8 @@ const mapStateToProps = (state: { app: AppState }) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
-    setModificationInProgress: (inProgress: boolean) => dispatch(setModificationInProgressAction(inProgress) as any)
+    setModificationInProgress: (inProgress: boolean) => dispatch(setModificationInProgressAction(inProgress) as any),
+    setModifiedImage: (image: ImageInfo | null) => dispatch(setModifiedImageAction(image) as any)
   };
 };
 
