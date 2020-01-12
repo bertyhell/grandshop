@@ -22,7 +22,7 @@ export interface ElectronCallFunctionRequest {
   funcArgs: any[];
 }
 
-export interface ImageInfo {
+export interface FrontendImageInfo {
   base64: string;
   dimensions: Dimensions;
 }

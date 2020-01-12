@@ -1,14 +1,19 @@
 import { State } from 'gm';
+import ImageManager from '../../../electron/image-manager';
+import { ImageInfo } from '../modifications';
 
-export function annotate(gmState: State, width: number, height: number, fontSize: number, margin: number, lines: string[]): State {
+export function annotate(imageInfo: ImageInfo, fontSize: number, margin: number, lines: string[]): Promise<Buffer> {
+  const gmState: State = ImageManager.bufferToGm(imageInfo.buffer);
+
   let state = gmState
-      .extent(width, height + margin + lines.length * fontSize + margin)
+      .extent(imageInfo.dimensions.width, imageInfo.dimensions.height + margin + lines.length * fontSize + margin)
       .font('helvetica', fontSize)
       .fill("#000");
 
   lines.forEach((line, index) => {
     state = state
-        .drawText(margin, height + margin + fontSize * 0.8 + index * fontSize, line);
+        .drawText(margin, imageInfo.dimensions.height + margin + fontSize * 0.8 + index * fontSize, line);
   });
-  return state;
+
+  return ImageManager.gmToBuffer(state);
 }

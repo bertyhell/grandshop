@@ -8,13 +8,13 @@ import { connect } from 'react-redux';
 import { AppState } from '../../store/types';
 import Spinner from '../../components/Spinner/Spinner';
 import { getImageSource } from '../../helpers/base64';
-import { ImageInfo } from '../../shared/types';
+import { FrontendImageInfo } from '../../shared/types';
 
 declare const ResizeObserver: any;
 
 interface MainPreviewProps {
-  originalImage: ImageInfo | null;
-  modifiedImage: ImageInfo | null;
+  originalImage: FrontendImageInfo | null;
+  modifiedImage: FrontendImageInfo | null;
   modificationInProgress: boolean;
 }
 

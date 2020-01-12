@@ -1,4 +1,4 @@
-import { ImageInfo } from '../types';
+import { FrontendImageInfo } from '../types';
 
 export interface ImageModificationInfo {
   name:
@@ -11,6 +11,6 @@ export interface ImageModificationInfo {
 }
 
 export interface ModificationProps {
-  imageInfo: ImageInfo,
+  imageInfo: FrontendImageInfo,
   onApply: (modification: ImageModificationInfo) => void,
 }

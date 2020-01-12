@@ -28,7 +28,6 @@ const App: React.FC = () => {
     sizeUnitMeasure="%"
     resizerSize="15px"
     onResize={() => {
-      console.log('resizing preview');
       window.dispatchEvent(new Event('resize'));
     }}
 >

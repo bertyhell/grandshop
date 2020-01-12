@@ -4,9 +4,10 @@ import { State, Dimensions } from 'gm';
 import path from 'path';
 import fs from 'fs-extra';
 import gm from 'gm';
+import throttle from '@jcoreio/async-throttle'
 
 import CustomError from './helpers/error';
-import mods from '../shared/modifications/modifications';
+import mods, { ImageInfo } from '../shared/modifications/modifications';
 import { ImageModificationInfo } from '../shared/modifications/types';
 
 export default class ImageManager {
@@ -18,40 +19,53 @@ export default class ImageManager {
   private static modifiedImageBuffer: Buffer;
   private static modifiedImageDimensions: Dimensions;
 
-  public static updateModifications(modifications: ImageModificationInfo[]): Promise<{buffer: Buffer, dimensions: Dimensions}> {
+  public static updateModifications = throttle((modifications: ImageModificationInfo[]): Promise<ImageInfo> => {
     return new Promise(async (resolve, reject) => {
       try {
-        let gmState = gm(this.originalImageBuffer, this.originalImagePathParts.name + this.originalImagePathParts.ext);
+        ImageManager.modifiedImageBuffer = ImageManager.originalImageBuffer;
+        ImageManager.modifiedImageDimensions = await ImageManager.getDimensions(ImageManager.modifiedImageBuffer);
+
+        // Apply each modification by passing it the image buffer and the args that were defined in the frontend
         for (const modification of modifications) {
-          const func: ((gmState: State, ...args: any[]) => State) | null = mods[modification.name];
+          const func: ((imageInfo: ImageInfo, ...args: any[]) => Promise<Buffer>) | null = mods[modification.name];
           if (!func) {
             throw new CustomError('requested to execute unsupported image modification', null, {
               modification,
-              originalImagePath: this.originalImagePath
+              originalImagePath: ImageManager.originalImagePath
             });
           }
-          gmState = func.bind(ImageManager)(gmState, ...modification.arguments);
+          ImageManager.modifiedImageBuffer = await func.bind(ImageManager)({
+            buffer: ImageManager.modifiedImageBuffer,
+            dimensions: ImageManager.modifiedImageDimensions
+          }, ...modification.arguments);
+
+          // Since the modifier can change the image size, we need to update it after each modification
+          ImageManager.modifiedImageDimensions = await ImageManager.getDimensions(ImageManager.modifiedImageBuffer);
         }
-        this.modifiedImageBuffer = await this.writeGmState(gmState);
-        this.modifiedImageDimensions = await this.getDimensions(gmState);
         resolve({
-          buffer: this.modifiedImageBuffer,
-          dimensions: this.modifiedImageDimensions,
+          buffer: ImageManager.modifiedImageBuffer,
+          dimensions: ImageManager.modifiedImageDimensions
         });
       } catch (err) {
-        reject(new CustomError('Failed to apply image modifications', err, { modifications, originalImagePath: this.originalImagePath }));
+        reject(
+            new CustomError(
+                'Failed to apply image modifications',
+                err,
+                { modifications, originalImagePath: ImageManager.originalImagePath }
+            )
+        );
       }
     });
-  }
+  }, 0);
 
-  public static async setOriginalImagePath(absoluteFilePath: string): Promise<{buffer: Buffer, dimensions: Dimensions}> {
+  public static async setOriginalImagePath(absoluteFilePath: string): Promise<{ buffer: Buffer, dimensions: Dimensions }> {
     this.originalImagePathParts = path.parse(absoluteFilePath);
     this.originalImagePath = absoluteFilePath;
     this.originalImageBuffer = await fs.readFile(absoluteFilePath);
-    this.originalImageDimensions = await this.getDimensions(gm(this.originalImageBuffer, this.originalImagePathParts.name + this.originalImagePathParts.ext));
+    this.originalImageDimensions = await this.getDimensions(this.originalImageBuffer);
     return {
       buffer: this.originalImageBuffer,
-      dimensions: this.originalImageDimensions,
+      dimensions: this.originalImageDimensions
     };
   }
 
@@ -67,7 +81,11 @@ export default class ImageManager {
     return this.modifiedImageBuffer;
   }
 
-  private static writeGmState(gmState: State): Promise<Buffer> {
+  public static bufferToGm(imageBuffer: Buffer): State {
+    return gm(imageBuffer, this.originalImagePathParts.name + this.originalImagePathParts.ext);
+  }
+
+  public static gmToBuffer(gmState: State): Promise<Buffer> {
     return new Promise<Buffer>((resolve, reject) => {
       try {
         gmState.toBuffer(function(err: any, newBuffer: Buffer) {
@@ -85,9 +103,9 @@ export default class ImageManager {
     });
   }
 
-  private static async getDimensions(gmState: State): Promise<Dimensions> {
+  private static async getDimensions(buffer: Buffer): Promise<Dimensions> {
     return new Promise((resolve, reject) => {
-      gmState.size((err: any, dim: Dimensions) => {
+      this.bufferToGm(buffer).size((err: any, dim: Dimensions) => {
         if (err) {
           reject(new CustomError('Failed to get dimensions from image', err));
         } else {

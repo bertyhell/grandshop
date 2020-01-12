@@ -8,7 +8,6 @@ import FormField from '../../../components/FormField/FormField';
 import { MultiRange } from '../../../components/MultiRange/MultiRange';
 
 const Annotate: FunctionComponent<ModificationProps> = ({
-                                                          imageInfo,
                                                           onApply
                                                         }) => {
   const [text, setText] = useState<string>('');
@@ -19,7 +18,7 @@ const Annotate: FunctionComponent<ModificationProps> = ({
     const lines = text.split('\n');
     onApply({
           name: 'annotate',
-          arguments: [imageInfo.dimensions.width, imageInfo.dimensions.height, fontSize, marge, lines]
+          arguments: [fontSize, marge, lines]
         }
     );
   }, [text, marge, fontSize]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -33,7 +32,7 @@ const Annotate: FunctionComponent<ModificationProps> = ({
           <MultiRange min={0} max={400} values={[marge]} onChange={(values) => setMarge(values[0])}/>
         </FormField>
         <FormField label="Tekst grootte">
-          <MultiRange min={0} max={100} values={[fontSize]} onChange={(values) => setFontSize(values[0])}/>
+          <MultiRange min={0} max={200} values={[fontSize]} onChange={(values) => setFontSize(values[0])}/>
         </FormField>
       </>
   );

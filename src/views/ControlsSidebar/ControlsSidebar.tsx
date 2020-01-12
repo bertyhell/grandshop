@@ -1,14 +1,12 @@
 import React, { FunctionComponent, useEffect, useReducer, useState } from 'react';
 import getUuid from 'uuid/v1';
 import { connect } from 'react-redux';
-import { useDebounce } from 'use-debounce';
 import { Dispatch } from 'redux';
 import usePrevious from 'use-previous';
 import compact from 'lodash-es/compact';
 import map from 'lodash-es/map';
 import kebabCase from 'lodash-es/kebabCase';
 import fromPairs from 'lodash-es/fromPairs';
-import throttle from '@jcoreio/async-throttle';
 
 import { applyModifications, saveImage, openImage } from '../../services/interop-electron';
 import Button from '../../components/Button/Button';
@@ -20,16 +18,16 @@ import { format } from '../../helpers/format';
 import mods, { ModificationComponent } from '../../shared/modifications/components';
 import { ImageModificationInfo } from '../../shared/modifications/types';
 import ImageModification from '../../components/ImageModification/ImageModification';
-import { ImageInfo } from '../../shared/types';
+import { FrontendImageInfo } from '../../shared/types';
 
 import './ControlsSidebar.scss';
 import { isEqual } from 'lodash-es';
 
 interface ControlsSidebarProps {
-  originalImage: ImageInfo | null;
-  modifiedImage: ImageInfo | null;
+  originalImage: FrontendImageInfo | null;
+  modifiedImage: FrontendImageInfo | null;
   setModificationInProgress: (inProgress: boolean) => void;
-  setModifiedImage: (image: ImageInfo | null) => void;
+  setModifiedImage: (image: FrontendImageInfo | null) => void;
 }
 
 interface ModifierState {
@@ -124,9 +122,6 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
     activeModifiers: []
   });
   const previousActiveModifiers = usePrevious<ActiveModifier[] | null>(modifierState.activeModifiers);
-  const applyModificationsThrottled = throttle((modifications: ImageModificationInfo[]) => {
-    applyModifications(modifications);
-  }, 0);
 
   useEffect(() => {
     // check previous state to see if we need to run the applyModifications function because all modifiers were removed
@@ -137,7 +132,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
       // Send the modifications to nodejs so we can update the image
       setModificationInProgress(true);
       const modifications: ImageModificationInfo[] = compact(modifierState.activeModifiers.map((m: ActiveModifier) => m.info));
-      applyModificationsThrottled(modifications); // Do not apply new modifications if the previous modifications are not done yet
+      applyModifications(modifications); // Do not apply new modifications if the previous modifications are not done yet
     }
   }, [modifierState.activeModifiers]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -255,7 +250,7 @@ const mapStateToProps = (state: { app: AppState }) => ({
 const mapDispatchToProps = (dispatch: Dispatch) => {
   return {
     setModificationInProgress: (inProgress: boolean) => dispatch(setModificationInProgressAction(inProgress) as any),
-    setModifiedImage: (image: ImageInfo | null) => dispatch(setModifiedImageAction(image) as any)
+    setModifiedImage: (image: FrontendImageInfo | null) => dispatch(setModifiedImageAction(image) as any)
   };
 };
 
