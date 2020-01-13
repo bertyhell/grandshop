@@ -1,15 +1,11 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import { MultiRange } from '../../../components/MultiRange/MultiRange';
-import { ImageModificationInfo } from '../types';
+import { ModificationProps } from '../types';
 
 import './Brightness.scss';
 
-interface BrightnessProps {
-  onApply: (modification: ImageModificationInfo) => void,
-}
-
-const Brightness: FunctionComponent<BrightnessProps> = ({
+const Brightness: FunctionComponent<ModificationProps> = ({
                                                           onApply
                                                         }) => {
   const [brightness, setBrightness] = useState<number>(120);

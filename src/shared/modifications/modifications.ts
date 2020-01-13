@@ -3,6 +3,7 @@ import { brightness } from './Brightness/modification';
 import { sepia } from './Sepia/modification';
 import { resize } from './Resize/modification';
 import { annotate } from './Annotate/modification';
+import { crop } from './Crop/modification';
 import { Dimensions } from 'gm';
 
 export interface ImageInfo {
@@ -19,6 +20,7 @@ const modificationFuncs: {[name: string]: ModificationFunc} = {
   sepia,
   resize,
   annotate,
+  crop,
 };
 
 export default modificationFuncs;
