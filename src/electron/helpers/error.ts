@@ -1,10 +1,8 @@
-import uuid from 'uuid/v1';
-
 export default class CustomError {
   public message: string;
   public innerException: any | null;
   public additionalInfo: any | null;
-  public identifier: string = uuid();
+  public identifier: string = Math.random().toString().substring(2, 9);
   public name: string = 'Error';
   public stack: string;
   public timestamp: string = new Date().toISOString();
