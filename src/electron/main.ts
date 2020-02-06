@@ -3,19 +3,17 @@
 
 // Modules to control application life and create native browser window
 import { ElectronCallFunctionRequest, RendererCallFunction, RendererCallFunctionRequest } from '../shared/types';
-import { ParsedPath } from 'path';
+import path, { ParsedPath } from 'path';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import fs from 'fs-extra';
+import isDev from 'electron-is-dev';
+import { Dimensions } from 'gm';
+import throttle from "@jcoreio/async-throttle";
+
+import { ImageModificationInfo } from '../shared/modifications/types';
 
 import ImageManager from './image-manager';
 import CustomError from './helpers/error';
-
-import { app, BrowserWindow, dialog, ipcMain } from 'electron';
-import path from 'path';
-import fs from 'fs-extra';
-
-import isDev from 'electron-is-dev';
-import { ImageModificationInfo } from '../shared/modifications/types';
-import { Dimensions } from 'gm';
-import throttle from "@jcoreio/async-throttle";
 
 const appFolder: string = path.resolve(__dirname, '..');
 // const windowStateFileName: string = path.resolve(appFolder, 'last-window-state.json');
