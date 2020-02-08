@@ -8,7 +8,7 @@ import './Brightness.scss';
 const Brightness: FunctionComponent<ModificationProps> = ({
                                                           onApply
                                                         }) => {
-  const [brightness, setBrightness] = useState<number>(120);
+  const [brightness, setBrightness] = useState<number>(1.1);
 
   useEffect(() => {
     onApply({
@@ -19,7 +19,7 @@ const Brightness: FunctionComponent<ModificationProps> = ({
   }, [brightness]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-      <MultiRange min={0} max={400} step={1} values={[brightness]} onChange={(values: number[]) => setBrightness(values[0])}/>
+      <MultiRange min={0} max={5} step={0.01} values={[brightness]} onChange={(values: number[]) => setBrightness(values[0])}/>
   );
 };
 

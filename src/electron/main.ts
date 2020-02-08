@@ -122,7 +122,7 @@ async function saveImage(event: Electron.IpcMainEvent, options: Electron.SaveDia
   let response: Electron.SaveDialogReturnValue | undefined = undefined;
   try {
     const parts: ParsedPath = ImageManager.getOriginalImagePathParts();
-    const defaultFileName = parts.name + '-' + new Date().toLocaleDateString().replace(/[^0-9]+/g, '-') + parts.ext;
+    const defaultFileName = parts.name + '-' + new Date().toLocaleDateString().replace(/[^0-9]+/g, '-') + '.png';
     response = await dialog.showSaveDialog(mainWindow, { ...options, defaultPath: defaultFileName });
     if (response.canceled || !response.filePath) {
       return;
