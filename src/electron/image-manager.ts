@@ -4,7 +4,7 @@ import { State, Dimensions } from 'gm';
 import path from 'path';
 import fs from 'fs-extra';
 import gm from 'gm';
-import throttle from '@jcoreio/async-throttle'
+import sharp, { Sharp } from 'sharp';
 
 import CustomError from './helpers/error';
 import mods, { ImageInfo } from '../shared/modifications/modifications';
@@ -61,7 +61,8 @@ export default class ImageManager {
   public static async setOriginalImagePath(absoluteFilePath: string): Promise<{ buffer: Buffer, dimensions: Dimensions }> {
     this.originalImagePathParts = path.parse(absoluteFilePath);
     this.originalImagePath = absoluteFilePath;
-    this.originalImageBuffer = await fs.readFile(absoluteFilePath);
+    // Always convert input images to a format that both sharp and graphicmagic understand and is lossless: PNG
+    this.originalImageBuffer = await this.bufferToSharp(await fs.readFile(absoluteFilePath)).png().toBuffer();
     this.originalImageDimensions = await this.getDimensions(this.originalImageBuffer);
     return {
       buffer: this.originalImageBuffer,
@@ -101,6 +102,14 @@ export default class ImageManager {
             err));
       }
     });
+  }
+
+  public static bufferToSharp(imageBuffer: Buffer): Sharp {
+    return sharp(imageBuffer);
+  }
+
+  public static async sharpToBuffer(sharp: Sharp): Promise<Buffer> {
+    return await sharp.toBuffer();
   }
 
   private static async getDimensions(buffer: Buffer): Promise<Dimensions> {

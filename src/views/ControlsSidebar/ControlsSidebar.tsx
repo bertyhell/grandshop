@@ -192,7 +192,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
                 },
                 {
                   name: 'Afbeeldingen',
-                  extensions: ['jpg', 'png', 'gif', 'tif', 'bmp', 'jpeg', 'webp']
+                  extensions: ['png']
                 }
               ],
               title: 'Kies de locatie en naam om je afbeelding op te slaan'
