@@ -170,7 +170,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
                 },
                 {
                   name: 'Afbeeldingen',
-                  extensions: ['jpg', 'png', 'gif', 'tif', 'bmp', 'jpeg', 'webp']
+                  extensions: ['jpg', 'png', 'gif', 'tif', 'jpeg', 'webp', 'svg']
                 }
               ],
               title: 'Selecteer de afbeelding die je wil bewerken',
