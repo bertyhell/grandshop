@@ -1,13 +1,12 @@
-import { State } from 'gm';
 import ImageManager from '../../../electron/image-manager';
 import { ImageInfo } from '../modifications';
+import { Sharp } from 'sharp';
 
 export function addBorder(imageInfo: ImageInfo, thickness: number, color: string): Promise<Buffer> {
-  const gmState: State = ImageManager.bufferToGm(imageInfo.buffer);
+  const sharp: Sharp = ImageManager.bufferToSharp(imageInfo.buffer);
 
-  const state = gmState
-      .borderColor(color)
-      .border(thickness, thickness);
+  const state = sharp
+      .extend({top: thickness, bottom: thickness, left: thickness, right: thickness, background: color});
 
-  return ImageManager.gmToBuffer(state);
+  return ImageManager.sharpToBuffer(state);
 }
