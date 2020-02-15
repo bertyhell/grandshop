@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import { ModificationProps } from '../types';
@@ -10,6 +11,8 @@ import ColorInput from '../../../components/ColorInput/ColorInput';
 const Sepia: FunctionComponent<ModificationProps> = ({
                                                        onApply
                                                      }) => {
+  const [t] = useTranslation();
+
   const [brightness, setBrightness] = useState<number>(87);
   const [color, setColor] = useState<string>('#0f0a05');
   const [redPercent, setRedPercent] = useState<number>(7);
@@ -25,21 +28,21 @@ const Sepia: FunctionComponent<ModificationProps> = ({
     );
   }, [brightness, color, redPercent, greenPercent, bluePercent]); // eslint-disable-line react-hooks/exhaustive-deps
   return <>
-    <FormField label="Helderheid" labelFor="brightness">
+    <FormField label={t('shared/modifications/sepia/sepia___brightness')} labelFor="brightness">
       <MultiRange min={0} max={255} step={1} values={[brightness]} onChange={(values: number[]) => setBrightness(values[0])}/>
     </FormField>
-    <FormField label="Kleur" labelFor="color">
+    <FormField label={t('shared/modifications/sepia/sepia___color')} labelFor="color">
       <ColorInput value={color} onChange={(value: string) => {
         setColor(value);
       }}/>
     </FormField>
-    <FormField label="Rood accent" labelFor="redPercent">
+    <FormField label={t('shared/modifications/sepia/sepia___red-hue')} labelFor="redPercent">
       <MultiRange min={0} max={100} step={1} values={[redPercent]} onChange={(values: number[]) => setRedPercent(values[0])}/>
     </FormField>
-    <FormField label="Groen accent" labelFor="greenPercent">
+    <FormField label={t('shared/modifications/sepia/sepia___green-hue')} labelFor="greenPercent">
       <MultiRange min={0} max={100} step={1} values={[greenPercent]} onChange={(values: number[]) => setGreenPercent(values[0])}/>
     </FormField>
-    <FormField label="Blauw accent" labelFor="bluePercent">
+    <FormField label={t('shared/modifications/sepia/sepia____blue-hue')} labelFor="bluePercent">
       <MultiRange min={0} max={100} step={1} values={[bluePercent]} onChange={(values: number[]) => setBluePercent(values[0])}/>
     </FormField>
   </>

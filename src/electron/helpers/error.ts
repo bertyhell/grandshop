@@ -1,3 +1,5 @@
+import i18n from "../../shared/translations/i18n";
+
 export default class CustomError {
   public message: string;
   public innerException: any | null;
@@ -8,7 +10,7 @@ export default class CustomError {
   public timestamp: string = new Date().toISOString();
 
   constructor(
-      message: string = 'Something went wrong',
+      message: string = i18n.t('electron/helpers/error___something-went-wrong'),
       innerException: any = null,
       additionalInfo: any = null) {
     this.message = message;

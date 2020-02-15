@@ -1,9 +1,7 @@
 /// <reference path="../../node_modules/@types/gm/index.d.ts" />
-import { ParsedPath } from "path";
-import { State, Dimensions } from 'gm';
-import path from 'path';
+import path, { ParsedPath } from "path";
+import gm, { State, Dimensions } from 'gm';
 import fs from 'fs-extra';
-import gm from 'gm';
 import sharp, { Sharp } from 'sharp';
 
 import CustomError from './helpers/error';
@@ -89,7 +87,7 @@ export default class ImageManager {
   public static gmToBuffer(gmState: State): Promise<Buffer> {
     return new Promise<Buffer>((resolve, reject) => {
       try {
-        gmState.toBuffer(function(err: any, newBuffer: Buffer) {
+        gmState.toBuffer((err: any, newBuffer: Buffer) => {
           if (err) {
             reject(new CustomError('Failed to write modified image to buffer', err));
           } else {

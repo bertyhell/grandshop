@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import prettyBytes from 'pretty-bytes';
 
@@ -11,6 +12,8 @@ const Resize: FunctionComponent<ModificationProps> = ({
                                                         imageInfo,
                                                         onApply
                                                       }) => {
+  const [t] = useTranslation();
+
   const getMaxSize = () => {
     return Math.min(Math.max(imageInfo.dimensions.width, imageInfo.dimensions.height), 10000);
   };
@@ -26,7 +29,7 @@ const Resize: FunctionComponent<ModificationProps> = ({
 
   return (
       <>
-      <FormField label="Maximale afmeeting in pixels">
+      <FormField label={t('shared/modifications/resize/resize___maximal-dimension-in-pixels')}>
       <MultiRange
           min={10}
           max={getMaxSize()}
@@ -36,7 +39,7 @@ const Resize: FunctionComponent<ModificationProps> = ({
       />
       </FormField>
         {/* https://softwareengineering.stackexchange.com/a/288673 */}
-        <span>Resulterende bestandsgrootte: {prettyBytes((imageInfo.base64.length - 814) / 1.35)}</span>
+        <span>{t('shared/modifications/resize/resize___resulting-file-size')}: {prettyBytes((imageInfo.base64.length - 814) / 1.35)}</span>
       </>
   );
 };

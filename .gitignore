@@ -27,3 +27,6 @@ yarn-error.log*
 **/*.js.map
 tmp
 electron-dist
+
+# Poeditor fetched files
+src/shared/translations/poeditor

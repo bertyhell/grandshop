@@ -1,5 +1,7 @@
 import { FunctionComponent } from 'react';
 
+import i18n from '../translations/i18n';
+
 import AddBorder from './AddBorder/AddBorder';
 import Brightness from './Brightness/Brightness';
 import Sepia from './Sepia/Sepia';
@@ -16,33 +18,33 @@ export interface ModificationComponent {
 const modificationComponents: {[name: string]: ModificationComponent} = {
   addBorder: {
     component: AddBorder,
-    label: 'Voeg een gekleurde rand toe',
-    title: "Rand {0}",
+    label: i18n.t('shared/modifications/components___add-a-colored-border'),
+    title: i18n.t('shared/modifications/components___border-0'),
   },
   brightness: {
     component: Brightness,
-    label: 'Pas de helderheid aan',
-    title: "Helderheid {0}",
+    label: i18n.t('shared/modifications/components___adjust-the-brightness'),
+    title: i18n.t('shared/modifications/components___brightness-0'),
   },
   sepia: {
     component: Sepia,
-    label: 'Voeg een sepia effect toe',
-    title: "Sepia {0}",
+    label: i18n.t('shared/modifications/components___add-a-sepia-effect'),
+    title: i18n.t('shared/modifications/components___sepia-0'),
   },
   resize: {
     component: Resize,
-    label: 'Afbeelding verkleinen (bestandsgrootte)',
-    title: "Verkleinen {0}",
+    label: i18n.t('shared/modifications/components___reduce-image-file-size'),
+    title: i18n.t('shared/modifications/components___shrink-0'),
   },
   annotate: {
     component: Annotate,
-    label: 'Tekst toevoegen onder de afbeelding',
-    title: "Bijschrift {0}",
+    label: i18n.t('shared/modifications/components___add-text-below-the-image'),
+    title: i18n.t('shared/modifications/components___caption-0'),
   },
   crop: {
     component: Crop,
-    label: 'Afbeelding bijsnijden',
-    title: "Bijsnijden {0}",
+    label: i18n.t('shared/modifications/components___crop-image'),
+    title: i18n.t('shared/modifications/components___crop-0'),
   },
 };
 

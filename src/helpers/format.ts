@@ -1,6 +1,7 @@
 export function format(text: string, ...args: any[]) {
+  let newText: string = text;
   for (const argIndex in args) {
-    text = text.replace("{" + argIndex + "}", args[argIndex])
+    newText = newText.replace("{" + argIndex + "}", args[argIndex])
   }
-  return text;
+  return newText;
 }

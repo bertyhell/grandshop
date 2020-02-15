@@ -1,12 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import { getTrackBackground, Range } from 'react-range';
+import { useTranslation } from 'react-i18next';
+import { clamp } from 'lodash-es';
 
 import classnames from 'classnames';
 
-import './MultiRange.scss';
 import toastService from '../../services/toast-service';
 import Input from '../Input/Input';
-import { clamp } from 'lodash-es';
+
+import './MultiRange.scss';
 
 export interface MultiRangeProps {
   className?: string;
@@ -31,12 +33,14 @@ export const MultiRange: FunctionComponent<MultiRangeProps> = ({
                                                                  allowOverlap = false,
                                                                  onChange = () => {},
                                                                }) => {
+  const [t] = useTranslation();
+
   const handleThicknessInputChanged = (value: string) => {
     try {
       const val = parseInt(value, 10);
       onChange([clamp(val, min, max)]);
     } catch (err) {
-      toastService.warn('De waarde moet een geldig getal zijn');
+      toastService.warn(t('components/multi-range/multi-range___the-value-must-be-a-valid-number'));
     }
   };
 

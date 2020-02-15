@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { createRef, FunctionComponent, MutableRefObject, RefObject, useEffect, useRef } from 'react';
 import 'viewerjs/dist/viewer.css';
 import Viewer from 'viewerjs';
@@ -23,8 +24,10 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
                                                             modifiedImage,
                                                             modificationInProgress
                                                           }) => {
-  let el: RefObject<HTMLImageElement> = createRef<HTMLImageElement>();
-  let viewer: MutableRefObject<any | null> = useRef<any | null>(null);
+  const [t] = useTranslation();
+
+  const el: RefObject<HTMLImageElement> = createRef<HTMLImageElement>();
+  const viewer: MutableRefObject<any | null> = useRef<any | null>(null);
 
   const updateViewer = () => {
     if (viewer.current) {
@@ -85,7 +88,7 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
     {modificationInProgress &&
     <div className="o-spinner-wrapper">
       <Spinner/>
-      Afbeelding wordt geupdate...
+      {t('views/main-preview/main-preview___image-is-being-updated')}
     </div>
     }
   </div>;

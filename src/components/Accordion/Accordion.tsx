@@ -3,6 +3,7 @@ import React, { FunctionComponent } from 'react';
 
 import './Accordion.scss';
 import Button from '../Button/Button';
+import { useTranslation } from 'react-i18next';
 
 export interface AccordionProps {
   className?: string;
@@ -20,6 +21,8 @@ export const Accordion: FunctionComponent<AccordionProps> = ({
                                                                onDelete,
                                                                title
                                                              }) => {
+  const [t] = useTranslation();
+
   return (
       <div className={classnames(className, 'c-accordion', { 'c-accordion-closed': !isOpen })}>
         <div
@@ -28,7 +31,7 @@ export const Accordion: FunctionComponent<AccordionProps> = ({
         >
           <div className="c-accordion-header-title">{title}</div>
           <div className="c-button-wrapper">
-            <Button label="Verwijder" onClick={onDelete} block={false} type="secondary"/>
+            <Button label={t('components/accordion/accordion___delete')} onClick={onDelete} block={false} type="secondary"/>
           </div>
         </div>
         {children &&
