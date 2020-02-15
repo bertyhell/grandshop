@@ -88,7 +88,7 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
     {modificationInProgress &&
     <div className="o-spinner-wrapper">
       <Spinner/>
-      {t('Afbeelding wordt geupdate...')}
+      {t('views/main-preview/main-preview___image-is-being-updated')}
     </div>
     }
   </div>;

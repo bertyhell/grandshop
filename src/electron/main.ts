@@ -131,10 +131,10 @@ async function saveImage(event: Electron.IpcMainEvent, options: Electron.SaveDia
     // Write the modified buffer image to the save location
     await fs.writeFile(response.filePath, ImageManager.getModifiedImageBuffer());
 
-    callRendererFunction(event, 'showNotification', [i18n.t('electron/main___afbeelding-is-opgeslagen'), 'success']);
+    callRendererFunction(event, 'showNotification', [i18n.t('electron/main___image-has-been-saved'), 'success']);
   } catch (err) {
     const error = new CustomError('Failed to save file', err, { dialogOptions: options, dialogResponse: response });
-    callRendererFunction(event, 'showNotification', [i18n.t('electron/main___het-opslaan-van-de-afbeelding-is-mislukt'), 'error', error]);
+    callRendererFunction(event, 'showNotification', [i18n.t('electron/main___saving-the-image-failed'), 'error', error]);
     console.error(error);
   }
 }
@@ -154,7 +154,7 @@ const applyModifications = throttle(async (event: Electron.IpcMainEvent, modific
     callRendererFunction(event, 'setModificationInProgress', [false]);
   } catch (err) {
     const error = new CustomError('Failed to apply modifications to image', err, { modifications });
-    callRendererFunction(event, 'showNotification', [i18n.t('electron/main___het-toepassen-van-de-laatste-bewerking-is-mislukt'), 'error', error]);
+    callRendererFunction(event, 'showNotification', [i18n.t('electron/main___applying-the-last-operation-failed'), 'error', error]);
     console.error(error);
   }
 }, 0);

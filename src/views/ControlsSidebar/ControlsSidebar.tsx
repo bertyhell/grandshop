@@ -165,39 +165,39 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
               // defaultPath // TODO default to the users images folder
               filters: [
                 {
-                  name: t('views/controls-sidebar/controls-sidebar___alle-bestanden'),
+                  name: t('views/controls-sidebar/controls-sidebar___all-file-types'),
                   extensions: ['*']
                 },
                 {
-                  name: t('views/controls-sidebar/controls-sidebar___afbeeldingen'),
+                  name: t('views/controls-sidebar/controls-sidebar___images'),
                   extensions: ['jpg', 'png', 'gif', 'tif', 'jpeg', 'webp', 'svg']
                 }
               ],
-              title: t('views/controls-sidebar/controls-sidebar___selecteer-de-afbeelding-die-je-wil-bewerken'),
+              title: t('views/controls-sidebar/controls-sidebar___select-the-image-that-you-want-to-edit'),
               properties: [
                 // 'multiSelections', // TODO add multi image support
                 'openFile'
               ]
             });
-          }} label={t('views/controls-sidebar/controls-sidebar___afbeelding-openen')}/>
+          }} label={t('views/controls-sidebar/controls-sidebar___open-image')}/>
           {modifiedImage &&
           <Button className="c-save-button" onClick={() => {
             saveImage({
-              buttonLabel: t('views/controls-sidebar/controls-sidebar___opslaan'),
+              buttonLabel: t('views/controls-sidebar/controls-sidebar___save'),
               // defaultPath // TODO default to the users images folder
               filters: [
                 {
-                  name: t('views/controls-sidebar/controls-sidebar___alle-bestanden'),
+                  name: t('views/controls-sidebar/controls-sidebar___all-file-types'),
                   extensions: ['*']
                 },
                 {
-                  name: t('views/controls-sidebar/controls-sidebar___afbeeldingen'),
+                  name: t('views/controls-sidebar/controls-sidebar___images'),
                   extensions: ['png']
                 }
               ],
-              title: t('views/controls-sidebar/controls-sidebar___kies-de-locatie-en-naam-om-je-afbeelding-op-te-slaan')
+              title: t('views/controls-sidebar/controls-sidebar___choose-the-location-and-name-to-save-your-file')
             });
-          }} label={t('views/controls-sidebar/controls-sidebar___afbeelding-opslaan-als')}/>
+          }} label={t('views/controls-sidebar/controls-sidebar___save-image-as')}/>
           }
         </div>
         {originalImage &&
@@ -207,7 +207,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
               options={IMAGE_MODIFIER_OPTIONS}
               onChange={handleModifierSelectionChanged}
               value={null}
-              placeholder={modifierState.activeModifiers.length ? t('views/controls-sidebar/controls-sidebar___kies-nog-een-bewerking') : t('views/controls-sidebar/controls-sidebar___kies-een-bewerking')}
+              placeholder={modifierState.activeModifiers.length ? t('views/controls-sidebar/controls-sidebar___choose-another-operation') : t('views/controls-sidebar/controls-sidebar___choose-an-operation')}
             />
           </div>
           <div className="m-modification-controls">

@@ -29,7 +29,7 @@ const Resize: FunctionComponent<ModificationProps> = ({
 
   return (
       <>
-      <FormField label={t('shared/modifications/resize/resize___maximale-afmeeting-in-pixels')}>
+      <FormField label={t('shared/modifications/resize/resize___maximal-dimension-in-pixels')}>
       <MultiRange
           min={10}
           max={getMaxSize()}
@@ -39,7 +39,7 @@ const Resize: FunctionComponent<ModificationProps> = ({
       />
       </FormField>
         {/* https://softwareengineering.stackexchange.com/a/288673 */}
-        <span>{t('Resulterende bestandsgrootte')}: {prettyBytes((imageInfo.base64.length - 814) / 1.35)}</span>
+        <span>{t('shared/modifications/resize/resize___resulting-file-size')}: {prettyBytes((imageInfo.base64.length - 814) / 1.35)}</span>
       </>
   );
 };

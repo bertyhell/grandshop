@@ -29,19 +29,19 @@ const Crop: FunctionComponent<ModificationProps> = ({
 	console.log(top, right, bottom, left);
 	return (
 		<>
-			<FormField label={t('shared/modifications/crop/crop___bovenkant')} labelFor="top">
+			<FormField label={t('shared/modifications/crop/crop___top')} labelFor="top">
 				<MultiRange min={0} max={imageInfo.dimensions.height} step={1} id="top" values={[top]}
 										onChange={(values: number[]) => setTop(values[0])} />
 			</FormField>
-			<FormField label={t('shared/modifications/crop/crop___linkerkant')} labelFor="left">
+			<FormField label={t('shared/modifications/crop/crop___left')} labelFor="left">
 				<MultiRange min={0} max={imageInfo.dimensions.width} step={1} id="left" values={[left]}
 										onChange={(values: number[]) => setLeft(values[0])} />
 			</FormField>
-			<FormField label={t('shared/modifications/crop/crop___rechterkant')} labelFor="right">
+			<FormField label={t('shared/modifications/crop/crop___right')} labelFor="right">
 				<MultiRange min={0} max={imageInfo.dimensions.width} step={1} id="right" values={[right]}
 										onChange={(values: number[]) => setRight(values[0])} />
 			</FormField>
-			<FormField label={t('shared/modifications/crop/crop___onderkant')} labelFor="bottom">
+			<FormField label={t('shared/modifications/crop/crop___bottom')} labelFor="bottom">
 				<MultiRange min={0} max={imageInfo.dimensions.height} step={1} id="bottom" values={[bottom]}
 										onChange={(values: number[]) => setBottom(values[0])} />
 			</FormField>

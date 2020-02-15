@@ -28,13 +28,13 @@ const Annotate: FunctionComponent<ModificationProps> = ({
 
   return (
       <>
-        <FormField label={t('shared/modifications/annotate/annotate___tekst')}>
+        <FormField label={t('shared/modifications/annotate/annotate___text')}>
           <TextArea placeholder="Typ hier uw tekst in" value={text} onChange={setText}/>
         </FormField>
-        <FormField label={t('shared/modifications/annotate/annotate___marge')}>
+        <FormField label={t('shared/modifications/annotate/annotate___margin')}>
           <MultiRange min={0} max={400} values={[marge]} onChange={(values) => setMarge(values[0])}/>
         </FormField>
-        <FormField label={t('shared/modifications/annotate/annotate___tekst-grootte')}>
+        <FormField label={t('shared/modifications/annotate/annotate___text-size')}>
           <MultiRange min={0} max={200} values={[fontSize]} onChange={(values) => setFontSize(values[0])}/>
         </FormField>
       </>

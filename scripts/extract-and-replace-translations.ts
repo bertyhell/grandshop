@@ -24,7 +24,7 @@ import * as fs from 'fs';
 import glob from 'glob';
 import * as _ from 'lodash';
 import * as path from 'path';
-import localTranslations from '../src/shared/translations/nl.json';
+import localTranslations from '../src/shared/translations/en.json';
 
 type keyMap = { [key: string]: string };
 
@@ -134,12 +134,12 @@ function extractTranslationsFromCodeFiles(codeFiles: string[]) {
 
 async function getOnlineTranslations() {
   try {
-    // Read file from poeditor website under /src/translations/poeditor/project-id/nl.json
-    const poEditorFiles = await getFilesByGlob('shared/translations/poeditor/*/nl.json');
+    // Read file from poeditor website under /src/translations/poeditor/project-id/en.json
+    const poEditorFiles = await getFilesByGlob('shared/translations/poeditor/*/en.json');
     const poEditorFile: string = poEditorFiles[0];
     if (!poEditorFile) {
       throw new Error(
-          'File fetched from poEditor website could not be found: /src/shared/translations/poeditor/*/nl.json'
+          'File fetched from poEditor website could not be found: /src/shared/translations/poeditor/*/en.json'
       );
     }
     try {
@@ -205,13 +205,13 @@ async function updateTranslations() {
   checkTranslationsForKeysAsValue(nlJsonContent); // Throws error if any key is found as a value
 
   fs.writeFileSync(
-      `${__dirname.replace(/\\/g, '/')}/../src/shared/translations/nl.json`,
+      `${__dirname.replace(/\\/g, '/')}/../src/shared/translations/en.json`,
       nlJsonContent
   );
 
   const totalTranslations = existingTranslationKeys.length + addedTranslationKeys.length;
   console.log(
-      `Wrote ${totalTranslations} src/shared/translations/nl.json file
+      `Wrote ${totalTranslations} src/shared/translations/en.json file
 \t${addedTranslationKeys.length} translations added
 \t${removedTranslationKeys.length} translations deleted`
   );

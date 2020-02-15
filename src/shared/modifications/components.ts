@@ -18,33 +18,33 @@ export interface ModificationComponent {
 const modificationComponents: {[name: string]: ModificationComponent} = {
   addBorder: {
     component: AddBorder,
-    label: i18n.t('shared/modifications/components___voeg-een-gekleurde-rand-toe'),
-    title: i18n.t('shared/modifications/components___rand-0'),
+    label: i18n.t('shared/modifications/components___add-a-colored-border'),
+    title: i18n.t('shared/modifications/components___border-0'),
   },
   brightness: {
     component: Brightness,
-    label: i18n.t('shared/modifications/components___pas-de-helderheid-aan'),
-    title: i18n.t('shared/modifications/components___helderheid-0'),
+    label: i18n.t('shared/modifications/components___adjust-the-brightness'),
+    title: i18n.t('shared/modifications/components___brightness-0'),
   },
   sepia: {
     component: Sepia,
-    label: i18n.t('shared/modifications/components___voeg-een-sepia-effect-toe'),
+    label: i18n.t('shared/modifications/components___add-a-sepia-effect'),
     title: i18n.t('shared/modifications/components___sepia-0'),
   },
   resize: {
     component: Resize,
-    label: i18n.t('shared/modifications/components___afbeelding-verkleinen-bestandsgrootte'),
-    title: i18n.t('shared/modifications/components___verkleinen-0'),
+    label: i18n.t('shared/modifications/components___reduce-image-file-size'),
+    title: i18n.t('shared/modifications/components___shrink-0'),
   },
   annotate: {
     component: Annotate,
-    label: i18n.t('shared/modifications/components___tekst-toevoegen-onder-de-afbeelding'),
-    title: i18n.t('shared/modifications/components___bijschrift-0'),
+    label: i18n.t('shared/modifications/components___add-text-below-the-image'),
+    title: i18n.t('shared/modifications/components___caption-0'),
   },
   crop: {
     component: Crop,
-    label: i18n.t('shared/modifications/components___afbeelding-bijsnijden'),
-    title: i18n.t('shared/modifications/components___bijsnijden-0'),
+    label: i18n.t('shared/modifications/components___crop-image'),
+    title: i18n.t('shared/modifications/components___crop-0'),
   },
 };
 
