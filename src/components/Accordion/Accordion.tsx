@@ -31,7 +31,7 @@ export const Accordion: FunctionComponent<AccordionProps> = ({
         >
           <div className="c-accordion-header-title">{title}</div>
           <div className="c-button-wrapper">
-            <Button label={t('Verwijder')} onClick={onDelete} block={false} type="secondary"/>
+            <Button label={t('components/accordion/accordion___verwijder')} onClick={onDelete} block={false} type="secondary"/>
           </div>
         </div>
         {children &&

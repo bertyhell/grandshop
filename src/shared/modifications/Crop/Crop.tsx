@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import { MultiRange } from '../../../components/MultiRange/MultiRange';
@@ -10,6 +11,8 @@ const Crop: FunctionComponent<ModificationProps> = ({
 	imageInfo,
 	onApply
 }) => {
+	const [t] = useTranslation();
+
 	const [top, setTop] = useState<number>(0);
 	const [right, setRight] = useState<number>(0);
 	const [bottom, setBottom] = useState<number>(0);
@@ -26,19 +29,19 @@ const Crop: FunctionComponent<ModificationProps> = ({
 	console.log(top, right, bottom, left);
 	return (
 		<>
-			<FormField label={t('Bovenkant')} labelFor="top">
+			<FormField label={t('shared/modifications/crop/crop___bovenkant')} labelFor="top">
 				<MultiRange min={0} max={imageInfo.dimensions.height} step={1} id="top" values={[top]}
 										onChange={(values: number[]) => setTop(values[0])} />
 			</FormField>
-			<FormField label={t('Linkerkant')} labelFor="left">
+			<FormField label={t('shared/modifications/crop/crop___linkerkant')} labelFor="left">
 				<MultiRange min={0} max={imageInfo.dimensions.width} step={1} id="left" values={[left]}
 										onChange={(values: number[]) => setLeft(values[0])} />
 			</FormField>
-			<FormField label={t('Rechterkant')} labelFor="right">
+			<FormField label={t('shared/modifications/crop/crop___rechterkant')} labelFor="right">
 				<MultiRange min={0} max={imageInfo.dimensions.width} step={1} id="right" values={[right]}
 										onChange={(values: number[]) => setRight(values[0])} />
 			</FormField>
-			<FormField label={t('Onderkant')} labelFor="bottom">
+			<FormField label={t('shared/modifications/crop/crop___onderkant')} labelFor="bottom">
 				<MultiRange min={0} max={imageInfo.dimensions.height} step={1} id="bottom" values={[bottom]}
 										onChange={(values: number[]) => setBottom(values[0])} />
 			</FormField>

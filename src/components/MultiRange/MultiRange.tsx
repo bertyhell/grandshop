@@ -40,7 +40,7 @@ export const MultiRange: FunctionComponent<MultiRangeProps> = ({
       const val = parseInt(value, 10);
       onChange([clamp(val, min, max)]);
     } catch (err) {
-      toastService.warn(t('De waarde moet een geldig getal zijn'));
+      toastService.warn(t('components/multi-range/multi-range___de-waarde-moet-een-geldig-getal-zijn'));
     }
   };
 

@@ -1,5 +1,6 @@
-import i18n from '../../translations/i18n';
 import { FunctionComponent } from 'react';
+
+import i18n from '../translations/i18n';
 
 import AddBorder from './AddBorder/AddBorder';
 import Brightness from './Brightness/Brightness';
@@ -17,33 +18,33 @@ export interface ModificationComponent {
 const modificationComponents: {[name: string]: ModificationComponent} = {
   addBorder: {
     component: AddBorder,
-    label: i18n.t('Voeg een gekleurde rand toe'),
-    title: i18n.t('Rand {0}'),
+    label: i18n.t('shared/modifications/components___voeg-een-gekleurde-rand-toe'),
+    title: i18n.t('shared/modifications/components___rand-0'),
   },
   brightness: {
     component: Brightness,
-    label: i18n.t('Pas de helderheid aan'),
-    title: i18n.t('Helderheid {0}'),
+    label: i18n.t('shared/modifications/components___pas-de-helderheid-aan'),
+    title: i18n.t('shared/modifications/components___helderheid-0'),
   },
   sepia: {
     component: Sepia,
-    label: i18n.t('Voeg een sepia effect toe'),
-    title: i18n.t('Sepia {0}'),
+    label: i18n.t('shared/modifications/components___voeg-een-sepia-effect-toe'),
+    title: i18n.t('shared/modifications/components___sepia-0'),
   },
   resize: {
     component: Resize,
-    label: i18n.t('Afbeelding verkleinen (bestandsgrootte)'),
-    title: i18n.t('Verkleinen {0}'),
+    label: i18n.t('shared/modifications/components___afbeelding-verkleinen-bestandsgrootte'),
+    title: i18n.t('shared/modifications/components___verkleinen-0'),
   },
   annotate: {
     component: Annotate,
-    label: i18n.t('Tekst toevoegen onder de afbeelding'),
-    title: i18n.t('Bijschrift {0}'),
+    label: i18n.t('shared/modifications/components___tekst-toevoegen-onder-de-afbeelding'),
+    title: i18n.t('shared/modifications/components___bijschrift-0'),
   },
   crop: {
     component: Crop,
-    label: i18n.t('Afbeelding bijsnijden'),
-    title: i18n.t('Bijsnijden {0}'),
+    label: i18n.t('shared/modifications/components___afbeelding-bijsnijden'),
+    title: i18n.t('shared/modifications/components___bijsnijden-0'),
   },
 };
 

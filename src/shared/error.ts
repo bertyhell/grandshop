@@ -1,5 +1,6 @@
 import uuid from 'uuid/v1';
-import i18n from '../translations/i18n';
+
+import i18n from './translations/i18n';
 
 export class CustomError {
   public message: string;
@@ -11,7 +12,7 @@ export class CustomError {
   public timestamp: string = new Date().toISOString();
 
   constructor(
-      message: string = i18n.t('Something went wrong'),
+      message: string = i18n.t('shared/error___something-went-wrong'),
       innerException: any = null,
       additionalInfo: any = null) {
     this.message = message;

@@ -18,7 +18,7 @@ i18n
       },
       keySeparator: '^',
       nsSeparator: '^',
-      lng: 'nl',
+      lng: 'en',
       fallbackLng: 'nl',
       interpolation: {
         escapeValue: false,

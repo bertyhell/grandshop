@@ -1,18 +1,18 @@
 /**
  This script runs over all the code and looks for either:
- <Trans>Aanvraagformulier</Trans>
+ <Trans>Request</Trans>
  or
- t('Aanvraagformulier')
+ t('Request')
 
  and replaces them with:
- <Trans i18nKey="authentication/views/registration-flow/r-4-manual-registration___aanvraagformulier">Aanvraagformulier</Trans>
+ <Trans i18nKey="testdir1/testdir2/testfile1______request">Request</Trans>
  or
- t('testdir1/testdir2/testfile1___aanvraagformulier')
+ t('testdir1/testdir2/testfile1___request')
 
 
  and it also outputs a json file with the translatable strings:
  {
-  "testdir1/testdir2/testfile1___aanvraagformulier": "Aanvraagformulier"
+  "testdir1/testdir2/testfile1___request": "Request"
  }
 
  Every time the `npm run extract-translations` command is run, it will extract new translations that it finds
@@ -24,7 +24,7 @@ import * as fs from 'fs';
 import glob from 'glob';
 import * as _ from 'lodash';
 import * as path from 'path';
-import localTranslations from '../src/translations/nl.json';
+import localTranslations from '../src/shared/translations/nl.json';
 
 type keyMap = { [key: string]: string };
 
@@ -133,19 +133,24 @@ function extractTranslationsFromCodeFiles(codeFiles: string[]) {
 }
 
 async function getOnlineTranslations() {
-  // Read file from poeditor website under /src/translations/poeditor/project-id/nl.json
-  const poEditorFiles = await getFilesByGlob('translations/poeditor/*/nl.json');
-  const poEditorFile: string = poEditorFiles[0];
-  if (!poEditorFile) {
-    throw new Error(
-        'File fetched from poEditor website could not be found: /src/translations/poeditor/*/nl.json'
-    );
-  }
   try {
-    const filePath = path.resolve(__dirname, '../src/', poEditorFile);
-    return JSON.parse(fs.readFileSync(filePath).toString());
+    // Read file from poeditor website under /src/translations/poeditor/project-id/nl.json
+    const poEditorFiles = await getFilesByGlob('shared/translations/poeditor/*/nl.json');
+    const poEditorFile: string = poEditorFiles[0];
+    if (!poEditorFile) {
+      throw new Error(
+          'File fetched from poEditor website could not be found: /src/shared/translations/poeditor/*/nl.json'
+      );
+    }
+    try {
+      const filePath = path.resolve(__dirname, '../src/', poEditorFile);
+      return JSON.parse(fs.readFileSync(filePath).toString());
+    } catch (err) {
+      throw new Error(`Failed to parse json file from poeditor: ${JSON.stringify(err, null, 2)}`);
+    }
   } catch (err) {
-    throw new Error(`Failed to parse json file from poeditor: ${JSON.stringify(err, null, 2)}`);
+    // Still return empty translations file to continue with the rest of the extraction script
+    return {};
   }
 }
 
@@ -200,13 +205,13 @@ async function updateTranslations() {
   checkTranslationsForKeysAsValue(nlJsonContent); // Throws error if any key is found as a value
 
   fs.writeFileSync(
-      `${__dirname.replace(/\\/g, '/')}/../src/translations/nl.json`,
+      `${__dirname.replace(/\\/g, '/')}/../src/shared/translations/nl.json`,
       nlJsonContent
   );
 
   const totalTranslations = existingTranslationKeys.length + addedTranslationKeys.length;
   console.log(
-      `Wrote ${totalTranslations} src/translations/nl.json file
+      `Wrote ${totalTranslations} src/shared/translations/nl.json file
 \t${addedTranslationKeys.length} translations added
 \t${removedTranslationKeys.length} translations deleted`
   );
