@@ -26,7 +26,7 @@ const Resize: FunctionComponent<ModificationProps> = ({
 
   return (
       <>
-      <FormField label="Maximale afmeeting in pixels">
+      <FormField label={t('Maximale afmeeting in pixels')}>
       <MultiRange
           min={10}
           max={getMaxSize()}

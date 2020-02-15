@@ -24,10 +24,10 @@ const AddBorder: FunctionComponent<ModificationProps> = ({
 
   return (
       <>
-        <FormField label="Dikte" labelFor="thickness">
+        <FormField label={t('Dikte')} labelFor="thickness">
           <MultiRange min={0} max={2000} step={1} values={[thickness]} onChange={(values: number[]) => setThickness(values[0])}/>
         </FormField>
-        <FormField label="Kleur" labelFor="color">
+        <FormField label={t('Kleur')} labelFor="color">
           <ColorInput value={color} onChange={(value: string) => {
             setColor(value);
           }}/>

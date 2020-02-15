@@ -4,9 +4,8 @@ import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import usePrevious from 'use-previous';
 import compact from 'lodash-es/compact';
-import map from 'lodash-es/map';
-import kebabCase from 'lodash-es/kebabCase';
-import fromPairs from 'lodash-es/fromPairs';
+import { isEqual, kebabCase, fromPairs, map } from 'lodash-es';
+import { useTranslation } from 'react-i18next';
 
 import { applyModifications, saveImage, openImage } from '../../services/interop-electron';
 import Button from '../../components/Button/Button';
@@ -21,7 +20,6 @@ import ImageModification from '../../components/ImageModification/ImageModificat
 import { FrontendImageInfo } from '../../shared/types';
 
 import './ControlsSidebar.scss';
-import { isEqual } from 'lodash-es';
 
 interface ControlsSidebarProps {
   originalImage: FrontendImageInfo | null;
@@ -46,6 +44,8 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
                                                                     modifiedImage,
                                                                     setModifiedImage,
                                                                   }) => {
+  const [t] = useTranslation();
+
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const IMAGE_MODIFIER_OPTIONS: SelectOption[] = [
@@ -75,7 +75,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
     let newModifiers: ActiveModifier[] | undefined = [...modifierState.activeModifiers];
     let newOpenStates: boolean[] | undefined = [...modifierState.openStates];
 
-    let key = getUuid();
+    const key = getUuid();
     switch (action.type) {
       case 'ADD':
         const title: string = getModifierTitle(modifierState.activeModifiers, action.name);
@@ -165,39 +165,39 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
               // defaultPath // TODO default to the users images folder
               filters: [
                 {
-                  name: 'Alle bestanden',
+                  name: t('Alle bestanden'),
                   extensions: ['*']
                 },
                 {
-                  name: 'Afbeeldingen',
+                  name: t('Afbeeldingen'),
                   extensions: ['jpg', 'png', 'gif', 'tif', 'jpeg', 'webp', 'svg']
                 }
               ],
-              title: 'Selecteer de afbeelding die je wil bewerken',
+              title: t('Selecteer de afbeelding die je wil bewerken'),
               properties: [
                 // 'multiSelections', // TODO add multi image support
                 'openFile'
               ]
             });
-          }} label="Afbeelding openen"/>
+          }} label={t('Afbeelding openen')}/>
           {modifiedImage &&
           <Button className="c-save-button" onClick={() => {
             saveImage({
-              buttonLabel: "Opslaan",
+              buttonLabel: t('Opslaan'),
               // defaultPath // TODO default to the users images folder
               filters: [
                 {
-                  name: 'Alle bestanden',
+                  name: t('Alle bestanden'),
                   extensions: ['*']
                 },
                 {
-                  name: 'Afbeeldingen',
+                  name: t('Afbeeldingen'),
                   extensions: ['png']
                 }
               ],
-              title: 'Kies de locatie en naam om je afbeelding op te slaan'
+              title: t('Kies de locatie en naam om je afbeelding op te slaan')
             });
-          }} label="Afbeelding opslaan als"/>
+          }} label={t('Afbeelding opslaan als')}/>
           }
         </div>
         {originalImage &&
@@ -207,7 +207,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
               options={IMAGE_MODIFIER_OPTIONS}
               onChange={handleModifierSelectionChanged}
               value={null}
-              placeholder={modifierState.activeModifiers.length ? 'Kies nog een bewerking' : 'Kies een bewerking'}
+              placeholder={modifierState.activeModifiers.length ? t('Kies nog een bewerking') : t('Kies een bewerking')}
             />
           </div>
           <div className="m-modification-controls">

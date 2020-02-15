@@ -26,8 +26,8 @@ const ColorInput: FunctionComponent<ColorInputProps> = ({
                                                           onChange = () => {
                                                           }
                                                         }) => {
-  let colorPicker: MutableRefObject<IroColorPicker | null> = useRef<IroColorPicker | null>(null);
-  let el: RefObject<HTMLDivElement> = createRef<HTMLDivElement>();
+  const colorPicker: MutableRefObject<IroColorPicker | null> = useRef<IroColorPicker | null>(null);
+  const el: RefObject<HTMLDivElement> = createRef<HTMLDivElement>();
 
   useEffect(() => {
     if (!el.current) {

@@ -23,8 +23,8 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
                                                             modifiedImage,
                                                             modificationInProgress
                                                           }) => {
-  let el: RefObject<HTMLImageElement> = createRef<HTMLImageElement>();
-  let viewer: MutableRefObject<any | null> = useRef<any | null>(null);
+  const el: RefObject<HTMLImageElement> = createRef<HTMLImageElement>();
+  const viewer: MutableRefObject<any | null> = useRef<any | null>(null);
 
   const updateViewer = () => {
     if (viewer.current) {

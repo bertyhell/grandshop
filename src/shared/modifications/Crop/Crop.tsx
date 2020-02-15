@@ -26,19 +26,19 @@ const Crop: FunctionComponent<ModificationProps> = ({
 	console.log(top, right, bottom, left);
 	return (
 		<>
-			<FormField label="Bovenkant" labelFor="top">
+			<FormField label={t('Bovenkant')} labelFor="top">
 				<MultiRange min={0} max={imageInfo.dimensions.height} step={1} id="top" values={[top]}
 										onChange={(values: number[]) => setTop(values[0])} />
 			</FormField>
-			<FormField label="Linkerkant" labelFor="left">
+			<FormField label={t('Linkerkant')} labelFor="left">
 				<MultiRange min={0} max={imageInfo.dimensions.width} step={1} id="left" values={[left]}
 										onChange={(values: number[]) => setLeft(values[0])} />
 			</FormField>
-			<FormField label="Rechterkant" labelFor="right">
+			<FormField label={t('Rechterkant')} labelFor="right">
 				<MultiRange min={0} max={imageInfo.dimensions.width} step={1} id="right" values={[right]}
 										onChange={(values: number[]) => setRight(values[0])} />
 			</FormField>
-			<FormField label="Onderkant" labelFor="bottom">
+			<FormField label={t('Onderkant')} labelFor="bottom">
 				<MultiRange min={0} max={imageInfo.dimensions.height} step={1} id="bottom" values={[bottom]}
 										onChange={(values: number[]) => setBottom(values[0])} />
 			</FormField>

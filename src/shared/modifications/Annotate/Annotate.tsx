@@ -25,13 +25,13 @@ const Annotate: FunctionComponent<ModificationProps> = ({
 
   return (
       <>
-        <FormField label="Tekst">
+        <FormField label={t('Tekst')}>
           <TextArea placeholder="Typ hier uw tekst in" value={text} onChange={setText}/>
         </FormField>
-        <FormField label="Marge">
+        <FormField label={t('Marge')}>
           <MultiRange min={0} max={400} values={[marge]} onChange={(values) => setMarge(values[0])}/>
         </FormField>
-        <FormField label="Tekst grootte">
+        <FormField label={t('Tekst grootte')}>
           <MultiRange min={0} max={200} values={[fontSize]} onChange={(values) => setFontSize(values[0])}/>
         </FormField>
       </>

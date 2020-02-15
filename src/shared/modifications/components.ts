@@ -1,3 +1,4 @@
+import i18n from '../../translations/i18n';
 import { FunctionComponent } from 'react';
 
 import AddBorder from './AddBorder/AddBorder';
@@ -16,33 +17,33 @@ export interface ModificationComponent {
 const modificationComponents: {[name: string]: ModificationComponent} = {
   addBorder: {
     component: AddBorder,
-    label: 'Voeg een gekleurde rand toe',
-    title: "Rand {0}",
+    label: i18n.t('Voeg een gekleurde rand toe'),
+    title: i18n.t('Rand {0}'),
   },
   brightness: {
     component: Brightness,
-    label: 'Pas de helderheid aan',
-    title: "Helderheid {0}",
+    label: i18n.t('Pas de helderheid aan'),
+    title: i18n.t('Helderheid {0}'),
   },
   sepia: {
     component: Sepia,
-    label: 'Voeg een sepia effect toe',
-    title: "Sepia {0}",
+    label: i18n.t('Voeg een sepia effect toe'),
+    title: i18n.t('Sepia {0}'),
   },
   resize: {
     component: Resize,
-    label: 'Afbeelding verkleinen (bestandsgrootte)',
-    title: "Verkleinen {0}",
+    label: i18n.t('Afbeelding verkleinen (bestandsgrootte)'),
+    title: i18n.t('Verkleinen {0}'),
   },
   annotate: {
     component: Annotate,
-    label: 'Tekst toevoegen onder de afbeelding',
-    title: "Bijschrift {0}",
+    label: i18n.t('Tekst toevoegen onder de afbeelding'),
+    title: i18n.t('Bijschrift {0}'),
   },
   crop: {
     component: Crop,
-    label: 'Afbeelding bijsnijden',
-    title: "Bijsnijden {0}",
+    label: i18n.t('Afbeelding bijsnijden'),
+    title: i18n.t('Bijsnijden {0}'),
   },
 };
 

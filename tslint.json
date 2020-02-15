@@ -4,6 +4,8 @@
     "variable-name": [true, "check-format", "allow-pascal-case"],
     "import-name": false,
     "function-name": false,
-    "ordered-imports": false
+    "ordered-imports": false,
+    "object-shorthand-properties-first": false,
+    "prefer-template": false
   }
 }

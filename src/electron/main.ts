@@ -11,6 +11,7 @@ import { Dimensions } from 'gm';
 import throttle from "@jcoreio/async-throttle";
 
 import { ImageModificationInfo } from '../shared/modifications/types';
+import i18n from '../translations/i18n';
 
 import ImageManager from './image-manager';
 import CustomError from './helpers/error';
@@ -113,7 +114,7 @@ async function openImage(event: Electron.IpcMainEvent, options: Electron.OpenDia
     ]);
   } catch (err) {
     const error = new CustomError('Failed to open file', err, { dialogOptions: options, dialogResponse: response });
-    callRendererFunction(event, 'showNotification', ['Het openen van de afbeelding is mislukt', 'error', error]);
+    callRendererFunction(event, 'showNotification', [i18n.t('Het openen van de afbeelding is mislukt'), 'error', error]);
     console.error(error);
   }
 }
@@ -130,10 +131,10 @@ async function saveImage(event: Electron.IpcMainEvent, options: Electron.SaveDia
     // Write the modified buffer image to the save location
     await fs.writeFile(response.filePath, ImageManager.getModifiedImageBuffer());
 
-    callRendererFunction(event, 'showNotification', ['Afbeelding is opgeslagen', 'success']);
+    callRendererFunction(event, 'showNotification', [i18n.t('Afbeelding is opgeslagen'), 'success']);
   } catch (err) {
     const error = new CustomError('Failed to save file', err, { dialogOptions: options, dialogResponse: response });
-    callRendererFunction(event, 'showNotification', ['Het opslaan van de afbeelding is mislukt', 'error', error]);
+    callRendererFunction(event, 'showNotification', [i18n.t('Het opslaan van de afbeelding is mislukt'), 'error', error]);
     console.error(error);
   }
 }
@@ -153,7 +154,7 @@ const applyModifications = throttle(async (event: Electron.IpcMainEvent, modific
     callRendererFunction(event, 'setModificationInProgress', [false]);
   } catch (err) {
     const error = new CustomError('Failed to apply modifications to image', err, { modifications });
-    callRendererFunction(event, 'showNotification', ['Het toepassen van de laatste bewerking is mislukt', 'error', error]);
+    callRendererFunction(event, 'showNotification', [i18n.t('Het toepassen van de laatste bewerking is mislukt'), 'error', error]);
     console.error(error);
   }
 }, 0);
