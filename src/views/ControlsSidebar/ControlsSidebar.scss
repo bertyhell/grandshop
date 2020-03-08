@@ -3,6 +3,10 @@
   box-sizing: border-box;
   min-height: 100vh;
 
+  .c-config-button {
+    width: 50px;
+  }
+
   .m-button-wrapper {
     padding: 10px 10px 0 10px;
     display: flex;
@@ -28,5 +32,21 @@
     box-sizing: border-box;
     height: calc(100vh - 120px);
     min-height: calc(100vh - 120px);
+  }
+}
+
+.m-settings-modal {
+  .c-modal {
+    position: absolute;
+    height: 400px;
+    left: 50vw;
+    top: 50vh;
+    transform: translate(-50%, -50%);
+
+    .c-modal__body {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
   }
 }

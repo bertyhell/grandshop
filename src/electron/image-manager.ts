@@ -4,7 +4,7 @@ import gm, { State, Dimensions } from 'gm';
 import fs from 'fs-extra';
 import sharp, { Sharp } from 'sharp';
 
-import CustomError from './helpers/error';
+import { CustomError } from '../shared/error';
 import mods, { ImageInfo } from '../shared/modifications/modifications';
 import { ImageModificationInfo } from '../shared/modifications/types';
 

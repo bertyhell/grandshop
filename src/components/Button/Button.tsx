@@ -2,6 +2,8 @@ import React, { FunctionComponent, MouseEvent, ReactNode } from 'react';
 
 import classnames from 'classnames';
 
+import "../../styles/fortawesome/fontawesome.scss";
+import "../../styles/fortawesome/solid.scss";
 import './Button.scss';
 
 export interface ButtonProps {
@@ -12,6 +14,7 @@ export interface ButtonProps {
   disabled?: boolean;
   label?: string;
   block?: boolean;
+  icon?: string;
 
   onClick?(event: MouseEvent<HTMLElement>): void;
 
@@ -21,7 +24,7 @@ export interface ButtonProps {
       | 'secondary';
 }
 
-const Button: FunctionComponent<ButtonProps> = ({
+export const Button: FunctionComponent<ButtonProps> = ({
                                                   ariaLabel,
                                                   children,
                                                   className,
@@ -30,7 +33,8 @@ const Button: FunctionComponent<ButtonProps> = ({
                                                   block = true,
                                                   onClick,
                                                   title,
-                                                  type = 'primary'
+                                                  type = 'primary',
+                                                  icon,
                                                 }) => (
     <button
         className={classnames(className, 'c-button', {
@@ -50,7 +54,6 @@ const Button: FunctionComponent<ButtonProps> = ({
             {label && <div className="c-button__label">{label}</div>}
           </div>
       )}
+      {!!icon && <i className={'fa ' + icon} />}
     </button>
 );
-
-export default Button;

@@ -16,7 +16,7 @@ declare const ResizeObserver: any;
 interface MainPreviewProps {
   originalImage: FrontendImageInfo | null;
   modifiedImage: FrontendImageInfo | null;
-  modificationInProgress: boolean;
+  modificationInProgress: boolean
 }
 
 const MainPreview: FunctionComponent<MainPreviewProps> = ({

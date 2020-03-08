@@ -16,7 +16,8 @@ export interface RendererCallFunctionRequest {
 export type ElectronCallFunction =
     | 'openImage'
     | 'applyModifications'
-    | 'saveImage';
+    | 'saveImage'
+    | 'setLanguage';
 
 export interface ElectronCallFunctionRequest {
   func: ElectronCallFunction;

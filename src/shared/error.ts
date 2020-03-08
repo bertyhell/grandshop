@@ -1,12 +1,9 @@
-import uuid from 'uuid/v1';
-
 import i18n from './translations/i18n';
 
 export class CustomError {
   public message: string;
   public innerException: any | null;
   public additionalInfo: any | null;
-  public identifier: string = uuid();
   public name: string = 'Error';
   public stack: string;
   public timestamp: string = new Date().toISOString();

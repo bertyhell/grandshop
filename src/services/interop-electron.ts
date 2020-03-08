@@ -64,3 +64,7 @@ export function saveImage(options: SaveDialogOptions = {}) {
 export function applyModifications(modifications: ImageModificationInfo[]) {
   callMainFunction('applyModifications', [modifications]);
 }
+
+export function setLanguage(language: string) {
+  callMainFunction('setLanguage', [language]);
+}

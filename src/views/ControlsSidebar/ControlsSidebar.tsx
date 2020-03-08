@@ -8,7 +8,7 @@ import { isEqual, kebabCase, fromPairs, map } from 'lodash-es';
 import { useTranslation } from 'react-i18next';
 
 import { applyModifications, saveImage, openImage } from '../../services/interop-electron';
-import Button from '../../components/Button/Button';
+import { Button } from '../../components/Button/Button';
 import { AppState } from '../../store/types';
 import { selectModifiedImage, selectOriginalImage } from '../../store/selectors';
 import { setModifiedImageAction } from '../../store/actions';
@@ -18,6 +18,7 @@ import mods, { ModificationComponent } from '../../shared/modifications/componen
 import { ImageModificationInfo } from '../../shared/modifications/types';
 import ImageModification from '../../components/ImageModification/ImageModification';
 import { FrontendImageInfo } from '../../shared/types';
+import SettingsModal from '../SettingsModal/SettingsModal';
 
 import './ControlsSidebar.scss';
 
@@ -42,11 +43,12 @@ interface ActiveModifier {
 const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
                                                                     originalImage,
                                                                     modifiedImage,
-                                                                    setModifiedImage,
+                                                                    setModifiedImage
                                                                   }) => {
   const [t] = useTranslation();
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
 
   const IMAGE_MODIFIER_OPTIONS: SelectOption[] = [
     ...map(mods, (mod: ModificationComponent, modName: string) => {
@@ -85,7 +87,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
           name: action.name,
           key
         });
-        newOpenStates =  [
+        newOpenStates = [
           ...modifierState.openStates.map(c => false), // Collapse all other modifiers when add a new one
           true
         ];
@@ -199,6 +201,11 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
             });
           }} label={t('views/controls-sidebar/controls-sidebar___save-image-as')}/>
           }
+          <Button className="c-config-button"
+                  onClick={() => setIsSettingsModalOpen(true)}
+                  ariaLabel={t('Open settings modal')}
+                  icon="fa-cog"
+          />
         </div>
         {originalImage &&
         <>
@@ -234,6 +241,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
           </div>
         </>
         }
+        <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)}/>
       </div>
   );
 };

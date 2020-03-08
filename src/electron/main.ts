@@ -14,7 +14,7 @@ import { ImageModificationInfo } from '../shared/modifications/types';
 import i18n from '../shared/translations/i18n';
 
 import ImageManager from './image-manager';
-import CustomError from './helpers/error';
+import { CustomError } from '../shared/error';
 
 const appFolder: string = path.resolve(__dirname, '..');
 // const windowStateFileName: string = path.resolve(appFolder, 'last-window-state.json');
@@ -159,10 +159,15 @@ const applyModifications = throttle(async (event: Electron.IpcMainEvent, modific
   }
 }, 0);
 
+const setLanguage = (event: Electron.IpcMainEvent, language: string) => {
+  i18n.changeLanguage(language);
+};
+
 const callableFunctions = {
   openImage,
   saveImage,
-  applyModifications
+  applyModifications,
+  setLanguage,
 };
 
 ipcMain.on('request-mainprocess-action', (event: Electron.IpcMainEvent, arg: ElectronCallFunctionRequest) => {

@@ -2,7 +2,7 @@ import classnames from 'classnames';
 import React, { FunctionComponent } from 'react';
 
 import './Accordion.scss';
-import Button from '../Button/Button';
+import { Button } from '../Button/Button';
 import { useTranslation } from 'react-i18next';
 
 export interface AccordionProps {
