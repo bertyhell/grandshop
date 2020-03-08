@@ -1,6 +1,6 @@
 {
   "name": "grandshop",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Photoshop for your grandparents",
   "main": "build/electron/main.js",
   "scripts": {
