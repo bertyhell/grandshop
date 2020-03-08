@@ -203,7 +203,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
           }
           <Button className="c-config-button"
                   onClick={() => setIsSettingsModalOpen(true)}
-                  ariaLabel={t('Open settings modal')}
+                  ariaLabel={t('views/controls-sidebar/controls-sidebar___open-settings-modal')}
                   icon="fa-cog"
           />
         </div>

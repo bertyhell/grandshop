@@ -1,5 +1,4 @@
 {
-  "electron/helpers/error___something-went-wrong": "Er is iets mis gegaan",
   "electron/main___het-openen-van-de-afbeelding-is-mislukt": "Het openen van de afbeelding is mislukt",
   "shared/error___something-went-wrong": "Er is iets mis gegaan",
   "shared/modifications/components___sepia-0": "Sepia {0}",
@@ -44,5 +43,9 @@
   "views/controls-sidebar/controls-sidebar___save": "Opslaan",
   "views/controls-sidebar/controls-sidebar___select-the-image-that-you-want-to-edit": "Selecteer de afbeelding die je wil bewerken",
   "shared/modifications/resize/resize___resulting-file-size": "Resulterende bestandsgrootte",
-  "views/main-preview/main-preview___image-is-being-updated": "Afbeelding wordt geupdate..."
+  "views/main-preview/main-preview___image-is-being-updated": "Afbeelding wordt geupdate...",
+  "views/controls-sidebar/controls-sidebar___open-settings-modal": "Open het instellingen venster",
+  "views/settings-modal/settings-modal___language": "Taal",
+  "views/settings-modal/settings-modal___save": "Opslaan",
+  "views/settings-modal/settings-modal___settings": "Instellingen"
 }

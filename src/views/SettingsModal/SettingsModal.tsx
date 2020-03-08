@@ -36,15 +36,15 @@ const SettingsModal: FunctionComponent<SettingsModalProps> = ({isOpen, onClose})
 
   return (
 
-      <Modal title={t('Settings')} isOpen={isOpen} onClose={onClose} size="small" className="m-settings-modal">
+      <Modal title={t('views/settings-modal/settings-modal___settings')} isOpen={isOpen} onClose={onClose} size="small" className="m-settings-modal">
         <ModalBody>
-          <FormField label={t('Language')}>
+          <FormField label={t('views/settings-modal/settings-modal___language')}>
             <Select options={languageMap.map(lang => ({
               label: lang.englishName + ' - ' + lang.nativeName,
               value: lang.code
             }))} value={selectedLanguage} onChange={setSelectedLanguage}/>
           </FormField>
-          <Button label={t('Save')} type="primary" onClick={saveSettings}/>
+          <Button label={t('views/settings-modal/settings-modal___save')} type="primary" onClick={saveSettings}/>
         </ModalBody>
       </Modal>
   );

@@ -1,7 +1,6 @@
 {
   "components/accordion/accordion___delete": "Delete",
   "components/multi-range/multi-range___the-value-must-be-a-valid-number": "The value must be a valid number",
-  "electron/helpers/error___something-went-wrong": "Something went wrong",
   "electron/main___applying-the-last-operation-failed": "Applying the last operation failed",
   "electron/main___het-openen-van-de-afbeelding-is-mislukt": "Failed to open the image",
   "electron/main___image-has-been-saved": "Image has been saved",
@@ -41,8 +40,12 @@
   "views/controls-sidebar/controls-sidebar___choose-the-location-and-name-to-save-your-file": "Choose the location and name to save your image",
   "views/controls-sidebar/controls-sidebar___images": "Pictures",
   "views/controls-sidebar/controls-sidebar___open-image": "Open image",
+  "views/controls-sidebar/controls-sidebar___open-settings-modal": "Open settings modal",
   "views/controls-sidebar/controls-sidebar___save": "Save",
   "views/controls-sidebar/controls-sidebar___save-image-as": "Save Image As",
   "views/controls-sidebar/controls-sidebar___select-the-image-that-you-want-to-edit": "Select the image that you want to edit",
-  "views/main-preview/main-preview___image-is-being-updated": "Image is being updated..."
+  "views/main-preview/main-preview___image-is-being-updated": "Image is being updated...",
+  "views/settings-modal/settings-modal___language": "Language",
+  "views/settings-modal/settings-modal___save": "Save",
+  "views/settings-modal/settings-modal___settings": "Settings"
 }
