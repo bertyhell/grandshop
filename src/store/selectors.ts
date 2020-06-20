@@ -12,4 +12,8 @@ const selectModificationInProgress = (state: {app: AppState}) => {
   return state.app.modificationInProgress;
 };
 
-export { selectOriginalImage, selectModifiedImage, selectModificationInProgress };
+const selectColorAtPixel = (state: {app: AppState}) => {
+  return state.app.color;
+};
+
+export { selectOriginalImage, selectModifiedImage, selectModificationInProgress, selectColorAtPixel };

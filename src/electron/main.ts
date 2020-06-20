@@ -15,6 +15,7 @@ import i18n from '../shared/translations/i18n';
 
 import ImageManager from './image-manager';
 import { CustomError } from '../shared/error';
+import { ColorPicker } from './color-picker';
 
 const appFolder: string = path.resolve(__dirname, '..');
 // const windowStateFileName: string = path.resolve(appFolder, 'last-window-state.json');
@@ -38,7 +39,7 @@ function createWindow() {
       webSecurity: false
     },
     backgroundColor: '#888888',
-    show: false,
+    show: false
   });
 
   mainWindow.once('ready-to-show', () => {
@@ -60,6 +61,7 @@ function createWindow() {
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
+
 
   // Emitted when the window is closed.
   mainWindow.on('closed', async () => {
@@ -139,6 +141,21 @@ async function saveImage(event: Electron.IpcMainEvent, options: Electron.SaveDia
   }
 }
 
+const setLanguage = (event: Electron.IpcMainEvent, language: string) => {
+  i18n.changeLanguage(language);
+};
+
+const getColorAtPixel = async (event: Electron.IpcMainEvent, x: number, y: number) => {
+  try {
+    const color: string = await ColorPicker.getColorAtMouse(mainWindow, x, y);
+    callRendererFunction(event, 'setColorAtPixel', [color]);
+  } catch (err) {
+    const error = new CustomError('Failed to get color at pixel', err, { x, y });
+    callRendererFunction(event, 'showNotification', [i18n.t('Failed to fetch color at pixel location'), 'error', error]);
+    console.error(error);
+  }
+};
+
 function callRendererFunction(event: Electron.IpcMainEvent, func: RendererCallFunction, funcArgs: any[]) {
   event.sender.send('mainprocess-response', { func, funcArgs } as RendererCallFunctionRequest)
 }
@@ -159,15 +176,12 @@ const applyModifications = throttle(async (event: Electron.IpcMainEvent, modific
   }
 }, 0);
 
-const setLanguage = (event: Electron.IpcMainEvent, language: string) => {
-  i18n.changeLanguage(language);
-};
-
 const callableFunctions = {
   openImage,
   saveImage,
   applyModifications,
   setLanguage,
+  getColorAtPixel,
 };
 
 ipcMain.on('request-mainprocess-action', (event: Electron.IpcMainEvent, arg: ElectronCallFunctionRequest) => {

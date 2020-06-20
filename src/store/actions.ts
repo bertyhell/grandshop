@@ -1,7 +1,7 @@
 import {
   AppActionTypes,
   SetOriginalImageAction,
-  SetModifiedImageAction, SetModificationInProgressAction
+  SetModifiedImageAction, SetModificationInProgressAction, SetColorAtPixelAction
 } from './types';
 import { FrontendImageInfo } from '../shared/types';
 
@@ -19,5 +19,12 @@ export const setModificationInProgressAction = (modificationInProgress: boolean)
   return {
     modificationInProgress,
     type: AppActionTypes.SET_MODIFICATION_IN_PROGRESS
+  };
+};
+
+export const setColorAtPixelAction = (color: string): SetColorAtPixelAction => {
+  return {
+    color,
+    type: AppActionTypes.SET_COLOR_AT_PIXEL
   };
 };

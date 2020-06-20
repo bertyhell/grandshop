@@ -1,7 +1,7 @@
 import { OpenDialogSyncOptions, SaveDialogOptions } from 'electron';
 import { Dimensions } from 'gm';
 
-import { setModificationInProgressAction, setModifiedImageAction, setOriginalImageAction } from '../store/actions';
+import { setColorAtPixelAction, setModificationInProgressAction, setModifiedImageAction, setOriginalImageAction } from '../store/actions';
 import store from '../store/store';
 import { ElectronCallFunction, ElectronCallFunctionRequest, RendererCallFunctionRequest } from '../shared/types';
 import toastService from './toast-service';
@@ -30,6 +30,9 @@ const callableFunctions = {
   },
   showNotification: (message: string, status: AlertType, innerException: CustomError) => {
     (toastService[status] || toastService['info'])(message, { innerException });
+  },
+  setColorAtPixel: (color: string) => {
+    store.dispatch(setColorAtPixelAction(color));
   }
 };
 
@@ -67,4 +70,8 @@ export function applyModifications(modifications: ImageModificationInfo[]) {
 
 export function setLanguage(language: string) {
   callMainFunction('setLanguage', [language]);
+}
+
+export function getColorAtPixel(x: number, y: number) {
+  callMainFunction('getColorAtPixel', [x, y]);
 }

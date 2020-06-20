@@ -64,7 +64,7 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
       },
       transition: false,
       fullscreen: false,
-      movable: true,
+      movable: false,
       rotatable: true,
       scalable: true,
       zIndexInline: 1
