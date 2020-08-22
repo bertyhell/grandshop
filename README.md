@@ -18,7 +18,7 @@ Download: https://gitlab.com/bertyhell/grandshop/-/releases
 
 ### Run the program from the repository:
 
-install node 12
+install node v12.14.1
 
 install dependencies
 ```bash
