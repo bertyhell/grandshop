@@ -2,7 +2,7 @@ import { createReducer } from '../helpers/create-reducer';
 
 import initialState from './initial-state';
 import {
-  AppActionTypes, SetModificationInProgressAction, SetModifiedImageAction, SetOriginalImageAction
+  AppActionTypes, SetColorAtPixelAction, SetModificationInProgressAction, SetModifiedImageAction, SetOriginalImageAction
 } from './types';
 
 const Reducer = createReducer(initialState, {
@@ -22,6 +22,12 @@ const Reducer = createReducer(initialState, {
     return {
       ...state,
       modificationInProgress: action.modificationInProgress
+    };
+  },
+  [AppActionTypes.SET_COLOR_AT_PIXEL]: (state, action: SetColorAtPixelAction) => {
+    return {
+      ...state,
+      color: action.color
     };
   }
 });

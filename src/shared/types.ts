@@ -6,7 +6,8 @@ export type RendererCallFunction =
     | 'setModifiedImage'
     | 'setModifiedImageDimensions'
     | 'setModificationInProgress'
-    | 'showNotification';
+    | 'showNotification'
+    | 'setColorAtPixel';
 
 export interface RendererCallFunctionRequest {
   func: RendererCallFunction,
@@ -17,7 +18,8 @@ export type ElectronCallFunction =
     | 'openImage'
     | 'applyModifications'
     | 'saveImage'
-    | 'setLanguage';
+    | 'setLanguage'
+    | 'getColorAtPixel';
 
 export interface ElectronCallFunctionRequest {
   func: ElectronCallFunction;

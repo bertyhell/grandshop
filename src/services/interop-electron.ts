@@ -1,7 +1,7 @@
 import { OpenDialogSyncOptions, SaveDialogOptions } from 'electron';
 import { Dimensions } from 'gm';
 
-import { setModificationInProgressAction, setModifiedImageAction, setOriginalImageAction } from '../store/actions';
+import { setColorAtPixelAction, setModificationInProgressAction, setModifiedImageAction, setOriginalImageAction } from '../store/actions';
 import store from '../store/store';
 import { ElectronCallFunction, ElectronCallFunctionRequest, RendererCallFunctionRequest } from '../shared/types';
 import toastService from './toast-service';
@@ -30,6 +30,9 @@ const callableFunctions = {
   },
   showNotification: (message: string, status: AlertType, innerException: CustomError) => {
     (toastService[status] || toastService['info'])(message, { innerException });
+  },
+  setColorAtPixel: (color: string) => {
+    store.dispatch(setColorAtPixelAction(color));
   }
 };
 
@@ -46,25 +49,29 @@ ipcRenderer.on('mainprocess-response', (event: any, arg: RendererCallFunctionReq
   }
 });
 
-function callMainFunction(name: ElectronCallFunction, args: any[]) {
-  ipcRenderer.send('request-mainprocess-action', {
+async function callMainFunction(name: ElectronCallFunction, args: any[]): Promise<any> {
+  return await ipcRenderer.invoke('request-mainprocess-action', {
     func: name,
     funcArgs: args
   } as ElectronCallFunctionRequest);
 }
 
-export function openImage(options: OpenDialogSyncOptions = {}) {
-  callMainFunction('openImage', [options]);
+export function openImage(options: OpenDialogSyncOptions = {}): Promise<void> {
+  return callMainFunction('openImage', [options]);
 }
 
-export function saveImage(options: SaveDialogOptions = {}) {
-  callMainFunction('saveImage', [options]);
+export function saveImage(options: SaveDialogOptions = {}): Promise<void> {
+  return callMainFunction('saveImage', [options]);
 }
 
 export function applyModifications(modifications: ImageModificationInfo[]) {
-  callMainFunction('applyModifications', [modifications]);
+  return callMainFunction('applyModifications', [modifications]);
 }
 
-export function setLanguage(language: string) {
-  callMainFunction('setLanguage', [language]);
+export function setLanguage(language: string): Promise<void> {
+  return callMainFunction('setLanguage', [language]);
+}
+
+export function getColorAtPixel(x: number, y: number): Promise<string> {
+  return callMainFunction('getColorAtPixel', [x, y]);
 }
