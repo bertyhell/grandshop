@@ -4,8 +4,7 @@
   "description": "Photoshop for your grandparents",
   "main": "build/electron/main.js",
   "scripts": {
-    "install-dependencies": "npm i cross-env && cross-env npm_config_target=9.2.0 npm_config_arch=x64 npm_config_target_arch=x64 npm_config_disturl=https://electronjs.org/headers npm_config_runtime=electron npm_config_build_from_source=true HOME=~/.electron-gyp npm i",
-    "electron-start": "cross-env npm_config_target=9.2.0 npm_config_arch=x64 npm_config_target_arch=x64 npm_config_disturl=https://electronjs.org/headers npm_config_runtime=electron npm_config_build_from_source=true HOME=~/.electron-gyp electron . --allow-file-access-from-files",
+    "electron-start": ".\\node_modules\\electron\\dist\\electron.exe . --allow-file-access-from-files",
     "node-gyp-rebuild": "node-gyp rebuild --target=9.2.0 --arch=x64 --dist-url=https://electronjs.org/headers",
     "electron-rebuild": "npx electron-rebuild",
     "electron-build": "concurrently \"npm:electron-build-main\" \"npm:electron-build-shared\"",
@@ -30,7 +29,7 @@
     "@jaames/iro": "^4.5.3",
     "@jcoreio/async-throttle": "^1.1.2",
     "classnames": "^2.2.6",
-    "electron-is-dev": "^1.1.0",
+    "electron-is-dev": "^1.2.0",
     "electron-reload": "^1.5.0",
     "fs-extra": "^8.1.0",
     "gm": "^1.23.1",

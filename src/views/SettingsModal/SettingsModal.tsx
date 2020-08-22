@@ -7,9 +7,9 @@ import { Modal } from '../../components/Modal/Modal';
 import { ModalBody } from '../../components/Modal/Modal.slots';
 import FormField from '../../components/FormField/FormField';
 import i18n, { languageMap } from '../../shared/translations/i18n';
+import { setLanguage } from '../../services/interop-electron';
 
 import './SettingsModal.scss';
-import { setLanguage } from '../../services/interop-electron';
 
 export const LANGUAGE_KEY = 'GRANDSHOP_SETTINGS_LANGUAGE';
 
@@ -25,7 +25,7 @@ const SettingsModal: FunctionComponent<SettingsModalProps> = ({isOpen, onClose})
 
   useEffect(() => {
     setLanguage(selectedLanguage);
-  }, []);
+  }, [selectedLanguage]);
 
   const saveSettings = () => {
     localStorage.setItem(LANGUAGE_KEY, selectedLanguage);
