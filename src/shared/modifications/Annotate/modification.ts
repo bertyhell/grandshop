@@ -1,19 +1,47 @@
-import { State } from 'gm';
 import ImageManager from '../../../electron/image-manager';
 import { ImageInfo } from '../modifications';
+import { Sharp } from 'sharp';
+import TextToSVG from 'text-to-svg';
+import { clamp } from 'lodash';
 
-export function annotate(imageInfo: ImageInfo, fontSize: number, margin: number, lines: string[]): Promise<Buffer> {
-  const gmState: State = ImageManager.bufferToGm(imageInfo.buffer);
+export interface SvgMetrics {
+  x: number;
+  y: number;
+  baseline: number;
+  width: number;
+  height: number;
+  ascender: number;
+  descender: number;
+}
 
-  let state = gmState
-      .extent(imageInfo.dimensions.width, imageInfo.dimensions.height + margin + lines.length * fontSize + margin)
-      .font('helvetica', fontSize)
-      .fill("#000");
+export async function annotate(imageInfo: ImageInfo, text: string, fontSize: number, xPosition: number, yPosition: number): Promise<Buffer> {
+  let sharp: Sharp = ImageManager.bufferToSharp(imageInfo.buffer);
 
-  lines.forEach((line, index) => {
-    state = state
-        .drawText(margin, imageInfo.dimensions.height + margin + fontSize * 0.8 + index * fontSize, line);
+  const compositeImages = text.split('\n').map((line: string, index: number) => {
+    // generate text as svg
+    const textToSVG = TextToSVG.loadSync();
+
+    const options = {
+      x: 0,
+      y: 0,
+      fontSize: Math.round(fontSize),
+      anchor: 'top',
+      attributes: {
+        fill: 'black',
+        // stroke: 'black'
+      }
+    };
+
+    const svg = textToSVG.getSVG(line, options);
+    const svgMetrics: SvgMetrics = textToSVG.getMetrics(line, options);
+
+    const left = clamp(Math.round(imageInfo.dimensions.width * xPosition / 100 - svgMetrics.width / 2), 0, imageInfo.dimensions.width);
+    const top = clamp(Math.round(imageInfo.dimensions.height * yPosition / 100 - svgMetrics.height / 2 + index * svgMetrics.height), 0, imageInfo.dimensions.height);
+
+    return { input: new Buffer(svg), left, top };
   });
 
-  return ImageManager.gmToBuffer(state);
+  sharp = sharp.composite(compositeImages)
+
+  return ImageManager.sharpToBuffer(sharp);
 }

@@ -14,28 +14,31 @@ const Annotate: FunctionComponent<ModificationProps> = ({
   const [t] = useTranslation();
 
   const [text, setText] = useState<string>('');
-  const [marge, setMarge] = useState<number>(40);
   const [fontSize, setFontSize] = useState<number>(30);
+  const [xPosition, setXPosition] = useState<number>(50);
+  const [yPosition, setYPosition] = useState<number>(95);
 
   useEffect(() => {
-    const lines = text.split('\n');
     onApply({
           name: 'annotate',
-          arguments: [fontSize, marge, lines]
+          arguments: [text, fontSize, xPosition, yPosition]
         }
     );
-  }, [text, marge, fontSize]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [text, fontSize, xPosition, yPosition]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
       <>
         <FormField label={t('shared/modifications/annotate/annotate___text')}>
           <TextArea placeholder="Typ hier uw tekst in" value={text} onChange={setText}/>
         </FormField>
-        <FormField label={t('shared/modifications/annotate/annotate___margin')}>
-          <MultiRange min={0} max={400} values={[marge]} onChange={(values) => setMarge(values[0])}/>
-        </FormField>
         <FormField label={t('shared/modifications/annotate/annotate___text-size')}>
           <MultiRange min={0} max={200} values={[fontSize]} onChange={(values) => setFontSize(values[0])}/>
+        </FormField>
+        <FormField label={t('Horizontal position')}>
+          <MultiRange min={0} max={100} step={0.01} values={[xPosition]} onChange={(values) => setXPosition(values[0])}/>
+        </FormField>
+        <FormField label={t('Vertical position')}>
+          <MultiRange min={0} max={100} step={0.01} values={[yPosition]} onChange={(values) => setYPosition(values[0])}/>
         </FormField>
       </>
   );

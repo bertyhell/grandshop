@@ -38,7 +38,7 @@ const modificationComponents: {[name: string]: ModificationComponent} = {
   },
   annotate: {
     component: Annotate,
-    label: i18n.t('shared/modifications/components___add-text-below-the-image'),
+    label: i18n.t('shared/modifications/components___add-text'),
     title: i18n.t('shared/modifications/components___caption-0'),
   },
   crop: {
