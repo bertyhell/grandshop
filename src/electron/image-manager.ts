@@ -7,6 +7,7 @@ import sharp, { Sharp } from 'sharp';
 import { CustomError } from '../shared/error';
 import mods, { ImageInfo } from '../shared/modifications/modifications';
 import { ImageModificationInfo } from '../shared/modifications/types';
+import { isNil } from 'lodash';
 
 export default class ImageManager {
   private static originalImagePathParts: ParsedPath;
@@ -111,14 +112,17 @@ export default class ImageManager {
   }
 
   private static async getDimensions(buffer: Buffer): Promise<Dimensions> {
-    return new Promise((resolve, reject) => {
-      this.bufferToGm(buffer).size((err: any, dim: Dimensions) => {
-        if (err) {
-          reject(new CustomError('Failed to get dimensions from image', err));
-        } else {
-          resolve(dim);
-        }
-      });
-    });
+    try {
+      const metadata = await this.bufferToSharp(buffer).metadata();
+      if (!metadata || isNil(metadata.width) || isNil(metadata.height)) {
+        throw new CustomError('Failed to fetch dimensions from metadata', null, {metadata});
+      }
+      return {
+        width: metadata.width,
+        height: metadata.height,
+      }
+    } catch (err) {
+      throw new CustomError('Failed to get dimensions from image', err);
+    }
   }
 };
