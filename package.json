@@ -98,6 +98,7 @@
     "electron-prebuilt": "^1.4.13",
     "fetch-poeditor": "^0.5.2",
     "node-sass": "^4.13.0",
+    "prettier": "^2.0.5",
     "rimraf": "^3.0.0",
     "sort-object-keys": "^1.1.3",
     "tslint": "^5.20.1",
