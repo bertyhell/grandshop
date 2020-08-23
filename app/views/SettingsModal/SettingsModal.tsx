@@ -18,10 +18,15 @@ interface SettingsModalProps {
   onClose: () => void;
 }
 
-const SettingsModal: FunctionComponent<SettingsModalProps> = ({isOpen, onClose}) => {
+const SettingsModal: FunctionComponent<SettingsModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const [t] = useTranslation();
 
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(localStorage.getItem(LANGUAGE_KEY) || 'en');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
+    localStorage.getItem(LANGUAGE_KEY) || 'en'
+  );
 
   useEffect(() => {
     setLanguage(selectedLanguage);
@@ -35,18 +40,31 @@ const SettingsModal: FunctionComponent<SettingsModalProps> = ({isOpen, onClose})
   };
 
   return (
-
-      <Modal title={t('views/settings-modal/settings-modal___settings')} isOpen={isOpen} onClose={onClose} size="small" className="m-settings-modal">
-        <ModalBody>
-          <FormField label={t('views/settings-modal/settings-modal___language')}>
-            <Select options={languageMap.map(lang => ({
+    <Modal
+      title={t('views/settings-modal/settings-modal___settings')}
+      isOpen={isOpen}
+      onClose={onClose}
+      size="small"
+      className="m-settings-modal"
+    >
+      <ModalBody>
+        <FormField label={t('views/settings-modal/settings-modal___language')}>
+          <Select
+            options={languageMap.map((lang) => ({
               label: lang.englishName + ' - ' + lang.nativeName,
-              value: lang.code
-            }))} value={selectedLanguage} onChange={setSelectedLanguage}/>
-          </FormField>
-          <Button label={t('views/settings-modal/settings-modal___save')} type="primary" onClick={saveSettings}/>
-        </ModalBody>
-      </Modal>
+              value: lang.code,
+            }))}
+            value={selectedLanguage}
+            onChange={setSelectedLanguage}
+          />
+        </FormField>
+        <Button
+          label={t('views/settings-modal/settings-modal___save')}
+          type="primary"
+          onClick={saveSettings}
+        />
+      </ModalBody>
+    </Modal>
   );
 };
 

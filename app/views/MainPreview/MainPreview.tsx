@@ -2,13 +2,14 @@ import { useTranslation } from 'react-i18next';
 import React, { createRef, FunctionComponent, MutableRefObject, RefObject, useEffect, useRef } from 'react';
 import Viewer from 'viewerjs';
 
-import './MainPreview.scss';
 import { selectModificationInProgress, selectModifiedImage, selectOriginalImage } from '../../store/selectors';
 import { connect } from 'react-redux';
 import { AppState } from '../../store/types';
 import Spinner from '../../components/Spinner/Spinner';
 import { getImageSource } from '../../helpers/base64';
 import { FrontendImageInfo } from '../../shared/types';
+
+import './MainPreview.scss';
 
 declare const ResizeObserver: any;
 
@@ -77,7 +78,7 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
     updateViewer();
   }, [modifiedImage]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <div className="m-main-preview">
+  return <div className="c-main-preview">
     {(modifiedImage || originalImage) &&
     <img className="o-image-viewer"
          ref={el}

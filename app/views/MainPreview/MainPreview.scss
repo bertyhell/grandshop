@@ -1,14 +1,6 @@
-$fa-font-path: '~@fortawesome/fontawesome-free/webfonts';
+@import '../variables';
 
-/*
- * @NOTE: Prepend a `~` to css file paths that are in your node_modules
- *        See https://github.com/webpack-contrib/sass-loader#imports
- */
-@import '~@fortawesome/fontawesome-free/scss/fontawesome.scss';
-@import '~@fortawesome/fontawesome-free/scss/solid.scss';
-@import '~viewerjs/dist/viewer.css';
-
-.m-main-preview {
+.c-main-preview {
   height: 100vh;
   width: 100%;
   padding: 20px;

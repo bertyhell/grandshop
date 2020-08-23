@@ -8,6 +8,7 @@ import MainPreview from './MainPreview/MainPreview';
 import ControlsSidebar from './ControlsSidebar/ControlsSidebar';
 import store from '../store/store';
 
+import './Global.scss';
 import './App.scss';
 
 const App: React.FC = () => {

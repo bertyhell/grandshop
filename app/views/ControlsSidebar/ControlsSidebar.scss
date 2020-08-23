@@ -34,19 +34,3 @@
     min-height: calc(100vh - 120px);
   }
 }
-
-.m-settings-modal {
-  .c-modal {
-    position: absolute;
-    height: 400px;
-    left: 50vw;
-    top: 50vh;
-    transform: translate(-50%, -50%);
-
-    .c-modal__body {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-  }
-}

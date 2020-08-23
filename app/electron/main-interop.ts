@@ -1,6 +1,3 @@
-/// <reference path="../../node_modules/electron/electron.d.ts" />
-/// <reference path="../../node_modules/@types/fs-extra/index.d.ts" />
-
 // Modules to control application life and create native browser window
 import {
 	ElectronCallFunctionRequest,
@@ -166,7 +163,7 @@ ipcMain.handle(
 					}
 				);
 			}
-			return await func(event, ...arg.funcArgs);
+			return await func(...arg.funcArgs);
 		} catch (err) {
 			callRendererFunction('showNotification', [i18n.t(err.message), 'error', err]);
 			console.error(err);
