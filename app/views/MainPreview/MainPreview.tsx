@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import React, { createRef, FunctionComponent, MutableRefObject, RefObject, useEffect, useRef } from 'react';
-import 'viewerjs/dist/viewer.css';
 import Viewer from 'viewerjs';
 
 import './MainPreview.scss';

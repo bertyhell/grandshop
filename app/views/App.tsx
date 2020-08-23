@@ -3,7 +3,6 @@ import React from 'react';
 import { ToastContainer } from 'react-toastify';
 import ResizablePanels from 'resizable-panels-react';
 import { Provider } from 'react-redux';
-import 'react-toastify/dist/ReactToastify.css';
 
 import MainPreview from './MainPreview/MainPreview';
 import ControlsSidebar from './ControlsSidebar/ControlsSidebar';
