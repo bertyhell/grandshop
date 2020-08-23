@@ -61,6 +61,9 @@ export default merge(baseConfig, {
         use: [
           {
             loader: MiniCssExtractPlugin.loader,
+            options: {
+              publicPath: './',
+            },
           },
           {
             loader: 'css-loader',
