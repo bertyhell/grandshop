@@ -1,6 +1,6 @@
 {
   "name": "grandshop",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Photo editing software for grandparents",
   "productName": "Grandshop",
   "scripts": {
@@ -52,8 +52,8 @@
     ]
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.develar.ElectronReact",
+    "productName": "Grandshop",
+    "appId": "ga.bertverhelst.grandshop",
     "files": [
       "dist/",
       "node_modules/",

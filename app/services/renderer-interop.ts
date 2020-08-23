@@ -9,7 +9,7 @@ import { CustomError } from '../utils/error';
 import { ImageModificationInfo } from '../modifications/types';
 import { Dimensions } from '../electron/main-interop';
 
-const { ipcRenderer } = (window as any).require('electron');
+const { ipcRenderer } = require('electron');
 
 const callableFunctions = {
   setOriginalImage: (base64: string, dimensions: Dimensions) => {
