@@ -1,0 +1,20 @@
+{
+  "name": "grandshop",
+  "productName": "Grandshop",
+  "version": "0.8.0",
+  "description": "Photo editing software for grandparents",
+  "main": "./main.prod.js",
+  "author": {
+    "name": "Bert Verhelst",
+    "email": "verhelstbert@gmail.com",
+    "url": "https://gitlab.com/bertyhell/grandshop"
+  },
+  "scripts": {
+    "electron-rebuild": "node -r ../internals/scripts/BabelRegister.js ../internals/scripts/ElectronRebuild.js",
+    "postinstall": "yarn electron-rebuild"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "sharp": "^0.25.4"
+  }
+}
