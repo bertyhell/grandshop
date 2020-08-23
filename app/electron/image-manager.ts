@@ -1,13 +1,12 @@
-/// <reference path="../../node_modules/@types/gm/index.d.ts" />
-import path, { ParsedPath } from "path";
+import path, { ParsedPath } from 'path';
 import fs from 'fs-extra';
 import sharp, { Sharp } from 'sharp';
 
-import { CustomError } from '../shared/error';
-import mods, { ImageInfo } from '../shared/modifications/modifications';
-import { ImageModificationInfo } from '../shared/modifications/types';
+import { CustomError } from '../utils/error';
+import mods, { ImageInfo } from '../modifications/modifications';
+import { ImageModificationInfo } from '../modifications/types';
 import { isNil } from 'lodash';
-import { Dimensions } from "./main-interop";
+import { Dimensions } from './main-interop';
 
 export default class ImageManager {
   private static originalImagePathParts: ParsedPath;
@@ -18,54 +17,76 @@ export default class ImageManager {
   private static modifiedImageBuffer: Buffer;
   private static modifiedImageDimensions: Dimensions;
 
-  public static updateModifications = (modifications: ImageModificationInfo[]): Promise<ImageInfo> => {
+  public static updateModifications = (
+    modifications: ImageModificationInfo[]
+  ): Promise<ImageInfo> => {
     return new Promise(async (resolve, reject) => {
       try {
         ImageManager.modifiedImageBuffer = ImageManager.originalImageBuffer;
-        ImageManager.modifiedImageDimensions = await ImageManager.getDimensions(ImageManager.modifiedImageBuffer);
+        ImageManager.modifiedImageDimensions = await ImageManager.getDimensions(
+          ImageManager.modifiedImageBuffer
+        );
 
         // Apply each modification by passing it the image buffer and the args that were defined in the frontend
         for (const modification of modifications) {
-          const func: ((imageInfo: ImageInfo, ...args: any[]) => Promise<Buffer>) | null = mods[modification.name];
+          const func:
+            | ((imageInfo: ImageInfo, ...args: any[]) => Promise<Buffer>)
+            | null = mods[modification.name];
           if (!func) {
-            throw new CustomError('requested to execute unsupported image modification', null, {
-              modification,
-              originalImagePath: ImageManager.originalImagePath
-            });
+            throw new CustomError(
+              'requested to execute unsupported image modification',
+              null,
+              {
+                modification,
+                originalImagePath: ImageManager.originalImagePath,
+              }
+            );
           }
-          ImageManager.modifiedImageBuffer = await func.bind(ImageManager)({
-            buffer: ImageManager.modifiedImageBuffer,
-            dimensions: ImageManager.modifiedImageDimensions
-          }, ...modification.arguments);
+          ImageManager.modifiedImageBuffer = await func.bind(ImageManager)(
+            {
+              buffer: ImageManager.modifiedImageBuffer,
+              dimensions: ImageManager.modifiedImageDimensions,
+            },
+            ...modification.arguments
+          );
 
           // Since the modifier can change the image size, we need to update it after each modification
-          ImageManager.modifiedImageDimensions = await ImageManager.getDimensions(ImageManager.modifiedImageBuffer);
+          ImageManager.modifiedImageDimensions = await ImageManager.getDimensions(
+            ImageManager.modifiedImageBuffer
+          );
         }
         resolve({
           buffer: ImageManager.modifiedImageBuffer,
-          dimensions: ImageManager.modifiedImageDimensions
+          dimensions: ImageManager.modifiedImageDimensions,
         });
       } catch (err) {
         reject(
-            new CustomError(
-                'Failed to apply image modifications',
-                err,
-                { modifications, originalImagePath: ImageManager.originalImagePath }
-            )
+          new CustomError('Failed to apply image modifications', err, {
+            modifications,
+            originalImagePath: ImageManager.originalImagePath,
+          })
         );
       }
     });
   };
 
-  public static async setOriginalImagePath(absoluteFilePath: string): Promise<{ buffer: Buffer, dimensions: Dimensions }> {
+  public static async setOriginalImagePath(
+    absoluteFilePath: string
+  ): Promise<{ buffer: Buffer; dimensions: Dimensions }> {
     this.originalImagePathParts = path.parse(absoluteFilePath);
     this.originalImagePath = absoluteFilePath;
     // Always convert input images to a format that both sharp and graphicmagic understand and is lossless: PNG
-    this.originalImageBuffer = await this.bufferToSharp(await fs.readFile(absoluteFilePath)).png().toBuffer();
-    this.originalImageDimensions = await this.getDimensions(this.originalImageBuffer);
+    this.originalImageBuffer = await this.bufferToSharp(
+      await fs.readFile(absoluteFilePath)
+    )
+      .png()
+      .toBuffer();
+    this.originalImageDimensions = await this.getDimensions(
+      this.originalImageBuffer
+    );
     return {
       buffer: this.originalImageBuffer,
-      dimensions: this.originalImageDimensions
+      dimensions: this.originalImageDimensions,
     };
   }
 
@@ -81,28 +102,6 @@ export default class ImageManager {
     return this.modifiedImageBuffer;
   }
 
-  // public static bufferToGm(imageBuffer: Buffer): State {
-  //   return gm(imageBuffer, this.originalImagePathParts.name + this.originalImagePathParts.ext);
-  // }
-  //
-  // public static gmToBuffer(gmState: State): Promise<Buffer> {
-  //   return new Promise<Buffer>((resolve, reject) => {
-  //     try {
-  //       gmState.toBuffer((err: any, newBuffer: Buffer) => {
-  //         if (err) {
-  //           reject(new CustomError('Failed to write modified image to buffer', err));
-  //         } else {
-  //           resolve(newBuffer);
-  //         }
-  //       });
-  //     } catch (err) {
-  //       reject(new CustomError(
-  //           'Failed to write image to disk',
-  //           err));
-  //     }
-  //   });
-  // }
-
   public static bufferToSharp(imageBuffer: Buffer): Sharp {
     return sharp(imageBuffer);
   }
@@ -115,14 +114,20 @@ export default class ImageManager {
     try {
       const metadata = await this.bufferToSharp(buffer).metadata();
       if (!metadata || isNil(metadata.width) || isNil(metadata.height)) {
-        throw new CustomError('Failed to fetch dimensions from metadata', null, {metadata});
+        throw new CustomError(
+          'Failed to fetch dimensions from metadata',
+          null,
+          { metadata }
+        );
       }
       return {
         width: metadata.width,
         height: metadata.height,
-      }
+      };
     } catch (err) {
-      throw new CustomError('Failed to get dimensions from image', err);
+      throw new CustomError('Failed to get dimensions from image', err, {
+        buffer,
+      });
     }
   }
-};
+}

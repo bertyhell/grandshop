@@ -3,7 +3,7 @@ import {
   SetOriginalImageAction,
   SetModifiedImageAction, SetModificationInProgressAction, SetColorAtPixelAction
 } from './types';
-import { FrontendImageInfo } from '../shared/types';
+import { FrontendImageInfo } from '../utils/types';
 
 export const setOriginalImageAction = (imageInfo: FrontendImageInfo | null): SetOriginalImageAction => ({
   imageInfo,

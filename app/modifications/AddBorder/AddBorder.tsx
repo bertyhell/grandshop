@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 
-import FormField from '../../../components/FormField/FormField';
-import ColorInput from '../../../components/ColorInput/ColorInput';
-import { MultiRange } from '../../../components/MultiRange/MultiRange';
+import FormField from '../../components/FormField/FormField';
+import ColorInput from '../../components/ColorInput/ColorInput';
+import { MultiRange } from '../../components/MultiRange/MultiRange';
 import { ModificationProps } from '../types';
 
 import './AddBorder.scss';

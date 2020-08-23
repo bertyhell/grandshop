@@ -1,13 +1,24 @@
 import { useTranslation } from 'react-i18next';
-import React, { createRef, FunctionComponent, MutableRefObject, RefObject, useEffect, useRef } from 'react';
+import React, {
+  createRef,
+  FunctionComponent,
+  MutableRefObject,
+  RefObject,
+  useEffect,
+  useRef,
+} from 'react';
 import Viewer from 'viewerjs';
 
-import { selectModificationInProgress, selectModifiedImage, selectOriginalImage } from '../../store/selectors';
+import {
+  selectModificationInProgress,
+  selectModifiedImage,
+  selectOriginalImage,
+} from '../../store/selectors';
 import { connect } from 'react-redux';
 import { AppState } from '../../store/types';
 import Spinner from '../../components/Spinner/Spinner';
 import { getImageSource } from '../../helpers/base64';
-import { FrontendImageInfo } from '../../shared/types';
+import { FrontendImageInfo } from '../../utils/types';
 
 import './MainPreview.scss';
 
@@ -16,14 +27,14 @@ declare const ResizeObserver: any;
 interface MainPreviewProps {
   originalImage: FrontendImageInfo | null;
   modifiedImage: FrontendImageInfo | null;
-  modificationInProgress: boolean
+  modificationInProgress: boolean;
 }
 
 const MainPreview: FunctionComponent<MainPreviewProps> = ({
-                                                            originalImage,
-                                                            modifiedImage,
-                                                            modificationInProgress
-                                                          }) => {
+  originalImage,
+  modifiedImage,
+  modificationInProgress,
+}) => {
   const [t] = useTranslation();
 
   const el: RefObject<HTMLImageElement> = createRef<HTMLImageElement>();
@@ -35,13 +46,14 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
     }
   };
 
-  useEffect(() => { // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    // eslint-disable-line react-hooks/exhaustive-deps
     if (!el.current || viewer.current) {
       return;
     }
     const DEFAULT_BUTTON = {
       show: 1,
-      size: 'large' as any
+      size: 'large' as any,
     };
     viewer.current = new Viewer(el.current, {
       inline: true,
@@ -60,44 +72,48 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
         rotateLeft: DEFAULT_BUTTON,
         rotateRight: DEFAULT_BUTTON,
         flipHorizontal: DEFAULT_BUTTON,
-        flipVertical: DEFAULT_BUTTON
+        flipVertical: DEFAULT_BUTTON,
       },
       transition: false,
       fullscreen: false,
       movable: false,
       rotatable: true,
       scalable: true,
-      zIndexInline: 1
+      zIndexInline: 1,
     });
 
     // Listen for preview div size changes, so we can update the viewer
-    new ResizeObserver(updateViewer).observe(el.current)
+    new ResizeObserver(updateViewer).observe(el.current);
   }, [el]);
 
   useEffect(() => {
     updateViewer();
   }, [modifiedImage]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <div className="c-main-preview">
-    {(modifiedImage || originalImage) &&
-    <img className="o-image-viewer"
-         ref={el}
-         src={getImageSource(modifiedImage?.base64 || originalImage?.base64)}
-         alt="Een voorbeeld van de aangepaste afbeelding"/>
-    }
-    {modificationInProgress &&
-    <div className="o-spinner-wrapper">
-      <Spinner/>
-      {t('views/main-preview/main-preview___image-is-being-updated')}
+  return (
+    <div className="c-main-preview">
+      {(modifiedImage || originalImage) && (
+        <img
+          className="o-image-viewer"
+          ref={el}
+          src={getImageSource(modifiedImage?.base64 || originalImage?.base64)}
+          alt="Een voorbeeld van de aangepaste afbeelding"
+        />
+      )}
+      {modificationInProgress && (
+        <div className="o-spinner-wrapper">
+          <Spinner />
+          {t('views/main-preview/main-preview___image-is-being-updated')}
+        </div>
+      )}
     </div>
-    }
-  </div>;
+  );
 };
 
 const mapStateToProps = (state: { app: AppState }) => ({
   originalImage: selectOriginalImage(state),
   modifiedImage: selectModifiedImage(state),
-  modificationInProgress: selectModificationInProgress(state)
+  modificationInProgress: selectModificationInProgress(state),
 });
 
 export default connect(mapStateToProps)(MainPreview);

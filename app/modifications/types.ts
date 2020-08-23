@@ -1,4 +1,4 @@
-import { FrontendImageInfo } from '../types';
+import { FrontendImageInfo } from '../utils/types';
 
 export interface ImageModificationInfo {
 	name:

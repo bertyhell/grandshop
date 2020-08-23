@@ -4,9 +4,9 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { ModificationProps } from '../types';
 
 import './Annotate.scss';
-import { TextArea } from '../../../components/TextArea/TextArea';
-import FormField from '../../../components/FormField/FormField';
-import { MultiRange } from '../../../components/MultiRange/MultiRange';
+import { TextArea } from '../../components/TextArea/TextArea';
+import FormField from '../../components/FormField/FormField';
+import { MultiRange } from '../../components/MultiRange/MultiRange';
 
 const Annotate: FunctionComponent<ModificationProps> = ({
                                                           onApply

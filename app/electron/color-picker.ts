@@ -1,5 +1,5 @@
 import { BrowserWindow } from "electron";
-import { CustomError } from '../shared/error';
+import { CustomError } from '../utils/error';
 import Color from 'color';
 
 export class ColorPicker {

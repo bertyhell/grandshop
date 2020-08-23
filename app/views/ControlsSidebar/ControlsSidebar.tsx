@@ -14,10 +14,10 @@ import { selectModifiedImage, selectOriginalImage } from '../../store/selectors'
 import { setModifiedImageAction } from '../../store/actions';
 import { Select, SelectOption } from '../../components/Select/Select';
 import { format } from '../../helpers/format';
-import mods, { ModificationComponent } from '../../shared/modifications/components';
-import { ImageModificationInfo } from '../../shared/modifications/types';
+import mods, { ModificationComponent } from '../../modifications/components';
+import { ImageModificationInfo } from '../../modifications/types';
 import ImageModification from '../../components/ImageModification/ImageModification';
-import { FrontendImageInfo } from '../../shared/types';
+import { FrontendImageInfo } from '../../utils/types';
 import SettingsModal from '../SettingsModal/SettingsModal';
 
 import './ControlsSidebar.scss';

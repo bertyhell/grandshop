@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 
-import { MultiRange } from '../../../components/MultiRange/MultiRange';
+import { MultiRange } from '../../components/MultiRange/MultiRange';
 import { ModificationProps } from '../types';
 
 import './Brightness.scss';

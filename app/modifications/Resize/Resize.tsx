@@ -2,9 +2,9 @@ import { useTranslation } from 'react-i18next';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import prettyBytes from 'pretty-bytes';
 
-import { MultiRange } from '../../../components/MultiRange/MultiRange';
+import { MultiRange } from '../../components/MultiRange/MultiRange';
 import { ModificationProps } from '../types';
-import FormField from '../../../components/FormField/FormField';
+import FormField from '../../components/FormField/FormField';
 
 import './Resize.scss';
 

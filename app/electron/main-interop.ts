@@ -3,17 +3,17 @@ import {
 	ElectronCallFunctionRequest,
 	RendererCallFunction,
 	RendererCallFunctionRequest,
-} from '../shared/types';
+} from '../utils/types';
 import { ParsedPath } from 'path';
 import { dialog, ipcMain } from 'electron';
 import fs from 'fs-extra';
 import throttle from '@jcoreio/async-throttle';
 
-import { ImageModificationInfo } from '../shared/modifications/types';
-import i18n from '../shared/translations/i18n';
+import { ImageModificationInfo } from '../modifications/types';
+import i18n from '../translations/i18n';
 
 import ImageManager from './image-manager';
-import { CustomError } from '../shared/error';
+import { CustomError } from '../utils/error';
 import { ColorPicker } from './color-picker';
 import { getMainWindow } from '../main.dev';
 

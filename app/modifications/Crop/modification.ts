@@ -1,6 +1,6 @@
 import { Sharp } from 'sharp';
 
-import ImageManager from '../../../electron/image-manager';
+import ImageManager from '../../electron/image-manager';
 import { ImageInfo } from '../modifications';
 
 export function crop(imageInfo: ImageInfo, top: number, right: number, bottom: number, left: number): Promise<Buffer> {

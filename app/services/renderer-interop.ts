@@ -2,11 +2,11 @@ import { OpenDialogSyncOptions, SaveDialogOptions } from 'electron';
 
 import { setColorAtPixelAction, setModificationInProgressAction, setModifiedImageAction, setOriginalImageAction } from '../store/actions';
 import store from '../store/store';
-import { ElectronCallFunction, ElectronCallFunctionRequest, RendererCallFunctionRequest } from '../shared/types';
+import { ElectronCallFunction, ElectronCallFunctionRequest, RendererCallFunctionRequest } from '../utils/types';
 import toastService from './toast-service';
 import { AlertType } from '../components/Alert/Alert';
-import { CustomError } from '../shared/error';
-import { ImageModificationInfo } from '../shared/modifications/types';
+import { CustomError } from '../utils/error';
+import { ImageModificationInfo } from '../modifications/types';
 import { Dimensions } from '../electron/main-interop';
 
 const { ipcRenderer } = (window as any).require('electron');

@@ -1,4 +1,4 @@
-import ImageManager from '../../../electron/image-manager';
+import ImageManager from '../../electron/image-manager';
 import { ImageInfo } from '../modifications';
 import { Sharp } from 'sharp';
 

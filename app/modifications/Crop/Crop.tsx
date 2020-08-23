@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 
-import { MultiRange } from '../../../components/MultiRange/MultiRange';
+import { MultiRange } from '../../components/MultiRange/MultiRange';
 import { ModificationProps } from '../types';
 
 import './Crop.scss';
-import FormField from '../../../components/FormField/FormField';
+import FormField from '../../components/FormField/FormField';
 
 const Crop: FunctionComponent<ModificationProps> = ({
 	imageInfo,
