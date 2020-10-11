@@ -1,5 +1,4 @@
 import { OpenDialogSyncOptions, SaveDialogOptions } from 'electron';
-import { Dimensions } from 'gm';
 
 import { setColorAtPixelAction, setModificationInProgressAction, setModifiedImageAction, setOriginalImageAction } from '../store/actions';
 import store from '../store/store';
@@ -8,6 +7,7 @@ import toastService from './toast-service';
 import { AlertType } from '../components/Alert/Alert';
 import { CustomError } from '../shared/error';
 import { ImageModificationInfo } from '../shared/modifications/types';
+import { Dimensions } from '../electron/main-interop';
 
 const { ipcRenderer } = (window as any).require('electron');
 

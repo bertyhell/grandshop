@@ -1,4 +1,4 @@
-import { Dimensions } from 'gm';
+import { Dimensions } from '../electron/main-interop';
 
 export type RendererCallFunction =
     | 'setOriginalImage'

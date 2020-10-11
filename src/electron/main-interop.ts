@@ -11,7 +11,6 @@ import path, { ParsedPath } from 'path';
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import fs from 'fs-extra';
 import isDev from 'electron-is-dev';
-import { Dimensions } from 'gm';
 import throttle from '@jcoreio/async-throttle';
 
 import { ImageModificationInfo } from '../shared/modifications/types';
@@ -20,6 +19,11 @@ import i18n from '../shared/translations/i18n';
 import ImageManager from './image-manager';
 import { CustomError } from '../shared/error';
 import { ColorPicker } from './color-picker';
+
+export interface Dimensions {
+	width: number;
+	height: number;
+}
 
 const appFolder: string = path.resolve(__dirname, '..');
 // const windowStateFileName: string = path.resolve(appFolder, 'last-window-state.json');
