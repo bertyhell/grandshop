@@ -4,6 +4,8 @@
   "description": "Photo editing software for grandparents",
   "main": "build/electron/main.js",
   "scripts": {
+    "start": "concurrently \"npm run electron-start\" \"npm run react-start\"",
+    "build": "concurrently \"npm run electron-build\" \"npm run react-build\"",
     "electron-start": ".\\node_modules\\electron\\dist\\electron.exe . --allow-file-access-from-files",
     "node-gyp-rebuild": "node-gyp rebuild --target=9.2.0 --arch=x64 --dist-url=https://electronjs.org/headers",
     "electron-rebuild": "npx electron-rebuild",
