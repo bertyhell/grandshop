@@ -210,7 +210,7 @@ async function updateTranslations() {
   );
 
   const totalTranslations = existingTranslationKeys.length + addedTranslationKeys.length;
-  console.log(
+  console.info(
       `Wrote ${totalTranslations} src/shared/translations/en.json file
 \t${addedTranslationKeys.length} translations added
 \t${removedTranslationKeys.length} translations deleted`

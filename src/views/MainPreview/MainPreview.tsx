@@ -8,7 +8,7 @@ import { selectModificationInProgress, selectModifiedImage, selectOriginalImage 
 import { connect } from 'react-redux';
 import { AppState } from '../../store/types';
 import Spinner from '../../components/Spinner/Spinner';
-import { getImageSource } from '../../helpers/base64';
+import { getImageSource } from '../../shared/helpers/base64';
 import { FrontendImageInfo } from '../../shared/types';
 
 declare const ResizeObserver: any;

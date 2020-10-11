@@ -26,7 +26,6 @@ const Crop: FunctionComponent<ModificationProps> = ({
 		);
 	}, [top, right, bottom, left]); // eslint-disable-line react-hooks/exhaustive-deps
 
-	console.log(top, right, bottom, left);
 	return (
 		<>
 			<FormField label={t('shared/modifications/crop/crop___top')} labelFor="top">

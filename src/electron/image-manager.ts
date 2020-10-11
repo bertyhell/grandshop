@@ -5,8 +5,8 @@ import sharp, { Sharp } from 'sharp';
 import { CustomError } from '../shared/error';
 import mods, { ImageInfo } from '../shared/modifications/modifications';
 import { ImageModificationInfo } from '../shared/modifications/types';
-import { isNil } from 'lodash';
 import { Dimensions } from './main-interop';
+import { getImageDimensions } from '../shared/helpers/get-image-dimensions';
 
 export default class ImageManager {
   private static originalImagePathParts: ParsedPath;
@@ -25,20 +25,28 @@ export default class ImageManager {
 
         // Apply each modification by passing it the image buffer and the args that were defined in the frontend
         for (const modification of modifications) {
-          const func: ((imageInfo: ImageInfo, ...args: any[]) => Promise<Buffer>) | null = mods[modification.name];
-          if (!func) {
-            throw new CustomError('requested to execute unsupported image modification', null, {
-              modification,
-              originalImagePath: ImageManager.originalImagePath
-            });
-          }
-          ImageManager.modifiedImageBuffer = await func.bind(ImageManager)({
-            buffer: ImageManager.modifiedImageBuffer,
-            dimensions: ImageManager.modifiedImageDimensions
-          }, ...modification.arguments);
+          try {
+            const func: ((imageInfo: ImageInfo, ...args: any[]) => Promise<Buffer>) | null = mods[modification.name];
+            if (!func) {
+              throw new CustomError('requested to execute unsupported image modification', null, {
+                modification,
+                originalImagePath: ImageManager.originalImagePath
+              });
+            }
+            ImageManager.modifiedImageBuffer = await func.bind(ImageManager)({
+              buffer: ImageManager.modifiedImageBuffer,
+              dimensions: ImageManager.modifiedImageDimensions
+            }, ...modification.arguments);
 
-          // Since the modifier can change the image size, we need to update it after each modification
-          ImageManager.modifiedImageDimensions = await ImageManager.getDimensions(ImageManager.modifiedImageBuffer);
+            // Since the modifier can change the image size, we need to update it after each modification
+            ImageManager.modifiedImageDimensions = await ImageManager.getDimensions(ImageManager.modifiedImageBuffer);
+          } catch (err) {
+            console.error(new CustomError(
+              'Failed to apply image modification',
+              err,
+              { modification, originalImagePath: ImageManager.originalImagePath }
+            ));
+          }
         }
         resolve({
           buffer: ImageManager.modifiedImageBuffer,
@@ -89,17 +97,6 @@ export default class ImageManager {
   }
 
   private static async getDimensions(buffer: Buffer): Promise<Dimensions> {
-    try {
-      const metadata = await this.bufferToSharp(buffer).metadata();
-      if (!metadata || isNil(metadata.width) || isNil(metadata.height)) {
-        throw new CustomError('Failed to fetch dimensions from metadata', null, {metadata});
-      }
-      return {
-        width: metadata.width,
-        height: metadata.height,
-      }
-    } catch (err) {
-      throw new CustomError('Failed to get dimensions from image', err);
-    }
+    return getImageDimensions(this.bufferToSharp(buffer));
   }
 };

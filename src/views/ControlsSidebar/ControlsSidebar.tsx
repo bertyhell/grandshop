@@ -13,7 +13,7 @@ import { AppState } from '../../store/types';
 import { selectModifiedImage, selectOriginalImage } from '../../store/selectors';
 import { setModifiedImageAction } from '../../store/actions';
 import { Select, SelectOption } from '../../components/Select/Select';
-import { format } from '../../helpers/format';
+import { format } from '../../shared/helpers/format';
 import mods, { ModificationComponent } from '../../shared/modifications/components';
 import { ImageModificationInfo } from '../../shared/modifications/types';
 import ImageModification from '../../components/ImageModification/ImageModification';

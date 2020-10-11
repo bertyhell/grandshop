@@ -1,4 +1,4 @@
-import { createReducer } from '../helpers/create-reducer';
+import { createReducer } from '../shared/helpers/create-reducer';
 
 import initialState from './initial-state';
 import {

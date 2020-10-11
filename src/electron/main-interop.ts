@@ -25,10 +25,6 @@ export interface Dimensions {
 	height: number;
 }
 
-const appFolder: string = path.resolve(__dirname, '..');
-// const windowStateFileName: string = path.resolve(appFolder, 'last-window-state.json');
-require('electron-reload')(appFolder);
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: any;
@@ -198,15 +194,11 @@ function callRendererFunction(func: RendererCallFunction, funcArgs: any[]) {
 async function getImageBorders(): Promise<string[]> {
 	const bordersFolder = path.join(
 		path.dirname(__dirname),
-		'../resources_external/modifiers/AddImageBorder/borders'
+		'../resources/modifications/add-image-border/borders'
 	);
-	console.log('path: ', bordersFolder);
 
 	const borderFileNames = await fs.readdir(bordersFolder);
-
-	console.log('path: ', bordersFolder, borderFileNames);
-
-	return borderFileNames;
+	return borderFileNames.map(fileName => path.join(bordersFolder, fileName));
 }
 
 const applyModifications = throttle(
