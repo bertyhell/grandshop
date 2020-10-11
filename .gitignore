@@ -30,3 +30,5 @@ electron-dist
 
 # Poeditor fetched files
 src/shared/translations/poeditor
+
+*.asar
