@@ -1,16 +1,16 @@
-import gm, { State } from 'gm';
 import ImageManager from '../../../electron/image-manager';
 import { ImageInfo } from '../modifications';
+import { Sharp } from 'sharp';
 
-export function sepia(imageInfo: ImageInfo, brightness: number, color: string, redPercent: number, greenPercent: number, bluePercent: number): Promise<Buffer> {
-  const gmState: State = ImageManager.bufferToGm(imageInfo.buffer);
+export function sepia(imageInfo: ImageInfo): Promise<Buffer> {
+  const sharp: Sharp = ImageManager.bufferToSharp(imageInfo.buffer);
 
-  gm(imageInfo.dimensions.width, imageInfo.dimensions.height, color);
+  const state = sharp
+    .recomb([
+      [0.3588, 0.7044, 0.1368],
+      [0.2990, 0.5870, 0.1140],
+      [0.2392, 0.4696, 0.0912],
+    ]);
 
-  const state = gmState
-      .modulate(brightness, 0, 100)
-      .fill(color)
-      .colorize(redPercent, greenPercent, bluePercent);
-
-  return ImageManager.gmToBuffer(state);
+  return ImageManager.sharpToBuffer(state);
 }
