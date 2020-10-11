@@ -1,6 +1,4 @@
-/// <reference path="../../node_modules/@types/gm/index.d.ts" />
 import path, { ParsedPath } from "path";
-import gm, { State, Dimensions } from 'gm';
 import fs from 'fs-extra';
 import sharp, { Sharp } from 'sharp';
 
@@ -8,6 +6,7 @@ import { CustomError } from '../shared/error';
 import mods, { ImageInfo } from '../shared/modifications/modifications';
 import { ImageModificationInfo } from '../shared/modifications/types';
 import { isNil } from 'lodash';
+import { Dimensions } from './main-interop';
 
 export default class ImageManager {
   private static originalImagePathParts: ParsedPath;
@@ -79,28 +78,6 @@ export default class ImageManager {
 
   public static getModifiedImageBuffer(): Buffer {
     return this.modifiedImageBuffer;
-  }
-
-  public static bufferToGm(imageBuffer: Buffer): State {
-    return gm(imageBuffer, this.originalImagePathParts.name + this.originalImagePathParts.ext);
-  }
-
-  public static gmToBuffer(gmState: State): Promise<Buffer> {
-    return new Promise<Buffer>((resolve, reject) => {
-      try {
-        gmState.toBuffer((err: any, newBuffer: Buffer) => {
-          if (err) {
-            reject(new CustomError('Failed to write modified image to buffer', err));
-          } else {
-            resolve(newBuffer);
-          }
-        });
-      } catch (err) {
-        reject(new CustomError(
-            'Failed to write image to disk',
-            err));
-      }
-    });
   }
 
   public static bufferToSharp(imageBuffer: Buffer): Sharp {
