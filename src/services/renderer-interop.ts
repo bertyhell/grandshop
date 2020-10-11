@@ -75,3 +75,7 @@ export function setLanguage(language: string): Promise<void> {
 export function getColorAtPixel(x: number, y: number): Promise<string> {
   return callMainFunction('getColorAtPixel', [x, y]);
 }
+
+export function getImageBorders(): Promise<string[]> {
+  return callMainFunction('getImageBorders', []);
+}

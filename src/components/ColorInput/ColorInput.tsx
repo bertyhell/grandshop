@@ -10,7 +10,7 @@ import React, {
 import iro from '@jaames/iro';
 import classnames from 'classnames';
 
-import { getColorAtPixel } from '../../services/interop-electron';
+import { getColorAtPixel } from '../../services/renderer-interop';
 
 import './ColorInput.scss';
 

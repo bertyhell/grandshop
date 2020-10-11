@@ -1,4 +1,5 @@
 import { addBorder } from './AddBorder/modification';
+import { addImageBorder } from './AddImageBorder/modification';
 import { brightness } from './Brightness/modification';
 import { sepia } from './Sepia/modification';
 import { resize } from './Resize/modification';
@@ -16,6 +17,7 @@ export type ModificationFunc = (imageInfo: ImageInfo, ...params: any[]) => Promi
 // List of functions that can modify an image by calling GraphicsMagick functions on its gm state
 const modificationFuncs: {[name: string]: ModificationFunc} = {
   addBorder,
+  addImageBorder,
   brightness,
   sepia,
   resize,

@@ -3,6 +3,7 @@ import { FrontendImageInfo } from '../types';
 export interface ImageModificationInfo {
 	name:
 		| 'addBorder'
+		| 'addImageBorder'
 		| 'sepia'
 		| 'brightness'
 		| 'resize'

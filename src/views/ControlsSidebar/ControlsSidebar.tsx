@@ -7,7 +7,7 @@ import compact from 'lodash-es/compact';
 import { isEqual, kebabCase, fromPairs, map } from 'lodash-es';
 import { useTranslation } from 'react-i18next';
 
-import { applyModifications, saveImage, openImage } from '../../services/interop-electron';
+import { applyModifications, saveImage, openImage } from '../../services/renderer-interop';
 import { Button } from '../../components/Button/Button';
 import { AppState } from '../../store/types';
 import { selectModifiedImage, selectOriginalImage } from '../../store/selectors';

@@ -7,7 +7,7 @@ import { Modal } from '../../components/Modal/Modal';
 import { ModalBody } from '../../components/Modal/Modal.slots';
 import FormField from '../../components/FormField/FormField';
 import i18n, { languageMap } from '../../shared/translations/i18n';
-import { setLanguage } from '../../services/interop-electron';
+import { setLanguage } from '../../services/renderer-interop';
 
 import './SettingsModal.scss';
 

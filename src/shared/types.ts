@@ -19,7 +19,8 @@ export type ElectronCallFunction =
     | 'applyModifications'
     | 'saveImage'
     | 'setLanguage'
-    | 'getColorAtPixel';
+    | 'getColorAtPixel'
+    | 'getImageBorders';
 
 export interface ElectronCallFunctionRequest {
   func: ElectronCallFunction;

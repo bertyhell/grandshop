@@ -195,6 +195,20 @@ function callRendererFunction(func: RendererCallFunction, funcArgs: any[]) {
 	} as RendererCallFunctionRequest);
 }
 
+async function getImageBorders(): Promise<string[]> {
+	const bordersFolder = path.join(
+		path.dirname(__dirname),
+		'../resources_external/modifiers/AddImageBorder/borders'
+	);
+	console.log('path: ', bordersFolder);
+
+	const borderFileNames = await fs.readdir(bordersFolder);
+
+	console.log('path: ', bordersFolder, borderFileNames);
+
+	return borderFileNames;
+}
+
 const applyModifications = throttle(
 	async (event: Electron.IpcMainInvokeEvent, modifications: ImageModificationInfo[]) => {
 		try {
@@ -229,6 +243,7 @@ const callableFunctions = {
 	applyModifications,
 	setLanguage,
 	getColorAtPixel,
+	getImageBorders,
 };
 
 ipcMain.handle(
@@ -238,7 +253,7 @@ ipcMain.handle(
 			const func: Function | undefined = callableFunctions[arg.func];
 			if (!func) {
 				throw new CustomError(
-					"Received func request on request-mainprocess-action, but function doesn't exist1",
+					"Received func request on request-mainprocess-action, but function doesn't exist",
 					null,
 					{
 						event,

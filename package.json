@@ -130,6 +130,15 @@
       "build/**/*",
       "public/**/*"
     ],
+    "extraResources": [
+      {
+        "from": "./src/resources_external/",
+        "to": "resources_external",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "win": {
       "target": [
         {

@@ -8,6 +8,7 @@ import Sepia from './Sepia/Sepia';
 import Resize from './Resize/Resize';
 import Annotate from './Annotate/Annotate';
 import Crop from './Crop/Crop';
+import AddImageBorder from './AddImageBorder/AddImageBorder';
 
 export interface ModificationComponent {
   component: FunctionComponent<any>, // React component to load for this modification
@@ -20,6 +21,11 @@ const modificationComponents: {[name: string]: ModificationComponent} = {
     component: AddBorder,
     label: i18n.t('shared/modifications/components___add-a-colored-border'),
     title: i18n.t('shared/modifications/components___border-0'),
+  },
+  addImageBorder: {
+    component: AddImageBorder,
+    label: i18n.t('Add image border'),
+    title: i18n.t('Image border {0}'),
   },
   brightness: {
     component: Brightness,
