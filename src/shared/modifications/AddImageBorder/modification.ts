@@ -58,13 +58,13 @@ export async function addImageBorder(
 		const borderTopEdgeWidth = scale(borderImageInfo.width - borderInfo.x * 2);
 		const imageTopEdgeSpace = imageInfo.dimensions.width - scale(borderInfo.x) * 2;
 		const numberOfHorizontalSegments = imageTopEdgeSpace / borderTopEdgeWidth;
-		const roundedNumberOfHorizontalSegments = Math.floor(numberOfHorizontalSegments);
+		const roundedNumberOfHorizontalSegments = Math.round(numberOfHorizontalSegments);
 		let horizontalScaleFactor: number;
-		// if (numberOfHorizontalSegments > roundedNumberOfHorizontalSegments) {
-		// 	horizontalScaleFactor = 1 + Math.abs(numberOfHorizontalSegments - roundedNumberOfHorizontalSegments) / numberOfHorizontalSegments;
-		// } else {
-			horizontalScaleFactor = 1 + Math.abs(roundedNumberOfHorizontalSegments - numberOfHorizontalSegments) / numberOfHorizontalSegments;
-		// }
+		if (numberOfHorizontalSegments > roundedNumberOfHorizontalSegments) {
+			horizontalScaleFactor = 1 - Math.abs(numberOfHorizontalSegments - roundedNumberOfHorizontalSegments) / numberOfHorizontalSegments;
+		} else {
+			horizontalScaleFactor = 1 + Math.abs(numberOfHorizontalSegments - roundedNumberOfHorizontalSegments) / numberOfHorizontalSegments;
+		}
 		const topEdgeSegments = [];
 		const bottomEdgeSegments = [];
 		const topSegmentWidth = borderImageInfo.width - borderInfo.x * 2;
@@ -76,7 +76,7 @@ export async function addImageBorder(
 				width: floor(scale(topSegmentWidth)),
 				height: floor(scale(borderInfo.y)),
 			})
-			.resize(floor(scale(topSegmentWidth * horizontalScaleFactor)), floor(scale(borderInfo.y)))
+			.resize(floor(scale(topSegmentWidth * horizontalScaleFactor)), floor(scale(borderInfo.y)), {fit: 'fill'	})
 			.toBuffer();
 		const bottomEdgeSegmentBuffer = await borderImage
 			.clone()
@@ -86,19 +86,19 @@ export async function addImageBorder(
 				width: floor(scale(topSegmentWidth)),
 				height: floor(scale(borderInfo.y)),
 			})
-			.resize(floor(scale(topSegmentWidth * horizontalScaleFactor)), floor(scale(borderInfo.y)))
+			.resize(floor(scale(topSegmentWidth * horizontalScaleFactor)), floor(scale(borderInfo.y)), {fit: 'fill'	})
 			.toBuffer();
-		for (let i = 0; i < numberOfHorizontalSegments - 1; i += 1) {
+		for (let i = 0; i < roundedNumberOfHorizontalSegments; i += 1) {
 			topEdgeSegments.push({
 				input: topEdgeSegmentBuffer,
 				gravity: 'northwest',
-				left: floor(scale(borderInfo.x + topSegmentWidth * horizontalScaleFactor * i)),
+				left: floor(scale(borderInfo.x + topSegmentWidth / horizontalScaleFactor * i)),
 				top: 0,
 			});
 			bottomEdgeSegments.push({
 				input: bottomEdgeSegmentBuffer,
 				gravity: 'northwest',
-				left: floor(scale(borderInfo.x + topSegmentWidth * horizontalScaleFactor * i)),
+				left: floor(scale(borderInfo.x + topSegmentWidth / horizontalScaleFactor * i)),
 				top: borderImageInfo.height - floor(scale(borderInfo.y)),
 			});
 		}
@@ -107,13 +107,13 @@ export async function addImageBorder(
 		const borderLeftEdgeHeight = scale(borderImageInfo.height - borderInfo.y * 2);
 		const imageLeftEdgeSpace = imageInfo.dimensions.height - borderWidth * 2;
 		const numberOfVerticalSegments = imageLeftEdgeSpace / borderLeftEdgeHeight;
-		const roundedNumberOfVerticalSegments = Math.floor(numberOfVerticalSegments);
+		const roundedNumberOfVerticalSegments = Math.round(numberOfVerticalSegments);
 		let verticalScaleFactor: number;
-		// if (numberOfVerticalSegments > roundedNumberOfVerticalSegments) {
-		// 	verticalScaleFactor = 1 - Math.abs(numberOfVerticalSegments - roundedNumberOfVerticalSegments) / numberOfVerticalSegments;
-		// } else {
-			verticalScaleFactor = 1 + Math.abs(roundedNumberOfVerticalSegments - numberOfVerticalSegments) / numberOfVerticalSegments;
-		// }
+		if (numberOfVerticalSegments > roundedNumberOfVerticalSegments) {
+			verticalScaleFactor = 1 - Math.abs(numberOfVerticalSegments - roundedNumberOfVerticalSegments) / numberOfVerticalSegments;
+		} else {
+			verticalScaleFactor = 1 + Math.abs(numberOfVerticalSegments - roundedNumberOfVerticalSegments) / numberOfVerticalSegments;
+		}
 		const leftEdgeSegments = [];
 		const rightEdgeSegments = [];
 		const leftSegmentHeight = borderImageInfo.height - borderInfo.y * 2;
@@ -125,10 +125,8 @@ export async function addImageBorder(
 				width: floor(scale(borderInfo.x)),
 				height: floor(scale(leftSegmentHeight)),
 			})
-			.resize(floor(scale(borderInfo.x)), floor(scale(leftSegmentHeight * verticalScaleFactor)))
+			.resize(floor(scale(borderInfo.x)), floor(scale(leftSegmentHeight / verticalScaleFactor)), {fit: 'fill'	})
 			.toBuffer();
-		const size = await getImageDimensions(await sharp(leftEdgeSegmentBuffer));
-		console.log(size);
 		const rightEdgeSegmentBuffer = await borderImage
 			.clone()
 			.extract({
@@ -137,20 +135,20 @@ export async function addImageBorder(
 				width: floor(scale(borderInfo.x)),
 				height: floor(scale(leftSegmentHeight)),
 			})
-			.resize(floor(scale(borderInfo.y)), floor(scale(leftSegmentHeight * verticalScaleFactor)))
+			.resize(floor(scale(borderInfo.y)), floor(scale(leftSegmentHeight / verticalScaleFactor)), {fit: 'fill'	})
 			.toBuffer();
-		for (let i = 0; i < numberOfVerticalSegments - 1; i += 1) {
+		for (let i = 0; i < roundedNumberOfVerticalSegments; i += 1) {
 			leftEdgeSegments.push({
 				input: leftEdgeSegmentBuffer,
 				gravity: 'northwest',
 				left: 0,
-				top: floor(scale(borderInfo.y + leftSegmentHeight * verticalScaleFactor * i)),
+				top: floor(scale(borderInfo.y + leftSegmentHeight / verticalScaleFactor * i)),
 			});
 			rightEdgeSegments.push({
 				input: rightEdgeSegmentBuffer,
 				gravity: 'northwest',
 				left: imageInfo.dimensions.width - floor(scale(borderInfo.x)),
-				top: floor(scale(borderInfo.y + leftSegmentHeight * verticalScaleFactor * i)),
+				top: floor(scale(borderInfo.y + leftSegmentHeight / verticalScaleFactor * i)),
 			});
 		}
 
@@ -167,8 +165,6 @@ export async function addImageBorder(
 			...leftEdgeSegments,
 			...rightEdgeSegments,
 		]);
-
-		await sharpImage.clone().png().toFile('C:/Users/Bert/Desktop/test.png');
 
 		return ImageManager.sharpToBuffer(sharpImage);
 	} catch (err) {

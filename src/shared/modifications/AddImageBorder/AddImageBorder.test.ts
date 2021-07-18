@@ -3,7 +3,7 @@ import * as path from 'path';
 import { loadImage } from '../../helpers/load-image-and-dimensions';
 import * as fs from 'fs-extra';
 
-const FIXTURE_IMAGE: string = path.resolve('src/fixtures/low-poly-river.jpg');
+const FIXTURE_IMAGE: string = path.resolve('src/fixtures/paint.jpg');
 const BORDER_IMAGE_FLORAL: string = path.resolve('resources/modifications/add-image-border/borders/floral_curly_188_188.png');
 
 describe('AddImageBorder', () => {
