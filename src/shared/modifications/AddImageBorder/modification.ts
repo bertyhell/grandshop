@@ -159,7 +159,7 @@ export async function addImageBorder(
 			{ input: await bottomLeftCorner.toBuffer(), gravity: 'southwest' },
 			{ input: await bottomRightCorner.toBuffer(), gravity: 'southeast' },
 
-			// // Edges
+			// Edges
 			...topEdgeSegments,
 			...bottomEdgeSegments,
 			...leftEdgeSegments,

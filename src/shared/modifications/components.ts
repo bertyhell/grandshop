@@ -16,7 +16,7 @@ export interface ModificationComponent {
   title: string, // Text show as the title of the section in the controls sidebar
 }
 
-const modificationComponents: {[name: string]: ModificationComponent} = {
+export const modificationComponents: {[name: string]: ModificationComponent} = {
   addBorder: {
     component: AddBorder,
     label: i18n.t('shared/modifications/components___add-a-colored-border'),
@@ -53,5 +53,3 @@ const modificationComponents: {[name: string]: ModificationComponent} = {
     title: i18n.t('shared/modifications/components___crop-0'),
   },
 };
-
-export default modificationComponents;

@@ -45,7 +45,7 @@ const AddImageBorder: FunctionComponent<ModificationProps> = ({ onApply }) => {
 				arguments: [selectedBorderPath, borderWidth],
 			});
 		}
-	}, [onApply, selectedBorderPath, borderWidth]);
+	}, [selectedBorderPath, borderWidth]); // TODO ensure that adding onApply in the useEffects dependency array doesn't cause an infinite loop because it's an anonymous function
 
 	if (!imageBorders || !imageBorders.length) {
 		return <Spinner />;
@@ -59,15 +59,19 @@ const AddImageBorder: FunctionComponent<ModificationProps> = ({ onApply }) => {
 						value: imageBorder.path,
 					}))}
 					value={selectedBorderPath}
-					onChange={setSelectedBorderPath}
+					onChange={(imageBorderPath) => {
+						setSelectedBorderPath(imageBorderPath);
+					}}
 				/>
 			</FormField>
-			<FormField label={t('shared/modifications/annotate/annotate___text-size')}>
+			<FormField label={t('Border width')}>
 				<MultiRange
-					min={0}
+					min={5}
 					max={500}
 					values={[borderWidth]}
-					onChange={(values) => setBorderWidth(values[0])}
+					onChange={(values) => {
+						setBorderWidth(values[0]);
+					}}
 				/>
 			</FormField>
 		</>

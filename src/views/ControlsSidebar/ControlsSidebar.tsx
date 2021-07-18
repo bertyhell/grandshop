@@ -14,7 +14,7 @@ import { selectModifiedImage, selectOriginalImage } from '../../store/selectors'
 import { setModifiedImageAction } from '../../store/actions';
 import { Select, SelectOption } from '../../components/Select/Select';
 import { format } from '../../shared/helpers/format';
-import mods, { ModificationComponent } from '../../shared/modifications/components';
+import { modificationComponents, ModificationComponent } from '../../shared/modifications/components';
 import { ImageModificationInfo } from '../../shared/modifications/types';
 import ImageModification from '../../components/ImageModification/ImageModification';
 import { FrontendImageInfo } from '../../shared/types';
@@ -51,7 +51,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
 
   const IMAGE_MODIFIER_OPTIONS: SelectOption[] = [
-    ...map(mods, (mod: ModificationComponent, modName: string) => {
+    ...map(modificationComponents, (mod: ModificationComponent, modName: string) => {
       return {
         label: mod.label,
         value: modName
@@ -59,7 +59,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
     })
   ];
 
-  const IMAGE_MODIFIER_TITLES: { [modifierName: string]: string } = fromPairs(map(mods, (mod: ModificationComponent, modName: string) => {
+  const IMAGE_MODIFIER_TITLES: { [modifierName: string]: string } = fromPairs(map(modificationComponents, (mod: ModificationComponent, modName: string) => {
     return [modName, mod.title];
   }));
 
@@ -219,11 +219,11 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
           </div>
           <div className="m-modification-controls">
             {modifierState.activeModifiers.map((m: ActiveModifier, index: number) => {
-              if (!mods[m.name] || !mods[m.name].component) {
+              if (!modificationComponents[m.name] || !modificationComponents[m.name].component) {
                 console.error('Failed to find component by name in list of modifications', { modificationInfo: m });
                 return null;
               }
-              const Component = mods[m.name].component;
+              const Component = modificationComponents[m.name].component;
               return <ImageModification
                   label={m.title}
                   className={'c-' + kebabCase(m.name)}
