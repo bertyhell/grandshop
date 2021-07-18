@@ -67,7 +67,7 @@ export default class ImageManager {
   public static async setOriginalImagePath(absoluteFilePath: string): Promise<{ buffer: Buffer, dimensions: Dimensions }> {
     this.originalImagePathParts = path.parse(absoluteFilePath);
     this.originalImagePath = absoluteFilePath;
-    // Always convert input images to a format that both sharp and graphicmagic understand and is lossless: PNG
+    // Always convert input images to a format that sharp understands and is lossless: PNG
     this.originalImageBuffer = await this.bufferToSharp(await fs.readFile(absoluteFilePath)).png().toBuffer();
     this.originalImageDimensions = await this.getDimensions(this.originalImageBuffer);
     return {
