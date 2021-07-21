@@ -56,17 +56,7 @@ export async function addImageBorder(
 		});
 
 		// Horizontal edges
-		const imageTopEdgeSpace = imageInfo.dimensions.width - scale(borderInfo.cornerX) * 2;
-		const numberOfHorizontalSegments = imageTopEdgeSpace / scale(borderInfo.edgeX);
-		const roundedNumberOfHorizontalSegments = Math.round(numberOfHorizontalSegments);
-		let horizontalScaleFactor: number;
-		if (numberOfHorizontalSegments > roundedNumberOfHorizontalSegments) {
-			horizontalScaleFactor = 1 - Math.abs(numberOfHorizontalSegments - roundedNumberOfHorizontalSegments) / numberOfHorizontalSegments;
-		} else {
-			horizontalScaleFactor = 1 + Math.abs(numberOfHorizontalSegments - roundedNumberOfHorizontalSegments) / numberOfHorizontalSegments;
-		}
-		const topEdgeSegments = [];
-		const bottomEdgeSegments = [];
+		// Extract the top edge repeatable part and the bottom edge repeatable part from the border image
 		const topEdgeSegmentBuffer = await borderImage
 			.clone()
 			.extract({
@@ -75,7 +65,6 @@ export async function addImageBorder(
 				width: floor(scale(borderInfo.edgeX)),
 				height: floor(scale(borderInfo.cornerY)),
 			})
-			.resize(floor(scale(borderInfo.edgeX * horizontalScaleFactor)), floor(scale(borderInfo.cornerY)), {fit: 'fill'	})
 			.toBuffer();
 		const bottomEdgeSegmentBuffer = await borderImage
 			.clone()
@@ -85,35 +74,48 @@ export async function addImageBorder(
 				width: floor(scale(borderInfo.edgeX)),
 				height: floor(scale(borderInfo.cornerY)),
 			})
-			.resize(floor(scale(borderInfo.edgeX * horizontalScaleFactor)), floor(scale(borderInfo.cornerY)), {fit: 'fill'	})
 			.toBuffer();
+		// Add the repeatable parts to fill up the required image space between the corner parts
+		const imageTopEdgeSpace = imageInfo.dimensions.width - scale(borderInfo.cornerX) * 2;
+		const numberOfHorizontalSegments = imageTopEdgeSpace / scale(borderInfo.edgeX);
+		const roundedNumberOfHorizontalSegments = Math.round(numberOfHorizontalSegments);
+		const topEdgeSegments = [];
+		const bottomEdgeSegments = [];
 		for (let i = 0; i < roundedNumberOfHorizontalSegments; i += 1) {
 			topEdgeSegments.push({
 				input: topEdgeSegmentBuffer,
 				gravity: 'northwest',
-				left: floor(scale(borderInfo.cornerX + borderInfo.edgeX / horizontalScaleFactor * i)),
+				left: floor(scale(borderInfo.edgeX)) * i,
 				top: 0,
 			});
 			bottomEdgeSegments.push({
 				input: bottomEdgeSegmentBuffer,
 				gravity: 'northwest',
-				left: floor(scale(borderInfo.cornerX + borderInfo.edgeX / horizontalScaleFactor * i)),
-				top: borderImageInfo.height - floor(scale(borderInfo.cornerY)),
+				left: floor(scale(borderInfo.edgeX)) * i,
+				top: 0,
 			});
 		}
+		const topEdgeImage = await sharp({
+			create: {
+				channels: 4,
+				width: floor(scale(borderInfo.edgeX)) * roundedNumberOfHorizontalSegments,
+				height: floor(scale(borderInfo.cornerY)),
+				background: { r: 0, g: 0, b: 0, alpha: 0 },
+			},
+		}).png();
+		const bottomEdgeImage = await sharp({
+			create: {
+				channels: 4,
+				width: floor(scale(borderInfo.edgeX)) * roundedNumberOfHorizontalSegments,
+				height: floor(scale(borderInfo.cornerY)),
+				background: { r: 0, g: 0, b: 0, alpha: 0 },
+			},
+		}).png();
+
+		const topEdgeImageScaled = await sharp(await topEdgeImage.composite(topEdgeSegments).toBuffer()).resize(imageTopEdgeSpace, floor(scale(borderInfo.cornerY)), { fit: 'fill' });
+		const bottomEdgeImageScaled = await sharp(await bottomEdgeImage.composite(bottomEdgeSegments).toBuffer()).resize(imageTopEdgeSpace, floor(scale(borderInfo.cornerY)), { fit: 'fill' });
 
 		// Vertical edges
-		const imageLeftEdgeSpace = imageInfo.dimensions.height - borderWidth * 2;
-		const numberOfVerticalSegments = imageLeftEdgeSpace / scale(borderInfo.edgeY);
-		const roundedNumberOfVerticalSegments = Math.round(numberOfVerticalSegments);
-		let verticalScaleFactor: number;
-		if (numberOfVerticalSegments > roundedNumberOfVerticalSegments) {
-			verticalScaleFactor = 1 - Math.abs(numberOfVerticalSegments - roundedNumberOfVerticalSegments) / numberOfVerticalSegments;
-		} else {
-			verticalScaleFactor = 1 + Math.abs(numberOfVerticalSegments - roundedNumberOfVerticalSegments) / numberOfVerticalSegments;
-		}
-		const leftEdgeSegments = [];
-		const rightEdgeSegments = [];
 		const leftEdgeSegmentBuffer = await borderImage
 			.clone()
 			.extract({
@@ -122,7 +124,6 @@ export async function addImageBorder(
 				width: floor(scale(borderInfo.cornerX)),
 				height: floor(scale(borderInfo.edgeY)),
 			})
-			.resize(floor(scale(borderInfo.cornerX)), floor(scale(borderInfo.edgeY / verticalScaleFactor)), {fit: 'fill'	})
 			.toBuffer();
 		const rightEdgeSegmentBuffer = await borderImage
 			.clone()
@@ -132,22 +133,46 @@ export async function addImageBorder(
 				width: floor(scale(borderInfo.cornerX)),
 				height: floor(scale(borderInfo.edgeY)),
 			})
-			.resize(floor(scale(borderInfo.cornerY)), floor(scale(borderInfo.edgeY / verticalScaleFactor)), {fit: 'fill'	})
 			.toBuffer();
+		// Add the repeatable parts to fill up the required image space between the corner parts
+		const imageLeftEdgeSpace = imageInfo.dimensions.height - scale(borderInfo.cornerY) * 2;
+		const numberOfVerticalSegments = imageLeftEdgeSpace / scale(borderInfo.edgeY);
+		const roundedNumberOfVerticalSegments = Math.round(numberOfVerticalSegments);
+		const leftEdgeSegments = [];
+		const rightEdgeSegments = [];
 		for (let i = 0; i < roundedNumberOfVerticalSegments; i += 1) {
 			leftEdgeSegments.push({
 				input: leftEdgeSegmentBuffer,
 				gravity: 'northwest',
 				left: 0,
-				top: floor(scale(borderInfo.cornerY + borderInfo.edgeY / verticalScaleFactor * i)),
+				top: floor(scale(borderInfo.edgeY)) * i,
 			});
 			rightEdgeSegments.push({
 				input: rightEdgeSegmentBuffer,
 				gravity: 'northwest',
-				left: imageInfo.dimensions.width - floor(scale(borderInfo.cornerX)),
-				top: floor(scale(borderInfo.cornerY + borderInfo.edgeY / verticalScaleFactor * i)),
+				left: 0,
+				top: floor(scale(borderInfo.edgeY)) * i,
 			});
 		}
+		const leftEdgeImage = await sharp({
+			create: {
+				channels: 4,
+				width: floor(scale(borderInfo.cornerX)),
+				height: floor(scale(borderInfo.edgeY)) * roundedNumberOfVerticalSegments,
+				background: { r: 0, g: 0, b: 0, alpha: 0 },
+			},
+		}).png();
+		const rightEdgeImage = await sharp({
+			create: {
+				channels: 4,
+				width: floor(scale(borderInfo.cornerX)),
+				height: floor(scale(borderInfo.edgeY)) * roundedNumberOfVerticalSegments,
+				background: { r: 0, g: 0, b: 0, alpha: 0 },
+			},
+		}).png();
+
+		const leftEdgeImageScaled = await sharp((await leftEdgeImage.composite(leftEdgeSegments).toBuffer())).resize(floor(scale(borderInfo.cornerX)), imageLeftEdgeSpace, { fit: 'fill' });
+		const rightEdgeImageScaled = await sharp((await rightEdgeImage.composite(rightEdgeSegments).toBuffer())).resize(floor(scale(borderInfo.cornerX)), imageLeftEdgeSpace, { fit: 'fill' });
 
 		sharpImage.composite([
 			// Corners
@@ -157,10 +182,18 @@ export async function addImageBorder(
 			{ input: await bottomRightCorner.toBuffer(), gravity: 'southeast' },
 
 			// Edges
-			...topEdgeSegments,
-			...bottomEdgeSegments,
-			...leftEdgeSegments,
-			...rightEdgeSegments,
+			{ input: await topEdgeImageScaled.toBuffer(), left: scale(borderInfo.cornerX), top: 0 },
+			{
+				input: await bottomEdgeImageScaled.toBuffer(),
+				left: scale(borderInfo.cornerX),
+				top: imageInfo.dimensions.height - scale(borderInfo.cornerY),
+			},
+			{ input: await leftEdgeImageScaled.toBuffer(), left: 0, top: scale(borderInfo.cornerY) },
+			{
+				input: await rightEdgeImageScaled.toBuffer(),
+				left: imageInfo.dimensions.width - scale(borderInfo.cornerX),
+				top: scale(borderInfo.cornerY),
+			},
 		]);
 
 		return ImageManager.sharpToBuffer(sharpImage);
