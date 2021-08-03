@@ -45,6 +45,7 @@ const AddImageBorder: FunctionComponent<ModificationProps> = ({ onApply }) => {
 				arguments: [selectedBorderPath, borderWidth],
 			});
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selectedBorderPath, borderWidth]); // TODO ensure that adding onApply in the useEffects dependency array doesn't cause an infinite loop because it's an anonymous function
 
 	if (!imageBorders || !imageBorders.length) {
