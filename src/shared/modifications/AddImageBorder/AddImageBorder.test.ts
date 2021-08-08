@@ -8,7 +8,7 @@ const BORDER_IMAGE_FLORAL: string = path.resolve('resources/modifications/add-im
 
 describe('AddImageBorder', () => {
 	it('Should add an image border', async () => {
-		const imageBuffer = await addImageBorder(await loadImage(FIXTURE_IMAGE), BORDER_IMAGE_FLORAL, 71);
+		const imageBuffer = await addImageBorder(await loadImage(FIXTURE_IMAGE), BORDER_IMAGE_FLORAL, 133);
 		await fs.writeFile(path.resolve('./test.png'), imageBuffer);
 	});
 });
