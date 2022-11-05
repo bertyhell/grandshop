@@ -247,7 +247,7 @@ ipcMain.handle(
 				);
 			}
 			return await func(event, ...arg.funcArgs);
-		} catch (err) {
+		} catch (err: any) {
 			callRendererFunction('showNotification', [i18n.t(err.message), 'error', err]);
 			console.error(err);
 		}

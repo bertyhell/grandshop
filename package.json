@@ -6,7 +6,6 @@
   "scripts": {
     "start": "concurrently \"npm run electron-start\" \"npm run react-start\"",
     "build": "concurrently \"npm run electron-build\" \"npm run react-build\"",
-    "build-and-run": "npm run build && npm run start",
     "electron-start": "electron . --allow-file-access-from-files",
     "electron-rebuild": "npx electron-rebuild",
     "electron-build": "concurrently \"npm:electron-build-main\" \"npm:electron-build-shared\"",
@@ -105,7 +104,7 @@
     "tslint-config-airbnb": "^5.11.1",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.3.0",
-    "typescript": "^3.8.2",
+    "typescript": "^4.8.4",
     "webpack": "^4.42.0"
   },
   "keywords": [
