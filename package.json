@@ -6,6 +6,7 @@
   "scripts": {
     "start": "concurrently \"npm run electron-start\" \"npm run react-start\"",
     "build": "concurrently \"npm run electron-build\" \"npm run react-build\"",
+    "build-and-run": "npm run build && npm run start",
     "electron-start": "electron . --allow-file-access-from-files",
     "electron-rebuild": "npx electron-rebuild",
     "electron-build": "concurrently \"npm:electron-build-main\" \"npm:electron-build-shared\"",
@@ -25,10 +26,10 @@
     "extract-translations": "npm run fetch-translations-from-poeditor && npm run build-extract-translations-script && node scripts/extract-and-replace-translations.js && npm run format"
   },
   "dependencies": {
-    "@babel/runtime": "^7.11.2",
+    "@babel/runtime": "^7.20.1",
     "@fortawesome/fontawesome-free": "^5.12.0",
-    "@jaames/iro": "^4.5.3",
-    "@jcoreio/async-throttle": "^1.1.2",
+    "@jaames/iro": "^5.5.2",
+    "@jcoreio/async-throttle": "^1.4.3",
     "@use-it/event-listener": "^0.1.3",
     "classnames": "^2.2.6",
     "color": "^3.1.2",
@@ -44,7 +45,7 @@
     "react-i18next": "^11.3.2",
     "react-range": "^1.4.6",
     "react-redux": "^7.1.3",
-    "react-scripts": "^3.4.3",
+    "react-scripts": "^5.0.1",
     "react-select": "^3.0.8",
     "react-textarea-autosize": "^7.1.2",
     "react-toastify": "^5.4.1",
