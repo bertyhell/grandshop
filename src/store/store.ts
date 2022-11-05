@@ -8,8 +8,8 @@ import { AppState } from './types';
 const middleware = [thunk];
 
 export default createStore(
-    combineReducers<Reducer<AppState>>({
-      app: appReducer
-    }),
-    composeWithDevTools(applyMiddleware(...middleware))
+	combineReducers<Reducer<AppState>>({
+		app: appReducer,
+	}),
+	composeWithDevTools(applyMiddleware(...middleware))
 );

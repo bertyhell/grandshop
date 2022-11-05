@@ -53,10 +53,13 @@ const ColorInput: FunctionComponent<ColorInputProps> = ({
 		[onChange]
 	);
 
-	const copyMouseColorToState = useCallback(async (evt: MouseEvent) => {
-		const color = await getColorAtPixel(evt.clientX, evt.clientY);
-		changeColor(color);
-	}, [changeColor]);
+	const copyMouseColorToState = useCallback(
+		async (evt: MouseEvent) => {
+			const color = await getColorAtPixel(evt.clientX, evt.clientY);
+			changeColor(color);
+		},
+		[changeColor]
+	);
 
 	useEffect(() => {
 		if (!el.current) {

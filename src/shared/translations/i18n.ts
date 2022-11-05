@@ -6,41 +6,40 @@ import nl from './nl.json';
 import en from './en.json';
 
 const resources = {
-  nl: {
-    translation: nl,
-  },
-  en: {
-    translation: en,
-  },
+	nl: {
+		translation: nl,
+	},
+	en: {
+		translation: en,
+	},
 };
 
 const languages: string[] = Object.keys(resources);
 
 interface LanguageInfo {
-  code: string;
-  englishName: string;
-  nativeName: string;
+	code: string;
+	englishName: string;
+	nativeName: string;
 }
 
 console.log('ISO6391: ', ISO6391);
-export const languageMap: LanguageInfo[] = languages.map(code => ({
-  code,
-  englishName: ISO6391.getName(code),
-  nativeName: ISO6391.getNativeName(code)
+export const languageMap: LanguageInfo[] = languages.map((code) => ({
+	code,
+	englishName: ISO6391.getName(code),
+	nativeName: ISO6391.getNativeName(code),
 }));
 
-i18n
-    .use(initReactI18next) // passes i18n down to react-i18next
-    .init({
-      debug: true,
-      resources,
-      keySeparator: '^',
-      nsSeparator: '^',
-      lng: 'en',
-      fallbackLng: 'nl',
-      interpolation: {
-        escapeValue: false,
-      },
-    });
+i18n.use(initReactI18next) // passes i18n down to react-i18next
+	.init({
+		debug: true,
+		resources,
+		keySeparator: '^',
+		nsSeparator: '^',
+		lng: 'en',
+		fallbackLng: 'nl',
+		interpolation: {
+			escapeValue: false,
+		},
+	});
 
 export default i18n;

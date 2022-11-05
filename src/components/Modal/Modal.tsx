@@ -59,7 +59,9 @@ export const Modal: FunctionComponent<ModalProps> = ({
 	return ReactDOM.createPortal(
 		<Fragment>
 			<div
-				className={classnames(className, 'c-modal-context', { 'c-modal-context--visible': isOpen })}
+				className={classnames(className, 'c-modal-context', {
+					'c-modal-context--visible': isOpen,
+				})}
 				onClick={onContextClick}
 			>
 				<div
@@ -80,7 +82,10 @@ export const Modal: FunctionComponent<ModalProps> = ({
 								{title && (
 									<ToolbarLeft>
 										<ToolbarItem>
-											<h2 className="c-modal__title" dangerouslySetInnerHTML={{ __html: title }} />
+											<h2
+												className="c-modal__title"
+												dangerouslySetInnerHTML={{ __html: title }}
+											/>
 										</ToolbarItem>
 									</ToolbarLeft>
 								)}

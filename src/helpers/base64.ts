@@ -1,3 +1,3 @@
 export function getImageSource(base64: string | null | undefined): string {
-  return 'data:image/png;base64,' + (base64 || '');
+	return 'data:image/png;base64,' + (base64 || '');
 }

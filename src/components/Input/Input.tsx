@@ -5,72 +5,70 @@ import classnames from 'classnames';
 import './Input.scss';
 
 type InputType =
-    | 'checkbox'
-    | 'date'
-    | 'datetime-local'
-    | 'email'
-    | 'file'
-    | 'hidden'
-    | 'image'
-    | 'month'
-    | 'number'
-    | 'password'
-    | 'radio'
-    | 'range'
-    | 'reset'
-    | 'search'
-    | 'submit'
-    | 'tel'
-    | 'text'
-    | 'time'
-    | 'url'
-    | 'week';
-
+	| 'checkbox'
+	| 'date'
+	| 'datetime-local'
+	| 'email'
+	| 'file'
+	| 'hidden'
+	| 'image'
+	| 'month'
+	| 'number'
+	| 'password'
+	| 'radio'
+	| 'range'
+	| 'reset'
+	| 'search'
+	| 'submit'
+	| 'tel'
+	| 'text'
+	| 'time'
+	| 'url'
+	| 'week';
 
 export interface InputProps {
-  className?: string;
-  id?: string;
-  disabled?: boolean;
-  placeholder?: string;
-  value?: string;
-  type?: InputType;
-  ariaLabel?: string;
-  onChange?: (value: any) => void;
-  onBlur?: (event: ChangeEvent<HTMLInputElement>) => void;
-  onKeyUp?: (event: KeyboardEvent<HTMLInputElement>) => void;
+	className?: string;
+	id?: string;
+	disabled?: boolean;
+	placeholder?: string;
+	value?: string;
+	type?: InputType;
+	ariaLabel?: string;
+	onChange?: (value: any) => void;
+	onBlur?: (event: ChangeEvent<HTMLInputElement>) => void;
+	onKeyUp?: (event: KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const Input: FunctionComponent<InputProps> = ({
-                                                               className,
-                                                               id,
-                                                               disabled = false,
-                                                               placeholder,
-                                                               value = '',
-                                                               type = 'text',
-                                                               ariaLabel = '',
-                                                               onChange = () => {
-                                                               },
-                                                               onBlur = () => {
-                                                               },
-                                                               onKeyUp = () => {
-                                                               }
-                                                             }) => {
-  function onValueChange(event: ChangeEvent<HTMLInputElement>) {
-    onChange(event.target.value);
-  }
+	className,
+	id,
+	disabled = false,
+	placeholder,
+	value = '',
+	type = 'text',
+	ariaLabel = '',
+	onChange = () => {},
+	onBlur = () => {},
+	onKeyUp = () => {},
+}) => {
+	function onValueChange(event: ChangeEvent<HTMLInputElement>) {
+		onChange(event.target.value);
+	}
 
-  return <input
-      className={classnames('o-input', className)}
-      type={type}
-      id={id}
-      value={value}
-      disabled={disabled}
-      placeholder={placeholder}
-      {...(ariaLabel ? { 'aria-label': ariaLabel } : {})}
-      onChange={onValueChange}
-      onBlur={onBlur}
-      onKeyUp={onKeyUp}
-  />;
+	return (
+		<input
+			className={classnames('o-input', className)}
+			type={type}
+			id={id}
+			value={value}
+			disabled={disabled}
+			placeholder={placeholder}
+			{...(ariaLabel ? { 'aria-label': ariaLabel } : {})}
+			onChange={onValueChange}
+			onBlur={onBlur}
+			onKeyUp={onKeyUp}
+		/>
+	);
 };
 
 export default Input;

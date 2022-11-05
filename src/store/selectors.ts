@@ -1,15 +1,15 @@
 import { AppState } from './types';
 
-const selectOriginalImage = (state: {app: AppState}) => {
-  return state.app.originalImage;
+const selectOriginalImage = (state: { app: AppState }) => {
+	return state.app.originalImage;
 };
 
-const selectModifiedImage = (state: {app: AppState}) => {
-  return state.app.modifiedImage;
+const selectModifiedImage = (state: { app: AppState }) => {
+	return state.app.modifiedImage;
 };
 
-const selectModificationInProgress = (state: {app: AppState}) => {
-  return state.app.modificationInProgress;
+const selectModificationInProgress = (state: { app: AppState }) => {
+	return state.app.modificationInProgress;
 };
 
 export { selectOriginalImage, selectModifiedImage, selectModificationInProgress };
