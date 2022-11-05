@@ -6,8 +6,7 @@
   "scripts": {
     "start": "concurrently \"npm run electron-start\" \"npm run react-start\"",
     "build": "concurrently \"npm run electron-build\" \"npm run react-build\"",
-    "electron-start": ".\\node_modules\\electron\\dist\\electron.exe . --allow-file-access-from-files",
-    "node-gyp-rebuild": "node-gyp rebuild --target=9.2.0 --arch=x64 --dist-url=https://electronjs.org/headers",
+    "electron-start": "electron . --allow-file-access-from-files",
     "electron-rebuild": "npx electron-rebuild",
     "electron-build": "concurrently \"npm:electron-build-main\" \"npm:electron-build-shared\"",
     "electron-build-main": "babel src/electron --out-dir build/electron --extensions .ts --source-maps inline",
@@ -97,7 +96,7 @@
     "electron-builder": "^22.8.0",
     "electron-prebuilt": "^1.4.13",
     "fetch-poeditor": "^0.5.2",
-    "node-sass": "^4.13.0",
+    "sass": "^1.56.0",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.0",
     "sort-object-keys": "^1.1.3",
