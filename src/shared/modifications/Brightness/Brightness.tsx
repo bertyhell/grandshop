@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 
-import { MultiRange } from '../../../components/MultiRange/MultiRange';
+import { MultiRange } from '../../../renderer/src/components/MultiRange/MultiRange';
 import { ModificationProps } from '../types';
 
 import './Brightness.scss';
@@ -13,7 +13,7 @@ const Brightness: FunctionComponent<ModificationProps> = ({ onApply }) => {
 			name: 'brightness',
 			arguments: [brightness],
 		});
-	}, [brightness]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [brightness]);
 
 	return (
 		<MultiRange

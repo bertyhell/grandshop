@@ -10,7 +10,7 @@ const Sepia: FunctionComponent<ModificationProps> = ({ onApply }) => {
 			name: 'sepia',
 			arguments: [],
 		});
-	}, []); // eslint-disable-line react-hooks/exhaustive-deps
+	}, []);
 	return null;
 };
 
