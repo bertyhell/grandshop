@@ -4,7 +4,7 @@ import { sepia } from './Sepia/modification';
 import { resize } from './Resize/modification';
 import { annotate } from './Annotate/modification';
 import { crop } from './Crop/modification';
-import { Dimensions } from '../../electron/main-interop';
+import { Dimensions } from '../types';
 
 export interface ImageInfo {
 	buffer: Buffer;

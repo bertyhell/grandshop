@@ -4,9 +4,9 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { ModificationProps } from '../types';
 
 import './Annotate.scss';
-import { TextArea } from '../../../components/TextArea/TextArea';
-import FormField from '../../../components/FormField/FormField';
-import { MultiRange } from '../../../components/MultiRange/MultiRange';
+import { TextArea } from '../../../renderer/src/components/TextArea/TextArea';
+import FormField from '../../../renderer/src/components/FormField/FormField';
+import { MultiRange } from '../../../renderer/src/components/MultiRange/MultiRange';
 
 const Annotate: FunctionComponent<ModificationProps> = ({ onApply }) => {
 	const [t] = useTranslation();
@@ -21,7 +21,7 @@ const Annotate: FunctionComponent<ModificationProps> = ({ onApply }) => {
 			name: 'annotate',
 			arguments: [text, fontSize, xPosition, yPosition],
 		});
-	}, [text, fontSize, xPosition, yPosition]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [text, fontSize, xPosition, yPosition]);
 
 	return (
 		<>

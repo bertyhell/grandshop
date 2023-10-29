@@ -10,6 +10,8 @@
 
 # production
 /build
+/out
+/dist
 
 # misc
 .DS_Store
@@ -32,3 +34,9 @@ electron-dist
 src/shared/translations/poeditor
 
 *.asar
+
+tsconfig.json
+tsconfig.*.json
+
+/vite-electron
+/old

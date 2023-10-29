@@ -1,5 +1,3 @@
-import { Dimensions } from '../electron/main-interop';
-
 export type RendererCallFunction =
 	| 'setOriginalImage'
 	| 'setOriginalImageDimensions'
@@ -11,6 +9,7 @@ export type RendererCallFunction =
 
 export interface RendererCallFunctionRequest {
 	func: RendererCallFunction;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	funcArgs: any[];
 }
 
@@ -23,10 +22,16 @@ export type ElectronCallFunction =
 
 export interface ElectronCallFunctionRequest {
 	func: ElectronCallFunction;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	funcArgs: any[];
 }
 
 export interface FrontendImageInfo {
 	base64: string;
 	dimensions: Dimensions;
+}
+
+export interface Dimensions {
+	width: number;
+	height: number;
 }

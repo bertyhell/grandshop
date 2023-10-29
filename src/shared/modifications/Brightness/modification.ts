@@ -1,6 +1,6 @@
 import { Sharp } from 'sharp';
 
-import ImageManager from '../../../electron/image-manager';
+import ImageManager from '../image-manager';
 import { ImageInfo } from '../modifications';
 
 export function brightness(imageInfo: ImageInfo, brightness: number): Promise<Buffer> {

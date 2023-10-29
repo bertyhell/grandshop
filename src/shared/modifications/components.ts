@@ -10,6 +10,7 @@ import Annotate from './Annotate/Annotate';
 import Crop from './Crop/Crop';
 
 export interface ModificationComponent {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	component: FunctionComponent<any>; // React component to load for this modification
 	label: string; // Label shown in the modification dropdown list
 	title: string; // Text show as the title of the section in the controls sidebar

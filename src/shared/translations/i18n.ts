@@ -22,7 +22,6 @@ interface LanguageInfo {
 	nativeName: string;
 }
 
-console.log('ISO6391: ', ISO6391);
 export const languageMap: LanguageInfo[] = languages.map((code) => ({
 	code,
 	englishName: ISO6391.getName(code),
@@ -31,7 +30,7 @@ export const languageMap: LanguageInfo[] = languages.map((code) => ({
 
 i18n.use(initReactI18next) // passes i18n down to react-i18next
 	.init({
-		debug: true,
+		debug: false,
 		resources,
 		keySeparator: '^',
 		nsSeparator: '^',

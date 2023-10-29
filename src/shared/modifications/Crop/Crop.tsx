@@ -1,11 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 
-import { MultiRange } from '../../../components/MultiRange/MultiRange';
+import { MultiRange } from '../../../renderer/src/components/MultiRange/MultiRange';
+import FormField from '../../../renderer/src/components/FormField/FormField';
 import { ModificationProps } from '../types';
 
 import './Crop.scss';
-import FormField from '../../../components/FormField/FormField';
 
 const Crop: FunctionComponent<ModificationProps> = ({ imageInfo, onApply }) => {
 	const [t] = useTranslation();
@@ -20,9 +20,8 @@ const Crop: FunctionComponent<ModificationProps> = ({ imageInfo, onApply }) => {
 			name: 'crop',
 			arguments: [top, right, bottom, left],
 		});
-	}, [top, right, bottom, left]); // eslint-disable-line react-hooks/exhaustive-deps
+	}, [top, right, bottom, left]);
 
-	console.log(top, right, bottom, left);
 	return (
 		<>
 			<FormField label={t('shared/modifications/crop/crop___top')} labelFor="top">
