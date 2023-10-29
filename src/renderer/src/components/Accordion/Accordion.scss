@@ -1,63 +1,63 @@
 .c-accordion {
-  background-color: #FFF;
-  border-radius: 4px;
-  border: 1px solid #aaa;
-  margin: 0 0 10px;
+	background-color: #fff;
+	border-radius: 4px;
+	border: 1px solid #aaa;
+	margin: 0 0 10px;
 
-  .c-toolbar-left {
-    flex: 1 1 auto;
-    z-index: 0;
-  }
+	.c-toolbar-left {
+		flex: 1 1 auto;
+		z-index: 0;
+	}
 
-  .c-toolbar-right {
-    flex: 1 1 auto;
-    z-index: 0;
-  }
+	.c-toolbar-right {
+		flex: 1 1 auto;
+		z-index: 0;
+	}
 
-  .c-accordion-body {
-    display: block;
-  }
+	.c-accordion-body {
+		display: block;
+	}
 
-  .c-accordion-icon {
-    display: block;
-  }
+	.c-accordion-icon {
+		display: block;
+	}
 
-  &.c-accordion-closed {
-    .c-accordion-body {
-      display: none;
-    }
-  }
+	&.c-accordion-closed {
+		.c-accordion-body {
+			display: none;
+		}
+	}
 
-  .c-button-wrapper {
-    position: absolute;
-    right: -1px;
-    top: -1px;
-    height: calc(100% + 2px);
+	.c-button-wrapper {
+		position: absolute;
+		right: -1px;
+		top: -1px;
+		height: calc(100% + 2px);
 
-    > * {
-      height: 100%;
-      margin-left: 10px;
-    }
-  }
+		> * {
+			height: 100%;
+			margin-left: 10px;
+		}
+	}
 }
 
 .c-accordion-header {
-  padding: 10px 10px;
-  display: flex;
-  justify-content: space-between;
-  position: relative;
+	padding: 10px 10px;
+	display: flex;
+	justify-content: space-between;
+	position: relative;
 }
 
 .c-accordion-header-title {
-  color: black;
-  font-weight: 500;
+	color: black;
+	font-weight: 500;
 }
 
 .c-accordion-item {
-  padding: 10px 10px;
-  overflow: hidden;
+	padding: 10px 10px;
+	overflow: hidden;
 }
 
 .c-accordion-body {
-  border-top: 1px solid #aaa;
+	border-top: 1px solid #aaa;
 }

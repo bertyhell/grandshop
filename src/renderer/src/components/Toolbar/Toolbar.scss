@@ -57,7 +57,6 @@ $c-toolbar-main-border-color: #333 !default;
 	align-items: center;
 }
 
-
 .c-toolbar__center {
 	position: absolute;
 	margin-left: 50%;
@@ -71,7 +70,7 @@ $c-toolbar-main-border-color: #333 !default;
 	align-items: center;
 
 	.c-toolbar__item {
-		margin: 0  math.div($c-toolbar-item-spacing, 2);
+		margin: 0 math.div($c-toolbar-item-spacing, 2);
 
 		&:only-child {
 			margin: 0;

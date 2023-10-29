@@ -2,8 +2,8 @@ $c-modal-padding-horizontal: 2.4rem !default;
 $c-modal-padding-vertical: 2.4rem !default;
 $c-modal-border-radius: 0.3rem !default;
 
-$c-modal-header-bg-color: #FFF !default;
-$c-modal-footer-bg-color: #FFF !default;
+$c-modal-header-bg-color: #fff !default;
+$c-modal-footer-bg-color: #fff !default;
 
 $g-c-modal-backdrop-z: 30 !default;
 $g-c-modal-context-z: 40 !default;
@@ -17,7 +17,10 @@ $g-c-modal-z: 50 !default;
 	position: fixed;
 	top: 0;
 	transform: translateY(-4rem) scale(0.98);
-	transition: visibility 0s linear 0.2s, opacity 0.2s linear, transform 0.2s ease-in-out;
+	transition:
+		visibility 0s linear 0.2s,
+		opacity 0.2s linear,
+		transform 0.2s ease-in-out;
 	visibility: hidden;
 	width: 100%;
 	z-index: $g-c-modal-context-z;
@@ -31,7 +34,7 @@ $g-c-modal-z: 50 !default;
 }
 
 .c-modal {
-	background-color: #FFF;
+	background-color: #fff;
 	display: flex;
 	flex-direction: column;
 	width: calc(100% - 8rem);
@@ -69,7 +72,7 @@ $g-c-modal-z: 50 !default;
 }
 
 .c-modal__header--bg-alt {
-	background: #DDD;
+	background: #ddd;
 }
 
 .c-modal__header--bordered {
@@ -96,7 +99,7 @@ $g-c-modal-z: 50 !default;
 }
 
 .c-modal__footer--bg-alt {
-	background: #DDD;
+	background: #ddd;
 }
 
 .c-modal__content {
@@ -155,7 +158,9 @@ $g-c-modal-z: 50 !default;
 	opacity: 0;
 	position: fixed;
 	top: 0;
-	transition: visibility 0s linear 0.2s, opacity 0.2s linear;
+	transition:
+		visibility 0s linear 0.2s,
+		opacity 0.2s linear;
 	left: 0;
 	visibility: hidden;
 	z-index: $g-c-modal-backdrop-z;
@@ -166,4 +171,3 @@ $g-c-modal-z: 50 !default;
 		visibility: visible;
 	}
 }
-

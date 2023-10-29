@@ -6,6 +6,7 @@ declare module '@jcoreio/async-throttle';
 declare module 'dataimg-dimensions';
 declare module 'pretty-bytes';
 declare module 'react-use-mouse-move';
+declare module 'glob-promise';
 
 declare global {
 	interface Window {

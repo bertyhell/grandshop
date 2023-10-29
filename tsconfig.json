@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
-		"resolveJsonModule": true
+		"resolveJsonModule": true,
+		"target": "ES2021"
 	},
 	"files": [],
 	"references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.web.json" }]

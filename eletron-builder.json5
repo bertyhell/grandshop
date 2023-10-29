@@ -1,66 +1,60 @@
 {
-	appId: "com.gitlab.com.bertyhell.grandshop",
-	productName: "grandshop",
+	appId: 'com.gitlab.com.bertyhell.grandshop',
+	productName: 'grandshop',
 	directories: {
-		buildResources: "build"
+		buildResources: 'build',
 	},
 	files: [
-		"!**/.vscode/*",
-		"!src/*",
-		"!electron.vite.config.{js,ts,mjs,cjs}",
-		"!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}",
-		"!{.env,.env.*,.npmrc,pnpm-lock.yaml}",
-		"!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
+		'!**/.vscode/*',
+		'!src/*',
+		'!electron.vite.config.{js,ts,mjs,cjs}',
+		'!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}',
+		'!{.env,.env.*,.npmrc,pnpm-lock.yaml}',
+		'!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}',
 	],
-	asarUnpack: [
-		"resources/**"
-	],
+	asarUnpack: ['resources/**'],
 	win: {
-		executableName: "grandshop",
-		icon: "build/icon.ico"
+		executableName: 'grandshop',
+		icon: 'build/icon.ico',
 	},
 	nsis: {
-		artifactName: "${name}-${version}-setup.${ext}",
-		shortcutName: "${productName}",
-		uninstallDisplayName: "${productName}",
-		createDesktopShortcut: "always"
+		artifactName: '${name}-${version}-setup.${ext}',
+		shortcutName: '${productName}',
+		uninstallDisplayName: '${productName}',
+		createDesktopShortcut: 'always',
 	},
 	mac: {
-		entitlementsInherit: "build/entitlements.mac.plist",
+		entitlementsInherit: 'build/entitlements.mac.plist',
 		extendInfo: [
 			{
-				NSCameraUsageDescription: "Application requests access to the device's camera."
+				NSCameraUsageDescription: "Application requests access to the device's camera.",
 			},
 			{
-				NSMicrophoneUsageDescription: "Application requests access to the device's microphone."
+				NSMicrophoneUsageDescription: "Application requests access to the device's microphone.",
 			},
 			{
-				NSDocumentsFolderUsageDescription: "Application requests access to the user's Documents folder."
+				NSDocumentsFolderUsageDescription: "Application requests access to the user's Documents folder.",
 			},
 			{
-				NSDownloadsFolderUsageDescription: "Application requests access to the user's Downloads folder."
-			}
+				NSDownloadsFolderUsageDescription: "Application requests access to the user's Downloads folder.",
+			},
 		],
-		notarize: false
+		notarize: false,
 	},
 	dmg: {
-		artifactName: "${name}-${version}.${ext}"
+		artifactName: '${name}-${version}.${ext}',
 	},
 	linux: {
-		target: [
-			"AppImage",
-			"snap",
-			"deb"
-		],
-		maintainer: "https://gitlab.com/bertyhell/grandshop/-/issues",
-		category: "Utility"
+		target: ['AppImage', 'snap', 'deb'],
+		maintainer: 'https://gitlab.com/bertyhell/grandshop/-/issues',
+		category: 'Utility',
 	},
 	appImage: {
-		artifactName: "${name}-${version}.${ext}"
+		artifactName: '${name}-${version}.${ext}',
 	},
 	npmRebuild: false,
 	publish: {
-		provider: "generic",
-		url: "https://example.com/auto-updates"
-	}
+		provider: 'generic',
+		url: 'https://example.com/auto-updates',
+	},
 }

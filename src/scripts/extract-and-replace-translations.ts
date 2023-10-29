@@ -2,12 +2,12 @@
  This script runs over all the code and looks for either:
  <Trans>Request</Trans>
  or
- t('Request')
+ t('scripts/extract-and-replace-translations___formatted-key')
 
  and replaces them with:
  <Trans i18nKey="testdir1/testdir2/testfile1______request">Request</Trans>
  or
- t('testdir1/testdir2/testfile1___request')
+ t('scripts/extract-and-replace-translations___formatted-key')
 
 
  and it also outputs a json file with the translatable strings:
@@ -21,7 +21,7 @@
  */
 
 import * as fs from 'fs';
-import * as glob from 'glob';
+import * as glob from 'glob-promise';
 import * as _ from 'lodash';
 import * as path from 'path';
 import * as localTranslations from '../shared/translations/en.json';
@@ -30,7 +30,16 @@ type keyMap = { [key: string]: string };
 
 const oldTranslations: keyMap = localTranslations;
 
-import sortObject from 'sort-object-keys';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function sortObject(object: any): any {
+	const objectKeys = Object.keys(object);
+	return objectKeys.sort().reduce((total, key) => {
+		if (objectKeys.indexOf(key) !== -1) {
+			total[key] = object[key];
+		}
+		return total;
+	}, {});
+}
 
 function getFormattedKey(filePath: string, key: string) {
 	const fileKey = filePath
@@ -51,19 +60,11 @@ function getFormattedTranslation(translation: string) {
 }
 
 async function getFilesByGlob(globPattern: string): Promise<string[]> {
-	return new Promise<string[]>((resolve, reject) => {
-		const options = {
-			ignore: '**/*.d.ts',
-			cwd: path.join(__dirname, '../src'),
-		};
-		glob(globPattern, options, (err, files) => {
-			if (err) {
-				reject(err);
-			} else {
-				resolve(files);
-			}
-		});
-	});
+	const options = {
+		ignore: '**/*.d.ts',
+		cwd: path.join(__dirname, '../'),
+	};
+	return await glob(globPattern, options);
 }
 
 function extractTranslationsFromCodeFiles(codeFiles: string[]) {
@@ -71,23 +72,8 @@ function extractTranslationsFromCodeFiles(codeFiles: string[]) {
 	// Find and extract translations, replace strings with translation keys
 	codeFiles.forEach((relativeFilePath: string) => {
 		try {
-			const absoluteFilePath = path.resolve(__dirname, '../src', relativeFilePath);
+			const absoluteFilePath = path.resolve(__dirname, '../', relativeFilePath);
 			let content: string = fs.readFileSync(absoluteFilePath).toString();
-
-			// Replace Trans objects
-			content = content.replace(
-				/<Trans( i18nKey="([^"]+)")?>([\s\S]*?)<\/Trans>/g,
-				(match: string, keyAttribute: string, key: string, translation: string) => {
-					let formattedKey: string | undefined = key;
-					const formattedTranslation: string = getFormattedTranslation(translation);
-					if (!key) {
-						// new Trans without a key
-						formattedKey = getFormattedKey(relativeFilePath, formattedTranslation);
-					}
-					newTranslations[formattedKey] = formattedTranslation;
-					return `<Trans i18nKey="${formattedKey}">${formattedTranslation}</Trans>`;
-				}
-			);
 
 			// Replace t() functions ( including i18n.t() )
 			content = content.replace(
@@ -120,7 +106,7 @@ function extractTranslationsFromCodeFiles(codeFiles: string[]) {
 						(formattedTranslation.includes('___')
 							? (oldTranslations as keyMap)[formattedKey]
 							: formattedTranslation) || '';
-					return `${prefix}t('${formattedKey}'${translationParams})`;
+					return `${prefix}t('scripts/extract-and-replace-translations___formatted-key'${translationParams})`;
 				}
 			);
 
@@ -210,7 +196,7 @@ async function updateTranslations() {
 	checkTranslationsForKeysAsValue(nlJsonContent); // Throws error if any key is found as a value
 
 	fs.writeFileSync(
-		`${__dirname.replace(/\\/g, '/')}/../src/shared/translations/en.json`,
+		`${__dirname.replace(/\\/g, '/')}/../shared/translations/en.json`,
 		nlJsonContent
 	);
 

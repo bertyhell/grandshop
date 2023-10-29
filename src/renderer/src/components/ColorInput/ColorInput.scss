@@ -1,13 +1,13 @@
 .o-color-input {
-  display: flex;
-  justify-content: space-between;
+	display: flex;
+	justify-content: space-between;
 
-  > div {
-    height: 340px;
+	> div {
+		height: 340px;
 
-    &.a-color-preview {
-      border-radius: 4px;
-      width: calc(100% - 320px);
-    }
-  }
+		&.a-color-preview {
+			border-radius: 4px;
+			width: calc(100% - 320px);
+		}
+	}
 }
