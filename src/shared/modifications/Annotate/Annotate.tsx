@@ -67,10 +67,10 @@ const Annotate: FunctionComponent<ModificationProps> = ({ onApply }) => {
 					onChange={(values) => setYPosition(values[0])}
 				/>
 			</FormField>
-			<FormField label={t('shared/modifications/annotate/annotate___tekst-kleur')}>
+			<FormField label={t('shared/modifications/annotate/annotate___text-color')}>
 				<ColorInput value={textColor} onChange={setTextColor}></ColorInput>
 			</FormField>
-			<FormField label={t('shared/modifications/annotate/annotate___achtergrond-kleur')}>
+			<FormField label={t('shared/modifications/annotate/annotate___background-color')}>
 				<ColorInput value={backgroundColor} onChange={setBackgroundColor}></ColorInput>
 			</FormField>
 		</>
