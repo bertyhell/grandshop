@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron';
+import type { BrowserWindow } from 'electron';
 import { CustomError } from '../shared/error';
 import Color from 'color';
 

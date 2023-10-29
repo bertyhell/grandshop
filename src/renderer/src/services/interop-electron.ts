@@ -1,4 +1,4 @@
-import { OpenDialogSyncOptions, SaveDialogOptions } from 'electron';
+import type { OpenDialogSyncOptions, SaveDialogOptions } from 'electron';
 
 import {
 	setColorAtPixelAction,
@@ -15,10 +15,11 @@ import {
 import toastService from './toast-service';
 import { AlertType } from '../components/Alert/Alert';
 import { CustomError } from '../../../shared/error';
-import { ImageModificationInfo } from '../../../shared/modifications/types';
 import { Dimensions } from '../../../shared/types';
+import type { ImageModificationInfo } from '../../../shared/modifications/types';
 
-import { ipcRenderer } from 'electron';
+// Loaded in the preload.index.ts file
+const ipcRenderer = window?.electron?.ipcRenderer;
 
 const callableFunctions = {
 	setOriginalImage: (base64: string, dimensions: Dimensions) => {
@@ -50,7 +51,7 @@ const callableFunctions = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-ipcRenderer.on('mainprocess-response', (event: any, arg: RendererCallFunctionRequest) => {
+ipcRenderer?.on('mainprocess-response', (event: any, arg: RendererCallFunctionRequest) => {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const func: ((...args: any[]) => void) | undefined = (callableFunctions as any)[arg.func];
 	if (func) {
@@ -72,7 +73,7 @@ ipcRenderer.on('mainprocess-response', (event: any, arg: RendererCallFunctionReq
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function callMainFunction(name: ElectronCallFunction, args: any[]): Promise<any> {
-	return await ipcRenderer.invoke('request-mainprocess-action', {
+	return await ipcRenderer?.invoke('request-mainprocess-action', {
 		func: name,
 		funcArgs: args,
 	} as ElectronCallFunctionRequest);

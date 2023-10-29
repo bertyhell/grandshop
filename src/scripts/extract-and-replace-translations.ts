@@ -21,14 +21,14 @@
  */
 
 import * as fs from 'fs';
-import glob from 'glob';
+import * as glob from 'glob';
 import * as _ from 'lodash';
 import * as path from 'path';
-import localTranslations from '../src/shared/translations/en.json';
+import * as localTranslations from '../shared/translations/en.json';
 
 type keyMap = { [key: string]: string };
 
-const oldTranslations: keyMap = localTranslations as any;
+const oldTranslations: keyMap = localTranslations;
 
 import sortObject from 'sort-object-keys';
 
@@ -193,7 +193,7 @@ async function updateTranslations() {
 
 	// Console log translations that were found in the json file but not in the code
 	console.warn(
-		`The following translation keys were removed: 
+		`The following translation keys were removed:
 \t${removedTranslationKeys.join('\n\t')}`
 	);
 

@@ -4,31 +4,6 @@
   height: 100vh;
   overflow: hidden;
 
-  > div:last-child {
-    height: 100vh;
-
-    > div:not(.resizable-fragment) {
-      position: relative;
-      background-color: #e0e0e0;
-
-      &:after {
-        content: '||';
-        border: solid 1px #666;
-        border-width: 0 1px;
-        margin: -10px 0 0 3.5px;
-        height: 20px;
-        width: 4px;
-        overflow: hidden;
-        //background-color: red;
-        color: transparent;
-        top: 50%;
-        left: 4px;
-        transform: translateX(-50%);
-        position: absolute;
-      }
-    }
-  }
-
   .Toastify {
     position: fixed;
     left: 20px;

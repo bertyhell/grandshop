@@ -10,7 +10,7 @@ import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import fs from 'fs-extra';
 import throttle from '@jcoreio/async-throttle';
 
-import { ImageModificationInfo } from '../shared/modifications/types';
+import type { ImageModificationInfo } from '../shared/modifications/types';
 import i18n from '../shared/translations/i18n';
 
 import ImageManager from '../shared/modifications/image-manager';
@@ -24,16 +24,12 @@ let mainWindow: BrowserWindow | null;
 
 function createWindow(): void {
 	// Create the browser window.
-	// let data: any;
-	// try {
-	//   data = JSON.parse(fs.readFileSync(windowStateFileName, 'utf8'));
-	// } catch (e) {
-	// }
 	mainWindow = new BrowserWindow({
 		// ...((data && data.bounds) ? data.bounds : { width: 800, height: 600 }),
 		webPreferences: {
 			nodeIntegration: true,
-			webSecurity: false,
+			webSecurity: true,
+			preload: join(__dirname, '../preload/index.js'),
 		},
 		backgroundColor: '#888888',
 		show: false,
