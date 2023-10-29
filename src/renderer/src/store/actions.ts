@@ -5,7 +5,7 @@ import {
 	SetModificationInProgressAction,
 	SetColorAtPixelAction,
 } from './types';
-import { FrontendImageInfo } from '../shared/types';
+import { FrontendImageInfo } from '../../../shared/types';
 
 export const setOriginalImageAction = (
 	imageInfo: FrontendImageInfo | null

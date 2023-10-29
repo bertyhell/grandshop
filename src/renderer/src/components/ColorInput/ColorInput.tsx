@@ -2,6 +2,7 @@ import React, {
 	createRef,
 	FunctionComponent,
 	MutableRefObject,
+	ReactNode,
 	RefObject,
 	useCallback,
 	useEffect,
@@ -15,15 +16,16 @@ import { getColorAtPixel } from '../../services/interop-electron';
 import './ColorInput.scss';
 
 interface IroColorPicker {
-	on: (action: string, callback: Function) => void;
+	on: (action: string, callback: () => void) => void;
 	color: {
 		hexString: string;
-		set: (value: any) => void;
-		setState: (state: any) => void;
+		set: (value: string) => void;
+		setState: (state: unknown) => void;
 	};
 }
 
 export interface ColorInputProps {
+	children?: ReactNode;
 	className?: string;
 	value?: string;
 	onChange?: (color: string) => void;
@@ -67,13 +69,14 @@ const ColorInput: FunctionComponent<ColorInputProps> = ({
 		}
 		if (!colorPicker.current) {
 			// create a new iro color picker and pass component props to it
-			colorPicker.current = new iro.ColorPicker(el.current, { color: value });
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			colorPicker.current = new (iro.ColorPicker as any)(el.current, { color: value });
 			// call onColorChange prop whenever the color changes
 			if (!colorPicker.current) {
 				return;
 			}
 			colorPicker.current.on('color:change', () => {
-				changeColor((colorPicker.current as any).color.hexString);
+				changeColor((colorPicker.current as IroColorPicker).color.hexString);
 			});
 		}
 		const img: HTMLImageElement | null = document.querySelector('.viewer-canvas img');

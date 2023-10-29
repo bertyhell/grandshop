@@ -11,6 +11,7 @@ export interface ImageInfo {
 	dimensions: Dimensions;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ModificationFunc = (imageInfo: ImageInfo, ...params: any[]) => Promise<Buffer>;
 
 // List of functions that can modify an image by calling GraphicsMagick functions on its gm state

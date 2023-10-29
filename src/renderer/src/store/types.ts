@@ -1,6 +1,6 @@
 import { Action } from 'redux';
 
-import { FrontendImageInfo } from '../shared/types';
+import { FrontendImageInfo } from '../../../shared/types';
 
 export enum AppActionTypes {
 	SET_ORIGINAL_IMAGE = '@@SET_MODIFIED_IMAGE',

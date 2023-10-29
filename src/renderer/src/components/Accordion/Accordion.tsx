@@ -1,11 +1,12 @@
 import clsx from 'clsx';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 
 import './Accordion.scss';
 import { Button } from '../Button/Button';
 import { useTranslation } from 'react-i18next';
 
 export interface AccordionProps {
+	children?: ReactNode;
 	className?: string;
 	isOpen?: boolean;
 	onToggle?: () => void;

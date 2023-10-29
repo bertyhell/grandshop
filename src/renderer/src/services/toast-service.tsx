@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { isNil } from 'lodash-es';
 import { toast, ToastOptions } from 'react-toastify';
-import { CustomError } from '../shared/error';
+import { CustomError } from '../../../shared/error';
 
 export enum ToastType {
 	ERROR = 'error',

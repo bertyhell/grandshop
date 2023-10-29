@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { getTrackBackground, Range } from 'react-range';
 import { useTranslation } from 'react-i18next';
 import { clamp } from 'lodash-es';
-
+import type { IRenderThumbParams, IRenderTrackParams } from 'react-range/lib/types';
 import clsx from 'clsx';
 
 import toastService from '../../services/toast-service';
@@ -59,7 +59,7 @@ export const MultiRange: FunctionComponent<MultiRangeProps> = ({
 				allowOverlap={allowOverlap}
 				values={values}
 				onChange={onChange}
-				renderTrack={({ props, children }: any) => (
+				renderTrack={({ props, children }: IRenderTrackParams) => (
 					<div
 						onMouseDown={props.onMouseDown}
 						onTouchStart={props.onTouchStart}
@@ -96,7 +96,7 @@ export const MultiRange: FunctionComponent<MultiRangeProps> = ({
 						</div>
 					</div>
 				)}
-				renderThumb={({ props }: any) => (
+				renderThumb={({ props }: IRenderThumbParams) => (
 					<div
 						{...props}
 						style={{

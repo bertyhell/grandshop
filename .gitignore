@@ -37,6 +37,3 @@ src/shared/translations/poeditor
 
 tsconfig.json
 tsconfig.*.json
-
-/vite-electron
-/old

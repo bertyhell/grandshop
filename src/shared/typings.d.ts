@@ -1,7 +1,15 @@
-declare module 'resizable-panels-react';
+import { ElectronAPI } from '@electron-toolkit/preload';
+
 declare module '@jaames/iro';
 declare module 'use-debounce';
 declare module '@jcoreio/async-throttle';
 declare module 'dataimg-dimensions';
 declare module 'pretty-bytes';
 declare module 'react-use-mouse-move';
+
+declare global {
+	interface Window {
+		electron: ElectronAPI;
+		api: unknown;
+	}
+}

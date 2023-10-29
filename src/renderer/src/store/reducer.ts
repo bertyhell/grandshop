@@ -1,40 +1,39 @@
-import { createReducer } from '../helpers/create-reducer';
+import { createReducer, ImageAction } from '../helpers/create-reducer';
 
 import initialState from './initial-state';
 import {
 	AppActionTypes,
+	AppState,
 	SetColorAtPixelAction,
 	SetModificationInProgressAction,
 	SetModifiedImageAction,
 	SetOriginalImageAction,
 } from './types';
 
-const Reducer = createReducer(initialState, {
-	[AppActionTypes.SET_ORIGINAL_IMAGE]: (state, action: SetOriginalImageAction) => {
+const Reducer = createReducer<AppState>(initialState, {
+	[AppActionTypes.SET_ORIGINAL_IMAGE]: (state, action: ImageAction) => {
 		return {
 			...state,
-			originalImage: action.imageInfo,
+			originalImage: (action as SetOriginalImageAction).imageInfo,
 		};
 	},
-	[AppActionTypes.SET_MODIFIED_IMAGE]: (state, action: SetModifiedImageAction) => {
+	[AppActionTypes.SET_MODIFIED_IMAGE]: (state, action: ImageAction) => {
 		return {
 			...state,
-			modifiedImage: action.imageInfo,
+			modifiedImage: (action as SetModifiedImageAction).imageInfo,
 		};
 	},
-	[AppActionTypes.SET_MODIFICATION_IN_PROGRESS]: (
-		state,
-		action: SetModificationInProgressAction
-	) => {
+	[AppActionTypes.SET_MODIFICATION_IN_PROGRESS]: (state, action: ImageAction) => {
 		return {
 			...state,
-			modificationInProgress: action.modificationInProgress,
+			modificationInProgress: (action as SetModificationInProgressAction)
+				.modificationInProgress,
 		};
 	},
-	[AppActionTypes.SET_COLOR_AT_PIXEL]: (state, action: SetColorAtPixelAction) => {
+	[AppActionTypes.SET_COLOR_AT_PIXEL]: (state, action: ImageAction) => {
 		return {
 			...state,
-			color: action.color,
+			color: (action as SetColorAtPixelAction).color,
 		};
 	},
 });

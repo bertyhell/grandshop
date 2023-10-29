@@ -2,7 +2,9 @@ import i18n from './translations/i18n';
 
 export class CustomError {
 	public message: string;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	public innerException: any | null;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	public additionalInfo: any | null;
 	public name: string = 'Error';
 	public stack: string;
@@ -10,7 +12,9 @@ export class CustomError {
 
 	constructor(
 		message: string = i18n.t('shared/error___something-went-wrong'),
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		innerException: any = null,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		additionalInfo: any = null
 	) {
 		this.message = message;

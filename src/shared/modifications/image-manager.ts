@@ -1,12 +1,13 @@
 import path, { ParsedPath } from 'path';
 import fs from 'fs-extra';
 import sharp, { Sharp } from 'sharp';
+import bmp from '@vingle/bmp-js';
 
 import { CustomError } from '../error';
 import mods, { ImageInfo } from './modifications';
 import { ImageModificationInfo } from './types';
 import { isNil } from 'lodash';
-import { Dimensions } from '../types';
+import { Dimensions, Extension } from '../types';
 
 export default class ImageManager {
 	private static originalImagePathParts: ParsedPath;
@@ -76,8 +77,11 @@ export default class ImageManager {
 	): Promise<{ buffer: Buffer; dimensions: Dimensions }> {
 		this.originalImagePathParts = path.parse(absoluteFilePath);
 		this.originalImagePath = absoluteFilePath;
+		const extension = path.parse(absoluteFilePath).ext;
+
 		// Always convert input images to a format that both sharp and graphicmagic understand and is lossless: PNG
-		this.originalImageBuffer = await this.bufferToSharp(await fs.readFile(absoluteFilePath))
+		const buffer = await fs.readFile(absoluteFilePath);
+		this.originalImageBuffer = await this.bufferToSharp(buffer, extension.substring(1))
 			.png()
 			.toBuffer();
 		this.originalImageDimensions = await this.getDimensions(this.originalImageBuffer);
@@ -99,8 +103,33 @@ export default class ImageManager {
 		return this.modifiedImageBuffer;
 	}
 
-	public static bufferToSharp(imageBuffer: Buffer): Sharp {
-		return sharp(imageBuffer);
+	public static bufferToSharp(
+		imageBuffer: Buffer,
+		extension: Extension | string = Extension.png
+	): Sharp {
+		// BMP file types
+		// https://github.com/lovell/sharp/issues/806#issuecomment-1220062412
+		if (extension.toLowerCase() === Extension.bmp) {
+			const bitmap = bmp.decode(imageBuffer, true); // boolean flag to convert to RGBA
+			return sharp(bitmap.data, {
+				raw: {
+					width: bitmap.width,
+					height: bitmap.height,
+					channels: 4,
+				},
+			});
+		}
+
+		// Supported file types
+		if ((Object.values(Extension) as string[]).includes(extension)) {
+			return sharp(imageBuffer);
+		}
+
+		// Unsupported file types
+		throw new CustomError('Failed to open file with unsupported extension', null, {
+			extension,
+			validExtensions: Object.values(Extension),
+		});
 	}
 
 	public static async sharpToBuffer(sharp: Sharp): Promise<Buffer> {

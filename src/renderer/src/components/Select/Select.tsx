@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import ReactSelect, { ActionMeta } from 'react-select';
-
 import clsx from 'clsx';
 
 import './Select.scss';
@@ -34,7 +33,10 @@ export const Select: FunctionComponent<SelectProps> = ({
 	value,
 	onChange = () => {},
 }) => {
-	function onValueChange(changedValue: SelectOption<string>, actionMeta: ActionMeta) {
+	function onValueChange(
+		changedValue: SelectOption<string>,
+		actionMeta: ActionMeta<SelectOption>
+	) {
 		if (actionMeta.action !== 'create-option' && changedValue) {
 			onChange(changedValue.value);
 		}
@@ -53,6 +55,7 @@ export const Select: FunctionComponent<SelectProps> = ({
 			isClearable={clearable}
 			isOptionDisabled={(option) => !!option.disabled}
 			placeholder={placeholder}
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			onChange={onValueChange as any}
 		/>
 	);

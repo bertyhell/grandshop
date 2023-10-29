@@ -17,7 +17,7 @@ import { format } from '../../helpers/format';
 import mods, { ModificationComponent } from '../../../../shared/modifications/components';
 import { ImageModificationInfo } from '../../../../shared/modifications/types';
 import ImageModification from '../../components/ImageModification/ImageModification';
-import { FrontendImageInfo } from '../../../../shared/types';
+import { Extension, FrontendImageInfo } from '../../../../shared/types';
 import SettingsModal from '../SettingsModal/SettingsModal';
 
 import './ControlsSidebar.scss';
@@ -177,8 +177,8 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 		<div className="m-controls-sidebar">
 			<div className="m-button-wrapper">
 				<Button
-					onClick={() => {
-						openImage({
+					onClick={async () => {
+						await openImage({
 							buttonLabel: 'Openen',
 							// defaultPath // TODO default to the users images folder
 							filters: [
@@ -190,7 +190,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 								},
 								{
 									name: t('views/controls-sidebar/controls-sidebar___images'),
-									extensions: ['jpg', 'png', 'gif', 'tif', 'jpeg', 'webp', 'svg'],
+									extensions: Object.values(Extension),
 								},
 							],
 							title: t(
@@ -207,8 +207,8 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 				{modifiedImage && (
 					<Button
 						className="c-save-button"
-						onClick={() => {
-							saveImage({
+						onClick={async () => {
+							await saveImage({
 								buttonLabel: t('views/controls-sidebar/controls-sidebar___save'),
 								// defaultPath // TODO default to the users images folder
 								filters: [
@@ -220,7 +220,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 									},
 									{
 										name: t('views/controls-sidebar/controls-sidebar___images'),
-										extensions: ['png'],
+										extensions: [Extension.png],
 									},
 								],
 								title: t(

@@ -19,7 +19,7 @@ import { Dimensions } from '../../../shared/types';
 import type { ImageModificationInfo } from '../../../shared/modifications/types';
 
 // Loaded in the preload.index.ts file
-const ipcRenderer = window?.electron?.ipcRenderer;
+const ipcRenderer = (window as Window)?.electron?.ipcRenderer;
 
 const callableFunctions = {
 	setOriginalImage: (base64: string, dimensions: Dimensions) => {

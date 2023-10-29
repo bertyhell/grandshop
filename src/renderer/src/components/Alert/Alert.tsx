@@ -7,6 +7,7 @@ import './Alert.scss';
 export type AlertType = 'success' | 'warn' | 'error' | 'info';
 
 export interface AlertProps {
+	children: ReactNode;
 	className?: string;
 	message?: ReactNode | string;
 	type?: AlertType;

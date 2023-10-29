@@ -20,9 +20,7 @@ import { connect } from 'react-redux';
 import { AppState } from '../../store/types';
 import Spinner from '../../components/Spinner/Spinner';
 import { getImageSource } from '../../helpers/base64';
-import { FrontendImageInfo } from '../../shared/types';
-
-declare const ResizeObserver: any;
+import { FrontendImageInfo } from '../../../../shared/types';
 
 interface MainPreviewProps {
 	originalImage: FrontendImageInfo | null;
@@ -38,6 +36,7 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
 	const [t] = useTranslation();
 
 	const el: RefObject<HTMLImageElement> = createRef<HTMLImageElement>();
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const viewer: MutableRefObject<any | null> = useRef<any | null>(null);
 
 	const updateViewer = () => {
@@ -47,13 +46,12 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
 	};
 
 	useEffect(() => {
-		// eslint-disable-line react-hooks/exhaustive-deps
 		if (!el.current || viewer.current) {
 			return;
 		}
 		const DEFAULT_BUTTON = {
 			show: true,
-			size: 'large' as any,
+			size: 'large' as const,
 		};
 		viewer.current = new Viewer(el.current, {
 			inline: true,
