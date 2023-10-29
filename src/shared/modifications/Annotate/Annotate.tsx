@@ -49,7 +49,7 @@ const Annotate: FunctionComponent<ModificationProps> = ({ onApply }) => {
 					onChange={(values) => setFontSize(values[0])}
 				/>
 			</FormField>
-			<FormField label={t('Horizontal position')}>
+			<FormField label={t('shared/modifications/annotate/annotate___horizontal-position')}>
 				<MultiRange
 					min={-500}
 					max={500}
@@ -58,7 +58,7 @@ const Annotate: FunctionComponent<ModificationProps> = ({ onApply }) => {
 					onChange={(values) => setXPosition(values[0])}
 				/>
 			</FormField>
-			<FormField label={t('Vertical position')}>
+			<FormField label={t('shared/modifications/annotate/annotate___vertical-position')}>
 				<MultiRange
 					min={-500}
 					max={500}
@@ -67,10 +67,10 @@ const Annotate: FunctionComponent<ModificationProps> = ({ onApply }) => {
 					onChange={(values) => setYPosition(values[0])}
 				/>
 			</FormField>
-			<FormField label={t('Tekst kleur')}>
+			<FormField label={t('shared/modifications/annotate/annotate___tekst-kleur')}>
 				<ColorInput value={textColor} onChange={setTextColor}></ColorInput>
 			</FormField>
-			<FormField label={t('Achtergrond kleur')}>
+			<FormField label={t('shared/modifications/annotate/annotate___achtergrond-kleur')}>
 				<ColorInput value={backgroundColor} onChange={setBackgroundColor}></ColorInput>
 			</FormField>
 		</>

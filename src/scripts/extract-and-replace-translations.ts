@@ -61,7 +61,7 @@ function getFormattedTranslation(translation: string) {
 
 async function getFilesByGlob(globPattern: string): Promise<string[]> {
 	const options = {
-		ignore: '**/*.d.ts',
+		ignore: ['**/*.d.ts', 'scripts/**/*.*'],
 		cwd: path.join(__dirname, '../'),
 	};
 	return await glob(globPattern, options);
@@ -106,7 +106,7 @@ function extractTranslationsFromCodeFiles(codeFiles: string[]) {
 						(formattedTranslation.includes('___')
 							? (oldTranslations as keyMap)[formattedKey]
 							: formattedTranslation) || '';
-					return `${prefix}t('scripts/extract-and-replace-translations___formatted-key'${translationParams})`;
+					return `${prefix}t('${formattedKey}'${translationParams})`;
 				}
 			);
 

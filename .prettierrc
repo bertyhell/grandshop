@@ -7,20 +7,14 @@
 	"printWidth": 100,
 	"overrides": [
 		{
-			"files": [
-				"**/*.css",
-				"**/*.scss",
-				"**/*.html"
-			],
+			"files": ["**/*.css", "**/*.scss", "**/*.html"],
 			"options": {
 				"singleQuote": false,
 				"printWidth": 1000
 			}
 		},
 		{
-			"files": [
-				"**.json"
-			],
+			"files": ["**.json"],
 			"options": {
 				"useTabs": false,
 				"tabWidth": 2
