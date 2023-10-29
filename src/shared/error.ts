@@ -1,5 +1,14 @@
 import i18n from './translations/i18n';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function replacer(key: string, value: any): any {
+	if (key === 'request') {
+		// Avoid huge request object in error json
+		return '[request]';
+	}
+	return value;
+}
+
 export class CustomError {
 	public message: string;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,7 +28,7 @@ export class CustomError {
 	) {
 		this.message = message;
 		this.innerException = innerException;
-		this.additionalInfo = additionalInfo;
+		this.additionalInfo = JSON.stringify(additionalInfo, replacer, 2);
 		Error.captureStackTrace(this, this.constructor);
 
 		if (innerException && typeof innerException.stack === 'string') {
@@ -30,16 +39,6 @@ export class CustomError {
 	}
 
 	public toString(): string {
-		return JSON.stringify(
-			this,
-			(key, value) => {
-				if (key === 'request') {
-					// Avoid huge request object in error json
-					return '[request]';
-				}
-				return value;
-			},
-			2
-		);
+		return JSON.stringify(this, replacer, 2);
 	}
 }

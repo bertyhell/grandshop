@@ -3,10 +3,12 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import { ModificationProps } from '../types';
 
-import './Annotate.scss';
 import { TextArea } from '../../../renderer/src/components/TextArea/TextArea';
 import FormField from '../../../renderer/src/components/FormField/FormField';
 import { MultiRange } from '../../../renderer/src/components/MultiRange/MultiRange';
+import ColorInput from '../../../renderer/src/components/ColorInput/ColorInput';
+
+import './Annotate.scss';
 
 const Annotate: FunctionComponent<ModificationProps> = ({ onApply }) => {
 	const [t] = useTranslation();
@@ -15,13 +17,23 @@ const Annotate: FunctionComponent<ModificationProps> = ({ onApply }) => {
 	const [fontSize, setFontSize] = useState<number>(30);
 	const [xPosition, setXPosition] = useState<number>(50);
 	const [yPosition, setYPosition] = useState<number>(95);
+	const [textColor, setTextColor] = useState<string>('#000000');
+	const [backgroundColor, setBackgroundColor] = useState<string>('#FFFFFF');
 
 	useEffect(() => {
-		onApply({
-			name: 'annotate',
-			arguments: [text, fontSize, xPosition, yPosition],
-		});
-	}, [text, fontSize, xPosition, yPosition]);
+		if (!isNaN(fontSize) && !isNaN(xPosition) && !isNaN(yPosition))
+			onApply({
+				name: 'annotate',
+				arguments: [
+					text,
+					Math.round(fontSize),
+					Math.round(xPosition),
+					Math.round(yPosition),
+					textColor,
+					backgroundColor,
+				],
+			});
+	}, [text, fontSize, xPosition, yPosition, textColor, backgroundColor]);
 
 	return (
 		<>
@@ -32,27 +44,34 @@ const Annotate: FunctionComponent<ModificationProps> = ({ onApply }) => {
 				<MultiRange
 					min={0}
 					max={200}
+					step={1}
 					values={[fontSize]}
 					onChange={(values) => setFontSize(values[0])}
 				/>
 			</FormField>
 			<FormField label={t('Horizontal position')}>
 				<MultiRange
-					min={0}
-					max={100}
-					step={0.01}
+					min={-500}
+					max={500}
+					step={1}
 					values={[xPosition]}
 					onChange={(values) => setXPosition(values[0])}
 				/>
 			</FormField>
 			<FormField label={t('Vertical position')}>
 				<MultiRange
-					min={0}
-					max={100}
-					step={0.01}
+					min={-500}
+					max={500}
+					step={1}
 					values={[yPosition]}
 					onChange={(values) => setYPosition(values[0])}
 				/>
+			</FormField>
+			<FormField label={t('Tekst kleur')}>
+				<ColorInput value={textColor} onChange={setTextColor}></ColorInput>
+			</FormField>
+			<FormField label={t('Achtergrond kleur')}>
+				<ColorInput value={backgroundColor} onChange={setBackgroundColor}></ColorInput>
 			</FormField>
 		</>
 	);

@@ -1,6 +1,6 @@
 {
   "name": "grandshop",
-  "version": "0.7.0",
+  "version": "0.9.0",
   "description": "Photo editing software for grandparents",
   "main": "./out/main/index.js",
   "scripts": {
@@ -115,34 +115,6 @@
     "manipulation",
     "graphics"
   ],
-  "build__temp_disabled": {
-    "appId": "com.electron.grandshop",
-    "productName": "grandshop",
-    "extends": null,
-    "directories": {
-      "buildResources": "electron-build",
-      "output": "electron-dist"
-    },
-    "files": [
-      "node_modules/**/*",
-      "out/**/*",
-      "resources/icon.ico"
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "dir",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "resources/icon.ico"
-    },
-    "mac": {
-      "category": "public.app-category.graphics-design"
-    }
-  },
   "author": {
     "name": "Bert Verhelst",
     "email": "verhelstbert@gmail.com"
