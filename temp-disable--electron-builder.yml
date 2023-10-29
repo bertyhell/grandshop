@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.gitlab.com.bertyhell.grandshop
 productName: grandshop
 directories:
   buildResources: build
@@ -13,6 +13,7 @@ asarUnpack:
   - resources/**
 win:
   executableName: grandshop
+  icon: build/icon.ico
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -33,7 +34,7 @@ linux:
     - AppImage
     - snap
     - deb
-  maintainer: electronjs.org
+  maintainer: https://gitlab.com/bertyhell/grandshop/-/issues
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}

@@ -9,6 +9,7 @@ import { join, ParsedPath } from 'path';
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import fs from 'fs-extra';
 import throttle from '@jcoreio/async-throttle';
+import appIcon from '../../resources/icon.ico?asset&asarUnpack';
 
 import type { ImageModificationInfo } from '../shared/modifications/types';
 import i18n from '../shared/translations/i18n';
@@ -33,6 +34,7 @@ function createWindow(): void {
 		},
 		backgroundColor: '#888888',
 		show: false,
+		icon: appIcon,
 	});
 
 	mainWindow.once('ready-to-show', () => {
