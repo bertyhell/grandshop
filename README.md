@@ -8,8 +8,9 @@ Current features:
 -   Change the brightness
 -   Add a sepia effect
 -   Resize an image
--   Add text below the image
+-   Add colored text
 -   Crop
+-   Upscale images (4x)
 
 Download: https://gitlab.com/bertyhell/grandshop/-/releases
 

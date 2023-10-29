@@ -1,9 +1,9 @@
 import ImageManager from '../image-manager';
 import { ImageInfo } from '../modifications';
 import { Sharp } from 'sharp';
-import Upscaler from '../../../../node_modules/upscaler/dist/node-gpu/upscalerjs/src/node-gpu/index.js';
+import Upscaler from '../../../../node_modules/upscaler/dist/node/upscalerjs/src/node/index.js';
 import model from '../../../../node_modules/@upscalerjs/esrgan-thick/dist/cjs/models/esrgan-thick/src/x4/index.js';
-import { node as tfNode } from '@tensorflow/tfjs-node-gpu';
+import { node as tfNode } from '@tensorflow/tfjs-node';
 
 export async function upscale(imageInfo: ImageInfo): Promise<Buffer> {
 	const sharp: Sharp = ImageManager.bufferToSharp(imageInfo.buffer);
