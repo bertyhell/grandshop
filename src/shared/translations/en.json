@@ -26,6 +26,8 @@
   "shared/modifications/components___reduce-image-file-size": "Reduce image (file size)",
   "shared/modifications/components___sepia-0": "Sepia {0}",
   "shared/modifications/components___shrink-0": "Shrink {0}",
+  "shared/modifications/components___upscale-0": "Upscale {0}",
+  "shared/modifications/components___upscale-image": "Upscale image",
   "shared/modifications/crop/crop___bottom": "Bottom",
   "shared/modifications/crop/crop___left": "Left",
   "shared/modifications/crop/crop___right": "Right",

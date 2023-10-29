@@ -4,6 +4,7 @@ import { sepia } from './Sepia/modification';
 import { resize } from './Resize/modification';
 import { annotate } from './Annotate/modification';
 import { crop } from './Crop/modification';
+import { upscale } from './Upscale/modification';
 import { Dimensions } from '../types';
 
 export interface ImageInfo {
@@ -22,6 +23,7 @@ const modificationFuncs: { [name: string]: ModificationFunc } = {
 	resize,
 	annotate,
 	crop,
+	upscale,
 };
 
 export default modificationFuncs;

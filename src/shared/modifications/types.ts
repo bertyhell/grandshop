@@ -1,7 +1,7 @@
 import { FrontendImageInfo } from '../types';
 
 export interface ImageModificationInfo {
-	name: 'addBorder' | 'sepia' | 'brightness' | 'resize' | 'annotate' | 'crop';
+	name: 'addBorder' | 'sepia' | 'brightness' | 'resize' | 'annotate' | 'crop' | 'upscale';
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	arguments: any;
 }

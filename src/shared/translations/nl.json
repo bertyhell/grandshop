@@ -26,6 +26,8 @@
   "shared/modifications/components___reduce-image-file-size": "Afbeelding verkleinen (bestandsgrootte)",
   "shared/modifications/components___sepia-0": "Sepia {0}",
   "shared/modifications/components___shrink-0": "Verkleinen {0}",
+  "shared/modifications/components___upscale-0": "Vergroten {0}",
+  "shared/modifications/components___upscale-image": "Vergroot afbeelding",
   "shared/modifications/crop/crop___bottom": "Onderkant",
   "shared/modifications/crop/crop___left": "Linkerkant",
   "shared/modifications/crop/crop___right": "Rechterkant",

@@ -8,6 +8,7 @@ import Sepia from './Sepia/Sepia';
 import Resize from './Resize/Resize';
 import Annotate from './Annotate/Annotate';
 import Crop from './Crop/Crop';
+import Upscale from './Upscale/Upscale';
 
 export interface ModificationComponent {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -46,6 +47,11 @@ const modificationComponents: { [name: string]: ModificationComponent } = {
 		component: Crop,
 		label: i18n.t('shared/modifications/components___crop-image'),
 		title: i18n.t('shared/modifications/components___crop-0'),
+	},
+	upscale: {
+		component: Upscale,
+		label: i18n.t('shared/modifications/components___upscale-image'),
+		title: i18n.t('shared/modifications/components___upscale-0'),
 	},
 };
 
