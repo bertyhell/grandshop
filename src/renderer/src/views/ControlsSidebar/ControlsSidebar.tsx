@@ -14,7 +14,7 @@ import { selectModifiedImage, selectOriginalImage } from '../../store/selectors'
 import { setModifiedImageAction } from '../../store/actions';
 import { Select, SelectOption } from '../../components/Select/Select';
 import { format } from '../../helpers/format';
-import modificationComponents, {
+import getModificationComponents, {
 	type ModificationComponent,
 } from '../../../../shared/modifications/components';
 import { ImageModificationInfo } from '../../../../shared/modifications/types';
@@ -54,7 +54,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 
 	const IMAGE_MODIFIER_OPTIONS: SelectOption[] = sortBy(
 		[
-			...map(modificationComponents, (mod: ModificationComponent, modName: string) => {
+			...map(getModificationComponents(), (mod: ModificationComponent, modName: string) => {
 				return {
 					label: mod.label,
 					value: modName,
@@ -65,7 +65,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 	);
 
 	const IMAGE_MODIFIER_TITLES: { [modifierName: string]: string } = fromPairs(
-		map(modificationComponents, (mod: ModificationComponent, modName: string) => {
+		map(getModificationComponents(), (mod: ModificationComponent, modName: string) => {
 			return [modName, mod.title];
 		})
 	);
@@ -262,8 +262,8 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 					<div className="m-modification-controls">
 						{modifierState.activeModifiers.map((m: ActiveModifier, index: number) => {
 							if (
-								!modificationComponents[m.name] ||
-								!modificationComponents[m.name].component
+								!getModificationComponents()[m.name] ||
+								!getModificationComponents()[m.name].component
 							) {
 								console.error(
 									'Failed to find component by name in list of modifications',
@@ -271,7 +271,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 								);
 								return null;
 							}
-							const Component = modificationComponents[m.name].component;
+							const Component = getModificationComponents()[m.name].component;
 							return (
 								<ImageModification
 									label={m.title}

@@ -20,7 +20,7 @@ export interface ModificationComponent {
 	title: string; // Text show as the title of the section in the controls sidebar
 }
 
-const modificationComponents: { [name: string]: ModificationComponent } = {
+const getModificationComponents = (): { [name: string]: ModificationComponent } => ({
 	addBorder: {
 		component: AddBorder,
 		label: i18n.t('shared/modifications/components___add-a-colored-border'),
@@ -71,6 +71,6 @@ const modificationComponents: { [name: string]: ModificationComponent } = {
 		label: i18n.t('shared/modifications/components___greyscale-image'),
 		title: i18n.t('shared/modifications/components___greyscale-0'),
 	},
-};
+});
 
-export default modificationComponents;
+export default getModificationComponents;
