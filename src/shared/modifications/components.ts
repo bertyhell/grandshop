@@ -9,6 +9,9 @@ import Resize from './Resize/Resize';
 import Annotate from './Annotate/Annotate';
 import Crop from './Crop/Crop';
 import Upscale from './Upscale/Upscale';
+import Rotate from './Rotate/Rotate';
+import Mirror from './Mirror/Mirror';
+import Greyscale from './Greyscale/Greyscale';
 
 export interface ModificationComponent {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -52,6 +55,21 @@ const modificationComponents: { [name: string]: ModificationComponent } = {
 		component: Upscale,
 		label: i18n.t('shared/modifications/components___upscale-image'),
 		title: i18n.t('shared/modifications/components___upscale-0'),
+	},
+	rotate: {
+		component: Rotate,
+		label: i18n.t('shared/modifications/components___rotate-image'),
+		title: i18n.t('shared/modifications/components___rotate-0'),
+	},
+	mirror: {
+		component: Mirror,
+		label: i18n.t('shared/modifications/components___mirror-image'),
+		title: i18n.t('shared/modifications/components___mirror-0'),
+	},
+	greyscale: {
+		component: Greyscale,
+		label: i18n.t('shared/modifications/components___greyscale-image'),
+		title: i18n.t('shared/modifications/components___greyscale-0'),
 	},
 };
 

@@ -4,6 +4,8 @@ A image editing program that is really easy to use.
 
 Current features:
 
+-   Upscale images (4x)
+		![screenshot of upscaled image](screenshots/07-upscale.jpg)
 -   Add colored borders
 		![screenshot of colored border](screenshots/01-border.jpg)
 -   Change the brightness
@@ -16,8 +18,10 @@ Current features:
 		![screenshot of colored text](screenshots/05-text.jpg)
 -   Crop
 		![screenshot of cropped image](screenshots/06-crop.jpg)
--   Upscale images (4x)
-		![screenshot of upscaled image](screenshots/07-upscale.jpg)
+-   Rotate
+		![screenshot of rotated image](screenshots/08-rotate.jpg)
+-   Mirror
+		![screenshot of vertically mirrored image](screenshots/09-mirror.jpg)
 
 Download: https://gitlab.com/bertyhell/grandshop/-/releases
 

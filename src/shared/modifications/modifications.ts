@@ -1,3 +1,4 @@
+import { Dimensions } from '../types';
 import { addBorder } from './AddBorder/modification';
 import { brightness } from './Brightness/modification';
 import { sepia } from './Sepia/modification';
@@ -5,7 +6,9 @@ import { resize } from './Resize/modification';
 import { annotate } from './Annotate/modification';
 import { crop } from './Crop/modification';
 import { upscale } from './Upscale/modification';
-import { Dimensions } from '../types';
+import { rotate } from './Rotate/modification';
+import { mirror } from './Mirror/modification';
+import { greyscale } from './Greyscale/modification';
 
 export interface ImageInfo {
 	buffer: Buffer;
@@ -24,6 +27,9 @@ const modificationFuncs: { [name: string]: ModificationFunc } = {
 	annotate,
 	crop,
 	upscale,
+	rotate,
+	mirror,
+	greyscale,
 };
 
 export default modificationFuncs;

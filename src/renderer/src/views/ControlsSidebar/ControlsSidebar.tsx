@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import usePrevious from 'use-previous';
 import compact from 'lodash-es/compact';
-import { isEqual, kebabCase, fromPairs, map } from 'lodash-es';
+import { isEqual, kebabCase, fromPairs, map, sortBy } from 'lodash-es';
 import { useTranslation } from 'react-i18next';
 
 import { applyModifications, saveImage, openImage } from '../../services/interop-electron';
@@ -52,14 +52,17 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 	const [selectedOption, setSelectedOption] = useState<string | null>(null);
 	const [isSettingsModalOpen, setIsSettingsModalOpen] = useState<boolean>(false);
 
-	const IMAGE_MODIFIER_OPTIONS: SelectOption[] = [
-		...map(modificationComponents, (mod: ModificationComponent, modName: string) => {
-			return {
-				label: mod.label,
-				value: modName,
-			};
-		}),
-	];
+	const IMAGE_MODIFIER_OPTIONS: SelectOption[] = sortBy(
+		[
+			...map(modificationComponents, (mod: ModificationComponent, modName: string) => {
+				return {
+					label: mod.label,
+					value: modName,
+				};
+			}),
+		],
+		(option) => option.label
+	);
 
 	const IMAGE_MODIFIER_TITLES: { [modifierName: string]: string } = fromPairs(
 		map(modificationComponents, (mod: ModificationComponent, modName: string) => {
@@ -97,10 +100,8 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 					name: action.name,
 					key,
 				});
-				newOpenStates = [
-					...modifierState.openStates.map(() => false), // Collapse all other modifiers when add a new one
-					true,
-				];
+				newOpenStates = newModifiers.map(() => false); // Collapse all other modifiers when add a new one
+				newOpenStates[newOpenStates.length - 1] = true;
 				break;
 			}
 
