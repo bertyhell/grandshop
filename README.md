@@ -5,23 +5,23 @@ A image editing program that is really easy to use.
 Current features:
 
 -   Upscale images (4x)
-		![screenshot of upscaled image](screenshots/07-upscale.jpg)
+    ![screenshot of upscaled image](screenshots/07-upscale.jpg)
 -   Add colored borders
-		![screenshot of colored border](screenshots/01-border.jpg)
+    ![screenshot of colored border](screenshots/01-border.jpg)
 -   Change the brightness
-		![screenshot of brightness](screenshots/02-brightness.jpg)
+    ![screenshot of brightness](screenshots/02-brightness.jpg)
 -   Add a sepia effect
-		![screenshot of sepia effect](screenshots/03-sepia.jpg)
+    ![screenshot of sepia effect](screenshots/03-sepia.jpg)
 -   Resize an image
-		![screenshot of resized image](screenshots/04-resize.jpg)
+    ![screenshot of resized image](screenshots/04-resize.jpg)
 -   Add colored text
-		![screenshot of colored text](screenshots/05-text.jpg)
+    ![screenshot of colored text](screenshots/05-text.jpg)
 -   Crop
-		![screenshot of cropped image](screenshots/06-crop.jpg)
+    ![screenshot of cropped image](screenshots/06-crop.jpg)
 -   Rotate
-		![screenshot of rotated image](screenshots/08-rotate.jpg)
+    ![screenshot of rotated image](screenshots/08-rotate.jpg)
 -   Mirror
-		![screenshot of vertically mirrored image](screenshots/09-mirror.jpg)
+    ![screenshot of vertically mirrored image](screenshots/09-mirror.jpg)
 
 Download: https://gitlab.com/bertyhell/grandshop/-/releases
 

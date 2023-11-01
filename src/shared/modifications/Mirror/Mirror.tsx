@@ -23,16 +23,16 @@ const Mirror: FunctionComponent<ModificationProps> = ({ onApply }) => {
 			<Toggle
 				isChecked={isHorizontal}
 				onChange={setIsHorizontal}
-				label={t('Mirror horizontally')}
-				offLabel={t('No')}
-				onLabel={t('Yes')}
+				label={t('shared/modifications/mirror/mirror___mirror-horizontally')}
+				offLabel={t('shared/modifications/mirror/mirror___no')}
+				onLabel={t('shared/modifications/mirror/mirror___yes')}
 			/>
 			<Toggle
 				isChecked={isVertical}
 				onChange={setIsVertical}
-				label={t('Mirror Vertically')}
-				offLabel={t('No')}
-				onLabel={t('Yes')}
+				label={t('shared/modifications/mirror/mirror___mirror-vertically')}
+				offLabel={t('shared/modifications/mirror/mirror___no')}
+				onLabel={t('shared/modifications/mirror/mirror___yes')}
 			/>
 		</>
 	);

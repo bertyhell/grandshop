@@ -12,7 +12,7 @@
 		'!{.env,.env.*,.npmrc,pnpm-lock.yaml}',
 		'!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}',
 		// Ignore large tensorflow dll file that is not used
-		'!node_modules/@tensorflow/tfjs-node/deps/**'
+		'!node_modules/@tensorflow/tfjs-node/deps/**',
 	],
 	asarUnpack: ['resources/**'],
 	win: {
