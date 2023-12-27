@@ -182,7 +182,9 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 				<Button
 					onClick={async () => {
 						await openImage({
-							buttonLabel: t('Openen'),
+							buttonLabel: t(
+								'renderer/src/views/controls-sidebar/controls-sidebar___open'
+							),
 							// defaultPath // TODO default to the users images folder
 							filters: [
 								{

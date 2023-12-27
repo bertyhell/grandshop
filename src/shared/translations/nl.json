@@ -5,6 +5,7 @@
   "electron/main___het-openen-van-de-afbeelding-is-mislukt": "Het openen van de afbeelding is mislukt",
   "electron/main___image-has-been-saved": "Afbeelding is opgeslagen",
   "electron/main___saving-the-image-failed": "Het opslaan van de afbeelding is mislukt",
+  "renderer/src/views/controls-sidebar/controls-sidebar___open": "Openen",
   "shared/error___something-went-wrong": "Er is iets mis gegaan",
   "shared/modifications/add-border/add-border___color": "Kleur",
   "shared/modifications/add-border/add-border___thickness": "Dikte",

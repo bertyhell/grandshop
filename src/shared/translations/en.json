@@ -5,6 +5,7 @@
   "electron/main___het-openen-van-de-afbeelding-is-mislukt": "Failed to open the image",
   "electron/main___image-has-been-saved": "Image has been saved",
   "electron/main___saving-the-image-failed": "Saving the image failed",
+  "renderer/src/views/controls-sidebar/controls-sidebar___open": "Open",
   "shared/error___something-went-wrong": "Something went wrong",
   "shared/modifications/add-border/add-border___color": "Color",
   "shared/modifications/add-border/add-border___thickness": "Thickness",
