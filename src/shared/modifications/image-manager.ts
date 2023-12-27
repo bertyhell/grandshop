@@ -4,10 +4,11 @@ import sharp, { Sharp } from 'sharp';
 import bmp from '@vingle/bmp-js';
 
 import { CustomError } from '../error';
-import mods, { ImageInfo } from './modifications';
+import { modificationFuncs, ImageInfo } from './modifications';
 import { ImageModificationInfo } from './types';
 import { isNil } from 'lodash';
 import { Dimensions, Extension } from '../types';
+import crypto from 'crypto';
 
 export default class ImageManager {
 	private static originalImagePathParts: ParsedPath;
@@ -17,6 +18,8 @@ export default class ImageManager {
 
 	private static modifiedImageBuffer: Buffer;
 	private static modifiedImageDimensions: Dimensions;
+
+	private static cache: { hash: string; image: Buffer }[] = [];
 
 	public static updateModifications = (
 		modifications: ImageModificationInfo[]
@@ -30,10 +33,10 @@ export default class ImageManager {
 				);
 
 				// Apply each modification by passing it the image buffer and the args that were defined in the frontend
-				for (const modification of modifications) {
+				for (const [modIndex, modification] of modifications.entries()) {
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					const func: ((imageInfo: ImageInfo, ...args: any[]) => Promise<Buffer>) | null =
-						mods[modification.name];
+						modificationFuncs[modification.name];
 					if (!func) {
 						throw new CustomError(
 							'requested to execute unsupported image modification',
@@ -44,13 +47,36 @@ export default class ImageManager {
 							}
 						);
 					}
-					ImageManager.modifiedImageBuffer = await func.bind(ImageManager)(
-						{
-							buffer: ImageManager.modifiedImageBuffer,
-							dimensions: ImageManager.modifiedImageDimensions,
-						},
-						...modification.arguments
-					);
+
+					const fullKey = JSON.stringify({
+						buffer: ImageManager.modifiedImageBuffer,
+						dimensions: ImageManager.modifiedImageDimensions,
+						arguments: modification.arguments,
+					});
+					const hash = crypto.createHash('md5').update(fullKey).digest('hex');
+
+					console.log('calculated cache ' + modIndex + '  -  ' + hash);
+
+					if (ImageManager.cache[modIndex]?.hash === hash) {
+						console.log('using cached version for ' + modIndex);
+						// modification hasn't changed, so we can use the cached value to speed up
+						ImageManager.modifiedImageBuffer = ImageManager.cache[modIndex].image;
+					} else {
+						console.log('cache miss for ' + modIndex);
+						// change was made in the earlier layers or the arguments of the current modification layer was changed => run the modification
+						ImageManager.modifiedImageBuffer = await func.bind(ImageManager)(
+							{
+								buffer: ImageManager.modifiedImageBuffer,
+								dimensions: ImageManager.modifiedImageDimensions,
+							},
+							...modification.arguments
+						);
+						// store value in the cache
+						ImageManager.cache[modIndex] = {
+							hash,
+							image: ImageManager.modifiedImageBuffer,
+						};
+					}
 
 					// Since the modifier can change the image size, we need to update it after each modification
 					ImageManager.modifiedImageDimensions = await ImageManager.getDimensions(

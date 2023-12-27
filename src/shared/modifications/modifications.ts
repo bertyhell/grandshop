@@ -19,7 +19,7 @@ export interface ImageInfo {
 export type ModificationFunc = (imageInfo: ImageInfo, ...params: any[]) => Promise<Buffer>;
 
 // List of functions that can modify an image by calling GraphicsMagick functions on its gm state
-const modificationFuncs: { [name: string]: ModificationFunc } = {
+export const modificationFuncs: { [name: string]: ModificationFunc } = {
 	addBorder,
 	brightness,
 	sepia,
@@ -31,5 +31,3 @@ const modificationFuncs: { [name: string]: ModificationFunc } = {
 	mirror,
 	greyscale,
 };
-
-export default modificationFuncs;
