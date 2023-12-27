@@ -2,6 +2,7 @@
 import {
 	Dimensions,
 	ElectronCallFunctionRequest,
+	FrontendImageInfo,
 	RendererCallFunction,
 	RendererCallFunctionRequest,
 } from '../shared/types';
@@ -18,6 +19,7 @@ import ImageManager from '../shared/modifications/image-manager';
 import { CustomError } from '../shared/error';
 import { ColorPicker } from './color-picker';
 import { electronApp, is, optimizer } from '@electron-toolkit/utils';
+import { ImageInfo } from '../shared/modifications/modifications';
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -164,7 +166,7 @@ async function saveImage(
 			return;
 		} // TODO allow the user to enter a different extension, then use gm to save the file in that extension
 		// Write the modified buffer image to the save location
-		await fs.writeFile(response.filePath, ImageManager.getModifiedImageBuffer());
+		await fs.writeFile(response.filePath, ImageManager.getLastModifiedImageBuffer());
 
 		callRendererFunction('showNotification', [
 			i18n.t('electron/main___image-has-been-saved'),
@@ -212,14 +214,16 @@ const applyModifications = throttle(
 	async (_event: Electron.IpcMainInvokeEvent, modifications: ImageModificationInfo[]) => {
 		try {
 			callRendererFunction('setModificationInProgress', [true]);
-			const modifiedImageInfo: {
-				buffer: Buffer;
-				dimensions: Dimensions;
-			} = await ImageManager.updateModifications(modifications);
-			callRendererFunction('setModifiedImage', [
-				modifiedImageInfo.buffer.toString('base64'),
-				modifiedImageInfo.dimensions,
-			]);
+			const modifiedImageInfos: ImageInfo[] =
+				await ImageManager.updateModifications(modifications);
+
+			const modifiedImages = modifiedImageInfos.map(
+				(imageInfo): FrontendImageInfo => ({
+					base64: imageInfo.buffer.toString('base64'),
+					dimensions: imageInfo.dimensions,
+				})
+			);
+			callRendererFunction('setModifiedImages', [modifiedImages]);
 			callRendererFunction('setModificationInProgress', [false]);
 		} catch (err) {
 			const error = new CustomError('Failed to apply modifications to image', err, {

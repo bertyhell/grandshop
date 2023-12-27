@@ -27,7 +27,7 @@ const Crop: FunctionComponent<ModificationProps> = ({ imageInfo, onApply }) => {
 			<FormField label={t('shared/modifications/crop/crop___top')} labelFor="top">
 				<MultiRange
 					min={0}
-					max={imageInfo.dimensions.height}
+					max={imageInfo.dimensions.height - 1}
 					step={1}
 					id="top"
 					values={[top]}
@@ -37,7 +37,7 @@ const Crop: FunctionComponent<ModificationProps> = ({ imageInfo, onApply }) => {
 			<FormField label={t('shared/modifications/crop/crop___left')} labelFor="left">
 				<MultiRange
 					min={0}
-					max={imageInfo.dimensions.width}
+					max={imageInfo.dimensions.width - 1}
 					step={1}
 					id="left"
 					values={[left]}
@@ -47,7 +47,7 @@ const Crop: FunctionComponent<ModificationProps> = ({ imageInfo, onApply }) => {
 			<FormField label={t('shared/modifications/crop/crop___right')} labelFor="right">
 				<MultiRange
 					min={0}
-					max={imageInfo.dimensions.width}
+					max={imageInfo.dimensions.width - 1}
 					step={1}
 					id="right"
 					values={[right]}
@@ -57,7 +57,7 @@ const Crop: FunctionComponent<ModificationProps> = ({ imageInfo, onApply }) => {
 			<FormField label={t('shared/modifications/crop/crop___bottom')} labelFor="bottom">
 				<MultiRange
 					min={0}
-					max={imageInfo.dimensions.height}
+					max={imageInfo.dimensions.height - 1}
 					step={1}
 					id="bottom"
 					values={[bottom]}

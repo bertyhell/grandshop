@@ -8,7 +8,11 @@ import FormField from '../../../renderer/src/components/FormField/FormField';
 
 import './Resize.scss';
 
-const Resize: FunctionComponent<ModificationProps> = ({ imageInfo, onApply }) => {
+const Resize: FunctionComponent<ModificationProps> = ({
+	imageInfo,
+	imageInfoAfterModification,
+	onApply,
+}) => {
 	const [t] = useTranslation();
 
 	const getMaxSize = () => {
@@ -39,7 +43,7 @@ const Resize: FunctionComponent<ModificationProps> = ({ imageInfo, onApply }) =>
 			{/* https://softwareengineering.stackexchange.com/a/288673 */}
 			<span>
 				{t('shared/modifications/resize/resize___resulting-file-size')}:{' '}
-				{prettyBytes((imageInfo.base64.length - 814) / 1.35)}
+				{prettyBytes((imageInfoAfterModification.base64.length - 814) / 1.35)}
 			</span>
 		</>
 	);

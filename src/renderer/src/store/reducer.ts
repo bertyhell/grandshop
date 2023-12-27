@@ -7,6 +7,7 @@ import {
 	SetColorAtPixelAction,
 	SetModificationInProgressAction,
 	SetModifiedImageAction,
+	SetModifiedImagesAction,
 	SetOriginalImageAction,
 } from './types';
 
@@ -18,9 +19,19 @@ const Reducer = createReducer<AppState>(initialState, {
 		};
 	},
 	[AppActionTypes.SET_MODIFIED_IMAGE]: (state, action: ImageAction) => {
+		const newModifiedImages = [...state.modifiedImages];
+		const setModifiedImageAction = action as SetModifiedImageAction;
+		newModifiedImages[setModifiedImageAction.index] = setModifiedImageAction.imageInfo;
 		return {
 			...state,
-			modifiedImage: (action as SetModifiedImageAction).imageInfo,
+			modifiedImages: newModifiedImages,
+		};
+	},
+	[AppActionTypes.SET_MODIFIED_IMAGES]: (state, action: ImageAction) => {
+		const setModifiedImagesAction = action as SetModifiedImagesAction;
+		return {
+			...state,
+			modifiedImages: setModifiedImagesAction.imageInfos,
 		};
 	},
 	[AppActionTypes.SET_MODIFICATION_IN_PROGRESS]: (state, action: ImageAction) => {

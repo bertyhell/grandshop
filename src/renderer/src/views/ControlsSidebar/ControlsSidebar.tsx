@@ -10,8 +10,8 @@ import { useTranslation } from 'react-i18next';
 import { applyModifications, saveImage, openImage } from '../../services/interop-electron';
 import { Button } from '../../components/Button/Button';
 import { AppState } from '../../store/types';
-import { selectModifiedImage, selectOriginalImage } from '../../store/selectors';
-import { setModifiedImageAction } from '../../store/actions';
+import { selectModifiedImages, selectOriginalImage } from '../../store/selectors';
+import { clearModifiedImagesAction } from '../../store/actions';
 import { Select, SelectOption } from '../../components/Select/Select';
 import { format } from '../../helpers/format';
 import getModificationComponents, {
@@ -26,8 +26,8 @@ import './ControlsSidebar.scss';
 
 interface ControlsSidebarProps {
 	originalImage: FrontendImageInfo | null;
-	modifiedImage: FrontendImageInfo | null;
-	setModifiedImage: (image: FrontendImageInfo | null) => void;
+	modifiedImages: (FrontendImageInfo | null)[];
+	clearModifierImage: () => void;
 }
 
 interface ModifierState {
@@ -44,8 +44,8 @@ interface ActiveModifier {
 
 const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 	originalImage,
-	modifiedImage,
-	setModifiedImage,
+	modifiedImages,
+	clearModifierImage,
 }) => {
 	const [t] = useTranslation();
 
@@ -143,7 +143,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 		// check previous state to see if we need to run the applyModifications function because all modifiers were removed
 		if (!modifierState.activeModifiers || !modifierState.activeModifiers.length) {
 			// No modifications, remove modified image, so the original image will be shown
-			setModifiedImage(null);
+			clearModifierImage();
 		} else if (!isEqual(previousActiveModifiers, modifierState.activeModifiers)) {
 			const modifications: ImageModificationInfo[] = compact(
 				modifierState.activeModifiers.map((m: ActiveModifier) => m.info)
@@ -182,7 +182,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 				<Button
 					onClick={async () => {
 						await openImage({
-							buttonLabel: 'Openen',
+							buttonLabel: t('Openen'),
 							// defaultPath // TODO default to the users images folder
 							filters: [
 								{
@@ -207,7 +207,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 					}}
 					label={t('views/controls-sidebar/controls-sidebar___open-image')}
 				/>
-				{modifiedImage && (
+				{!!modifiedImages.filter((img) => !!img).length && (
 					<Button
 						className="c-save-button"
 						onClick={async () => {
@@ -282,7 +282,10 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 									key={m.key}
 								>
 									<Component
-										imageInfo={modifiedImage || originalImage}
+										imageInfo={modifiedImages[index - 1] || originalImage}
+										imageInfoAfterModification={
+											modifiedImages[index] || originalImage
+										}
 										onApply={(info: ImageModificationInfo) =>
 											handleApplyModifier(info, index)
 										}
@@ -303,14 +306,14 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 
 const mapStateToProps = (state: { app: AppState }) => ({
 	originalImage: selectOriginalImage(state),
-	modifiedImage: selectModifiedImage(state),
+	modifiedImages: selectModifiedImages(state),
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => {
 	return {
-		setModifiedImage: (image: FrontendImageInfo | null) =>
+		clearModifierImage: () =>
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			dispatch(setModifiedImageAction(image) as any),
+			dispatch(clearModifiedImagesAction() as any),
 	};
 };
 

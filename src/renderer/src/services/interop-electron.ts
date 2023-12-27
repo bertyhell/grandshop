@@ -1,15 +1,18 @@
 import type { OpenDialogSyncOptions, SaveDialogOptions } from 'electron';
 
 import {
+	clearModifiedImagesAction,
 	setColorAtPixelAction,
 	setModificationInProgressAction,
-	setModifiedImageAction,
+	setModifiedImagesAction,
 	setOriginalImageAction,
 } from '../store/actions';
 import store from '../store/store';
 import {
 	ElectronCallFunction,
 	ElectronCallFunctionRequest,
+	FrontendImageInfo,
+	RendererCallFunction,
 	RendererCallFunctionRequest,
 } from '../../../shared/types';
 import toastService from './toast-service';
@@ -21,7 +24,8 @@ import type { ImageModificationInfo } from '../../../shared/modifications/types'
 // Loaded in the preload.index.ts file
 const ipcRenderer = (window as Window)?.electron?.ipcRenderer;
 
-const callableFunctions = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const callableFunctions: Record<RendererCallFunction, (...props: any) => void> = {
 	setOriginalImage: (base64: string, dimensions: Dimensions) => {
 		store.dispatch(
 			setOriginalImageAction({
@@ -29,15 +33,13 @@ const callableFunctions = {
 				dimensions,
 			})
 		);
-		store.dispatch(setModifiedImageAction(null));
+		store.dispatch(clearModifiedImagesAction());
 	},
-	setModifiedImage: (base64: string, dimensions: Dimensions) => {
-		store.dispatch(
-			setModifiedImageAction({
-				base64,
-				dimensions,
-			})
-		);
+	setModifiedImages: (imageInfos: FrontendImageInfo[]) => {
+		store.dispatch(setModifiedImagesAction(imageInfos));
+	},
+	clearModifiedImages: () => {
+		store.dispatch(clearModifiedImagesAction());
 	},
 	setModificationInProgress: (inProgress: boolean) => {
 		store.dispatch(setModificationInProgressAction(inProgress));

@@ -1,8 +1,7 @@
 export type RendererCallFunction =
 	| 'setOriginalImage'
-	| 'setOriginalImageDimensions'
-	| 'setModifiedImage'
-	| 'setModifiedImageDimensions'
+	| 'setModifiedImages'
+	| 'clearModifiedImages'
 	| 'setModificationInProgress'
 	| 'showNotification'
 	| 'setColorAtPixel';

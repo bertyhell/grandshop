@@ -4,6 +4,8 @@ import {
 	SetModifiedImageAction,
 	SetModificationInProgressAction,
 	SetColorAtPixelAction,
+	ClearModifiedImagesAction,
+	SetModifiedImagesAction,
 } from './types';
 import { FrontendImageInfo } from '../../../shared/types';
 
@@ -15,10 +17,23 @@ export const setOriginalImageAction = (
 });
 
 export const setModifiedImageAction = (
-	imageInfo: FrontendImageInfo | null
+	imageInfo: FrontendImageInfo | null,
+	index: number
 ): SetModifiedImageAction => ({
 	imageInfo,
+	index,
 	type: AppActionTypes.SET_MODIFIED_IMAGE,
+});
+
+export const setModifiedImagesAction = (
+	imageInfos: (FrontendImageInfo | null)[]
+): SetModifiedImagesAction => ({
+	imageInfos,
+	type: AppActionTypes.SET_MODIFIED_IMAGES,
+});
+
+export const clearModifiedImagesAction = (): ClearModifiedImagesAction => ({
+	type: AppActionTypes.CLEAR_MODIFIED_IMAGES,
 });
 
 export const setModificationInProgressAction = (

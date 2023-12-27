@@ -1,4 +1,5 @@
 import {
+	ClearModifiedImagesAction,
 	SetColorAtPixelAction,
 	SetModificationInProgressAction,
 	SetModifiedImageAction,
@@ -10,6 +11,7 @@ type Handler<S> = (state: S, action: ImageAction) => S;
 export type ImageAction =
 	| SetOriginalImageAction
 	| SetModifiedImageAction
+	| ClearModifiedImagesAction
 	| SetModificationInProgressAction
 	| SetColorAtPixelAction;
 

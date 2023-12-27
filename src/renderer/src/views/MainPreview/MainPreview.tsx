@@ -24,7 +24,7 @@ import { FrontendImageInfo } from '../../../../shared/types';
 
 interface MainPreviewProps {
 	originalImage: FrontendImageInfo | null;
-	modifiedImage: FrontendImageInfo | null;
+	modifiedImage: FrontendImageInfo | null | undefined;
 	modificationInProgress: boolean;
 }
 

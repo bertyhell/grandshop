@@ -18,5 +18,6 @@ export interface ImageModificationInfo {
 
 export interface ModificationProps {
 	imageInfo: FrontendImageInfo;
+	imageInfoAfterModification: FrontendImageInfo;
 	onApply: (modification: ImageModificationInfo) => void;
 }
