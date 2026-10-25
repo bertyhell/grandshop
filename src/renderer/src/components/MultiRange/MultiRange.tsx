@@ -96,8 +96,9 @@ export const MultiRange: FunctionComponent<MultiRangeProps> = ({
 						</div>
 					</div>
 				)}
-				renderThumb={({ props }: IRenderThumbParams) => (
+				renderThumb={({ props: { key, ...props } }: IRenderThumbParams) => (
 					<div
+						key={key}
 						{...props}
 						style={{
 							...props.style,
