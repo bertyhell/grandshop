@@ -1,13 +1,14 @@
 import { resolve } from 'path';
-import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
+import { defineConfig } from 'electron-vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-	main: {
-		plugins: [externalizeDepsPlugin()],
-	},
+	main: {},
 	preload: {
-		plugins: [externalizeDepsPlugin()],
+		build: {
+			// Bundle the preload dependencies, so the preload script can run in a sandboxed renderer
+			externalizeDeps: false,
+		},
 	},
 	renderer: {
 		resolve: {
@@ -15,8 +16,15 @@ export default defineConfig({
 				'@renderer': resolve('src/renderer/src'),
 			},
 		},
-
 		plugins: [react()],
+		css: {
+			preprocessorOptions: {
+				scss: {
+					// The vendored font awesome scss files still use @import and global functions
+					silenceDeprecations: ['import', 'global-builtin'],
+				},
+			},
+		},
 		server: {
 			port: 3000,
 		},

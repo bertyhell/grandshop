@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 
 import { MultiRange } from '../../../renderer/src/components/MultiRange/MultiRange';
 import { ModificationProps } from '../types';

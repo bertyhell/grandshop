@@ -6,7 +6,7 @@ import {
 	RendererCallFunction,
 	RendererCallFunctionRequest,
 } from '../shared/types';
-import { join, ParsedPath } from 'path';
+import { extname, join, ParsedPath } from 'path';
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 import fs from 'fs-extra';
 import throttle from '@jcoreio/async-throttle';
@@ -30,8 +30,8 @@ function createWindow(): void {
 	mainWindow = new BrowserWindow({
 		// ...((data && data.bounds) ? data.bounds : { width: 800, height: 600 }),
 		webPreferences: {
-			nodeIntegration: true,
-			webSecurity: true,
+			// The renderer only talks to the main process through the api exposed in the preload script
+			sandbox: true,
 			preload: join(__dirname, '../preload/index.js'),
 		},
 		backgroundColor: '#888888',
@@ -79,7 +79,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
 	// Set app user model id for windows
-	electronApp.setAppUserModelId('com.electron');
+	electronApp.setAppUserModelId('com.gitlab.com.bertyhell.grandshop');
 
 	// Default open or close DevTools by F12 in development
 	// and ignore CommandOrControl + R in production.
@@ -103,14 +103,6 @@ app.on('window-all-closed', () => {
 	// to stay active until the user quits explicitly with Cmd + Q
 	if (process.platform !== 'darwin') {
 		app.quit();
-	}
-});
-
-app.on('activate', () => {
-	// On macOS it's common to re-create a window in the app when the
-	// dock icon is clicked and there are no other windows open.
-	if (mainWindow === null) {
-		createWindow();
 	}
 });
 
@@ -160,13 +152,24 @@ async function saveImage(
 			parts.name + '-' + new Date().toLocaleDateString().replace(/[^0-9]+/g, '-') + '.png';
 		response = await dialog.showSaveDialog(mainWindow as BrowserWindow, {
 			...options,
-			defaultPath: defaultFileName,
+			// Save next to the original image by default
+			defaultPath: join(parts.dir, defaultFileName),
 		});
 		if (response.canceled || !response.filePath) {
 			return;
-		} // TODO allow the user to enter a different extension, then use gm to save the file in that extension
-		// Write the modified buffer image to the save location
-		await fs.writeFile(response.filePath, ImageManager.getLastModifiedImageBuffer());
+		}
+		let filePath = response.filePath;
+		if (!extname(filePath)) {
+			filePath += '.png';
+		}
+		// Write the modified image to the save location in the format of the chosen extension
+		await fs.writeFile(
+			filePath,
+			await ImageManager.convertToFormat(
+				ImageManager.getLastModifiedImageBuffer(),
+				extname(filePath).substring(1)
+			)
+		);
 
 		callRendererFunction('showNotification', [
 			i18n.t('electron/main___image-has-been-saved'),
@@ -217,12 +220,10 @@ const applyModifications = throttle(
 			const modifiedImageInfos: ImageInfo[] =
 				await ImageManager.updateModifications(modifications);
 
-			const modifiedImages = modifiedImageInfos.map(
-				(imageInfo): FrontendImageInfo => ({
-					base64: imageInfo.buffer.toString('base64'),
-					dimensions: imageInfo.dimensions,
-				})
-			);
+			const modifiedImages = modifiedImageInfos.map((imageInfo): FrontendImageInfo => ({
+				base64: imageInfo.buffer.toString('base64'),
+				dimensions: imageInfo.dimensions,
+			}));
 			callRendererFunction('setModifiedImages', [modifiedImages]);
 			callRendererFunction('setModificationInProgress', [false]);
 		} catch (err) {
@@ -263,7 +264,7 @@ ipcMain.handle(
 					}
 				);
 			}
-			return func(event, ...arg.funcArgs);
+			return await func(event, ...arg.funcArgs);
 		} catch (err: unknown) {
 			callRendererFunction('showNotification', [
 				i18n.t((err as { message: string })?.message),

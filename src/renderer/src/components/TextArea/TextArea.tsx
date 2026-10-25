@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FunctionComponent } from 'react';
+import { ChangeEvent, FunctionComponent } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import clsx from 'clsx';
 

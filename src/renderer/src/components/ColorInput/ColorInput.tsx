@@ -1,4 +1,4 @@
-import React, {
+import {
 	createRef,
 	FunctionComponent,
 	MutableRefObject,
@@ -39,7 +39,7 @@ const ColorInput: FunctionComponent<ColorInputProps> = ({
 	const colorPicker: MutableRefObject<IroColorPicker | null> = useRef<IroColorPicker | null>(
 		null
 	);
-	const el: RefObject<HTMLDivElement> = createRef<HTMLDivElement>();
+	const el: RefObject<HTMLDivElement | null> = createRef<HTMLDivElement>();
 
 	const changeColor = useCallback(
 		(color: string) => {

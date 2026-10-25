@@ -1,25 +1,12 @@
-import {
-	ClearModifiedImagesAction,
-	SetColorAtPixelAction,
-	SetModificationInProgressAction,
-	SetModifiedImageAction,
-	SetOriginalImageAction,
-} from '../store/types';
+import type { Reducer, UnknownAction } from '@reduxjs/toolkit';
 
-type Handler<S> = (state: S, action: ImageAction) => S;
-
-export type ImageAction =
-	| SetOriginalImageAction
-	| SetModifiedImageAction
-	| ClearModifiedImagesAction
-	| SetModificationInProgressAction
-	| SetColorAtPixelAction;
+type Handler<S> = (state: S, action: UnknownAction) => S;
 
 export function createReducer<State>(
 	initialState: State,
 	handlers: { [type: string]: Handler<State> }
-): Handler<State> {
-	return (state: State = initialState, action: ImageAction): State => {
+): Reducer<State> {
+	return (state: State = initialState, action: UnknownAction): State => {
 		if (Object.hasOwn(handlers, action.type)) {
 			return handlers[action.type](state, action);
 		}

@@ -1,3 +1,5 @@
+@use "sass:color";
+
 .c-button {
 	height: 40px;
 	border: 1px solid #666;
@@ -17,11 +19,11 @@
 		border-color: #182347;
 
 		&:hover {
-			background-color: lighten(#223b82, 10%);
+			background-color: color.adjust(#223b82, $lightness: 10%);
 		}
 
 		&:active {
-			background-color: lighten(#223b82, 15%);
+			background-color: color.adjust(#223b82, $lightness: 15%);
 		}
 	}
 
@@ -31,11 +33,11 @@
 		border-color: #acacac;
 
 		&:hover {
-			background-color: lighten(#ddd, 10%);
+			background-color: color.adjust(#ddd, $lightness: 10%);
 		}
 
 		&:active {
-			background-color: lighten(#ddd, 15%);
+			background-color: color.adjust(#ddd, $lightness: 15%);
 		}
 	}
 

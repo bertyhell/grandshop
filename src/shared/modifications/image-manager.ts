@@ -6,7 +6,6 @@ import bmp from '@vingle/bmp-js';
 import { CustomError } from '../error';
 import { modificationFuncs, ImageInfo } from './modifications';
 import { ImageModificationInfo } from './types';
-import { isNil } from 'lodash';
 import { Dimensions, Extension } from '../types';
 import crypto from 'crypto';
 
@@ -15,10 +14,12 @@ export default class ImageManager {
 	private static originalImagePath: string;
 	private static originalImageBuffer: Buffer;
 	private static originalImageDimensions: Dimensions;
+	private static originalImageHash: string;
 
 	private static modifiedImages: ImageInfo[] = [];
 
-	private static cache: { hash: string; image: Buffer }[] = [];
+	// One cache entry per modification layer, so unchanged layers don't need to be recalculated
+	private static cache: { hash: string; image: ImageInfo }[] = [];
 
 	public static updateModifications = (
 		modifications: ImageModificationInfo[]
@@ -27,9 +28,8 @@ export default class ImageManager {
 		return new Promise<ImageInfo[]>(async (resolve, reject) => {
 			try {
 				let modifiedImageBuffer = ImageManager.originalImageBuffer;
-				let modifiedImageDimensions = await ImageManager.getDimensions(
-					ImageManager.originalImageBuffer
-				);
+				let modifiedImageDimensions = ImageManager.originalImageDimensions;
+				let previousHash = ImageManager.originalImageHash;
 
 				// Apply each modification by passing it the image buffer and the args that were defined in the frontend
 				for (const [modIndex, modification] of modifications.entries()) {
@@ -47,16 +47,24 @@ export default class ImageManager {
 						);
 					}
 
-					const fullKey = JSON.stringify({
-						buffer: modifiedImageBuffer,
-						dimensions: modifiedImageDimensions,
-						arguments: modification.arguments,
-					});
-					const hash = crypto.createHash('md5').update(fullKey).digest('hex');
+					// The hash of a layer depends on the hash of the previous layer and the arguments of this layer,
+					// so a change in an earlier layer invalidates all the layers after it
+					const hash = crypto
+						.createHash('md5')
+						.update(previousHash)
+						.update(
+							JSON.stringify({
+								name: modification.name,
+								args: modification.arguments,
+							})
+						)
+						.digest('hex');
+					previousHash = hash;
 
 					if (ImageManager.cache[modIndex]?.hash === hash) {
 						// modification hasn't changed, so we can use the cached value to speed up
-						modifiedImageBuffer = ImageManager.cache[modIndex].image;
+						modifiedImageBuffer = ImageManager.cache[modIndex].image.buffer;
+						modifiedImageDimensions = ImageManager.cache[modIndex].image.dimensions;
 					} else {
 						// change was made in the earlier layers or the arguments of the current modification layer was changed => run the modification
 						modifiedImageBuffer = await func.bind(ImageManager)(
@@ -66,21 +74,30 @@ export default class ImageManager {
 							},
 							...modification.arguments
 						);
+						// Since the modifier can change the image size, we need to update it after each modification
+						modifiedImageDimensions =
+							await ImageManager.getDimensions(modifiedImageBuffer);
 						// store value in the cache
 						ImageManager.cache[modIndex] = {
 							hash,
-							image: modifiedImageBuffer,
+							image: {
+								buffer: modifiedImageBuffer,
+								dimensions: modifiedImageDimensions,
+							},
 						};
 					}
-
-					// Since the modifier can change the image size, we need to update it after each modification
-					modifiedImageDimensions = await ImageManager.getDimensions(modifiedImageBuffer);
 
 					ImageManager.modifiedImages[modIndex] = {
 						buffer: modifiedImageBuffer,
 						dimensions: modifiedImageDimensions,
 					};
 				}
+				// Remove results of modifications that were deleted
+				ImageManager.modifiedImages.length = modifications.length;
+				ImageManager.cache.length = Math.min(
+					ImageManager.cache.length,
+					modifications.length
+				);
 				resolve(ImageManager.modifiedImages);
 			} catch (err) {
 				reject(
@@ -106,6 +123,13 @@ export default class ImageManager {
 			.png()
 			.toBuffer();
 		this.originalImageDimensions = await this.getDimensions(this.originalImageBuffer);
+		this.originalImageHash = crypto
+			.createHash('md5')
+			.update(this.originalImageBuffer)
+			.digest('hex');
+		// A new image invalidates all previous results
+		this.modifiedImages = [];
+		this.cache = [];
 		return {
 			buffer: this.originalImageBuffer,
 			dimensions: this.originalImageDimensions,
@@ -121,7 +145,7 @@ export default class ImageManager {
 	}
 
 	public static getLastModifiedImageBuffer(): Buffer {
-		return this.modifiedImages.filter((imageInfo) => !!imageInfo).at(-1)?.buffer as Buffer;
+		return this.modifiedImages.at(-1)?.buffer ?? this.originalImageBuffer;
 	}
 
 	public static bufferToSharp(
@@ -153,6 +177,34 @@ export default class ImageManager {
 		});
 	}
 
+	/**
+	 * Converts a png buffer to the image format that matches the extension
+	 * Unknown extensions are saved as png
+	 */
+	public static async convertToFormat(pngBuffer: Buffer, extension: string): Promise<Buffer> {
+		switch (extension.toLowerCase()) {
+			case Extension.jpg:
+			case Extension.jpeg:
+				// jpg doesn't support transparency, so use a white background
+				return sharp(pngBuffer)
+					.flatten({ background: '#ffffff' })
+					.jpeg({ quality: 92 })
+					.toBuffer();
+
+			case Extension.webp:
+				return sharp(pngBuffer).webp({ quality: 92 }).toBuffer();
+
+			case Extension.tif:
+				return sharp(pngBuffer).tiff().toBuffer();
+
+			case Extension.gif:
+				return sharp(pngBuffer).gif().toBuffer();
+
+			default:
+				return pngBuffer;
+		}
+	}
+
 	public static async sharpToBuffer(sharp: Sharp): Promise<Buffer> {
 		return await sharp.toBuffer();
 	}
@@ -160,7 +212,7 @@ export default class ImageManager {
 	private static async getDimensions(buffer: Buffer): Promise<Dimensions> {
 		try {
 			const metadata = await this.bufferToSharp(buffer).metadata();
-			if (!metadata || isNil(metadata.width) || isNil(metadata.height)) {
+			if (!metadata?.width || !metadata?.height) {
 				throw new CustomError('Failed to fetch dimensions from metadata', null, {
 					metadata,
 				});

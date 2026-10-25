@@ -21,10 +21,10 @@
  */
 
 import * as fs from 'fs';
-import * as glob from 'glob-promise';
-import * as _ from 'lodash';
+import { glob } from 'glob';
+import { intersection, kebabCase, without } from 'lodash-es';
 import * as path from 'path';
-import * as localTranslations from '../shared/translations/en.json';
+import localTranslations from '../shared/translations/en.json';
 
 type keyMap = { [key: string]: string };
 
@@ -46,12 +46,12 @@ function getFormattedKey(filePath: string, key: string) {
 		.replace(/[\\/]+/g, '/')
 		.split('.')[0]
 		.split(/[\\/]/g)
-		.map((part) => _.kebabCase(part))
+		.map((part) => kebabCase(part))
 		.join('/')
 		.toLowerCase()
 		.replace(/(^\/+|\/+$)/g, '')
 		.trim();
-	const formattedKey = _.kebabCase(key);
+	const formattedKey = kebabCase(key);
 	return `${fileKey}___${formattedKey}`;
 }
 
@@ -129,14 +129,16 @@ async function getOnlineTranslations() {
 			);
 		}
 		try {
-			const filePath = path.resolve(__dirname, '../src/', poEditorFile);
+			const filePath = path.resolve(__dirname, '../', poEditorFile);
 			return JSON.parse(fs.readFileSync(filePath).toString());
 		} catch (err) {
 			throw new Error(
-				`Failed to parse json file from poeditor: ${JSON.stringify(err, null, 2)}`
+				`Failed to parse json file from poeditor: ${JSON.stringify(err, null, 2)}`,
+				{ cause: err }
 			);
 		}
 	} catch (err) {
+		console.warn('Failed to load the translations from poeditor', err);
 		// Still return empty translations file to continue with the rest of the extraction script
 		return {};
 	}
@@ -168,14 +170,11 @@ async function updateTranslations() {
 	const newTranslations: keyMap = extractTranslationsFromCodeFiles(codeFiles);
 
 	// Compare existing translations to the new translations
-	const oldTranslationKeys: string[] = _.keys(oldTranslations);
-	const newTranslationKeys: string[] = _.keys(newTranslations);
-	const addedTranslationKeys: string[] = _.without(newTranslationKeys, ...oldTranslationKeys);
-	const removedTranslationKeys: string[] = _.without(oldTranslationKeys, ...newTranslationKeys);
-	const existingTranslationKeys: string[] = _.intersection(
-		newTranslationKeys,
-		oldTranslationKeys
-	);
+	const oldTranslationKeys: string[] = Object.keys(oldTranslations);
+	const newTranslationKeys: string[] = Object.keys(newTranslations);
+	const addedTranslationKeys: string[] = without(newTranslationKeys, ...oldTranslationKeys);
+	const removedTranslationKeys: string[] = without(oldTranslationKeys, ...newTranslationKeys);
+	const existingTranslationKeys: string[] = intersection(newTranslationKeys, oldTranslationKeys);
 
 	// Console log translations that were found in the json file but not in the code
 	console.warn(

@@ -1,6 +1,9 @@
 import type { BrowserWindow } from 'electron';
 import { CustomError } from '../shared/error';
-import Color from 'color';
+
+function toHex(value: number): string {
+	return value.toString(16).padStart(2, '0');
+}
 
 export class ColorPicker {
 	public static async getColorAtMouse(win: BrowserWindow, x: number, y: number): Promise<string> {
@@ -11,18 +14,9 @@ export class ColorPicker {
 				width: 1,
 				height: 1,
 			});
+			// Bitmap data is in BGRA order
 			const rawData = img.toBitmap();
-			return (
-				'#' +
-				Color({
-					r: rawData[2],
-					g: rawData[1],
-					b: rawData[0],
-				})
-					.alpha(rawData[3] / 255.0)
-					.hex()
-					.substring(1)
-			);
+			return '#' + toHex(rawData[2]) + toHex(rawData[1]) + toHex(rawData[0]);
 		} catch (err) {
 			throw new CustomError('Failed to get pixel color', err, { x, y });
 		}

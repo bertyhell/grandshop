@@ -13,11 +13,7 @@ export interface RendererCallFunctionRequest {
 }
 
 export type ElectronCallFunction =
-	| 'openImage'
-	| 'applyModifications'
-	| 'saveImage'
-	| 'setLanguage'
-	| 'getColorAtPixel';
+	'openImage' | 'applyModifications' | 'saveImage' | 'setLanguage' | 'getColorAtPixel';
 
 export interface ElectronCallFunctionRequest {
 	func: ElectronCallFunction;

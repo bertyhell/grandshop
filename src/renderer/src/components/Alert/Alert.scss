@@ -1,3 +1,5 @@
+@use "sass:color";
+
 .c-alert {
 	background: #fff;
 	border-radius: 0.3rem;
@@ -23,20 +25,20 @@
 
 .c-alert-info {
 	background: #f2f9fa;
-	border-color: darken(#f2f9fa, 10%);
+	border-color: color.adjust(#f2f9fa, $lightness: -10%);
 }
 
 .c-alert-danger {
 	background: #fef2f0;
-	border-color: darken(#fef2f0, 10%);
+	border-color: color.adjust(#fef2f0, $lightness: -10%);
 }
 
 .c-alert-warn {
 	background: #feeacf;
-	border-color: darken(#feeacf, 10%);
+	border-color: color.adjust(#feeacf, $lightness: -10%);
 }
 
 .c-alert-success {
 	background: #eff9f6;
-	border-color: darken(#eff9f6, 10%);
+	border-color: color.adjust(#eff9f6, $lightness: -10%);
 }

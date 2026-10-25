@@ -62,7 +62,7 @@ ipcRenderer?.on('mainprocess-response', (event: any, arg: RendererCallFunctionRe
 		} catch (err) {
 			console.error(
 				'Failed to execute renderer function that was requested from the main thread',
-				{ event, arg, func }
+				{ event, arg, func, err }
 			);
 		}
 	} else {

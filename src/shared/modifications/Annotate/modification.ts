@@ -2,7 +2,6 @@ import ImageManager from '../image-manager';
 import type { ImageInfo } from '../modifications';
 import type { Sharp } from 'sharp';
 import TextToSVG from 'text-to-svg';
-import { maxBy } from 'lodash';
 
 // generate text as svg
 const textToSVG = TextToSVG.loadSync();
@@ -26,17 +25,9 @@ export interface SvgMetrics {
 }
 
 function getMaxTextLocation(compositeImages: CompositeImage[]): { x: number; y: number } {
-	const maxHorizontal = maxBy(
-		compositeImages,
-		(compositeImage) => compositeImage.left + compositeImage.width
-	) as CompositeImage;
-	const maxVertical = maxBy(
-		compositeImages,
-		(compositeImage) => compositeImage.top + compositeImage.height
-	) as CompositeImage;
 	return {
-		x: Math.ceil(maxHorizontal.left + maxHorizontal.width),
-		y: Math.ceil(maxVertical.top + maxVertical.height),
+		x: Math.ceil(Math.max(...compositeImages.map((image) => image.left + image.width))),
+		y: Math.ceil(Math.max(...compositeImages.map((image) => image.top + image.height))),
 	};
 }
 
@@ -86,7 +77,7 @@ export async function annotate(
 			}
 
 			return {
-				input: new Buffer(svg),
+				input: Buffer.from(svg),
 				left: Math.round(left),
 				top: Math.round(top),
 				width: svgMetrics.width,

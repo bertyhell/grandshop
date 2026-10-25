@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import React, { FunctionComponent, ReactNode } from 'react';
+import { FunctionComponent, ReactNode } from 'react';
 
 import './Accordion.scss';
 import { Button } from '../Button/Button';

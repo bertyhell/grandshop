@@ -1,4 +1,4 @@
-import React, { Fragment, FunctionComponent, MouseEvent, ReactNode } from 'react';
+import { Fragment, FunctionComponent, MouseEvent, ReactNode } from 'react';
 
 import clsx from 'clsx';
 import ReactDOM from 'react-dom';

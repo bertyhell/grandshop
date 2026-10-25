@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, {
+import {
 	createRef,
 	FunctionComponent,
 	MutableRefObject,
@@ -35,7 +35,7 @@ const MainPreview: FunctionComponent<MainPreviewProps> = ({
 }) => {
 	const [t] = useTranslation();
 
-	const el: RefObject<HTMLImageElement> = createRef<HTMLImageElement>();
+	const el: RefObject<HTMLImageElement | null> = createRef<HTMLImageElement>();
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const viewer: MutableRefObject<any | null> = useRef<any | null>(null);
 

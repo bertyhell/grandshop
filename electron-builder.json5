@@ -8,14 +8,17 @@
 		'!**/.vscode/*',
 		'!src/*',
 		'!electron.vite.config.{js,ts,mjs,cjs}',
-		'!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}',
+		'!{.prettierignore,.prettierrc,dev-app-update.yml,CHANGELOG.md,README.md}',
 		'!{.env,.env.*,.npmrc,pnpm-lock.yaml}',
-		'!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}',
-		// Ignore large tensorflow dll file that is not used
-		'!node_modules/@tensorflow/tfjs-node/deps/**',
+		'!{tsconfig.json,tsconfig.node.json,tsconfig.web.json,eslint.config.mjs}',
 	],
 	asarUnpack: ['resources/**'],
 	win: {
+		files: [
+			// On windows tensorflow.dll is copied next to the binding (see src/scripts/copy-tensorflow-dll.mjs),
+			// so the large libtensorflow download folder is not needed
+			'!node_modules/@tensorflow/tfjs-node/deps/**',
+		],
 		executableName: 'grandshop',
 		icon: 'build/icon.ico',
 	},

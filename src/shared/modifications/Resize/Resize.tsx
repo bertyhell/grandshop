@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import prettyBytes from 'pretty-bytes';
 
 import { MultiRange } from '../../../renderer/src/components/MultiRange/MultiRange';

@@ -3,7 +3,6 @@ import { ToastContainer } from 'react-toastify';
 import { Allotment } from 'allotment';
 import 'allotment/dist/style.css';
 import { Provider } from 'react-redux';
-import 'react-toastify/dist/ReactToastify.css';
 
 import MainPreview from './views/MainPreview/MainPreview';
 import ControlsSidebar from './views/ControlsSidebar/ControlsSidebar';
@@ -32,7 +31,6 @@ const App: React.FC = () => {
 					<MainPreview />
 					<ControlsSidebar />
 				</Allotment>
-				;
 			</div>
 		</Provider>
 	);

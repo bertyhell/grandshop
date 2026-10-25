@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 
 import FormField from '../../../renderer/src/components/FormField/FormField';
 import ColorInput from '../../../renderer/src/components/ColorInput/ColorInput';

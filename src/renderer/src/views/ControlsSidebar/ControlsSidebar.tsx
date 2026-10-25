@@ -1,8 +1,6 @@
-import React, { FunctionComponent, useEffect, useReducer, useState } from 'react';
-import { v4 as getUuid } from 'uuid';
+import { FunctionComponent, useEffect, useReducer, useRef, useState } from 'react';
 import { connect } from 'react-redux';
-import { Dispatch } from 'redux';
-import usePrevious from 'use-previous';
+import type { Dispatch } from '@reduxjs/toolkit';
 import compact from 'lodash-es/compact';
 import { isEqual, kebabCase, fromPairs, map, sortBy } from 'lodash-es';
 import { useTranslation } from 'react-i18next';
@@ -90,7 +88,7 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 		let newModifiers: ActiveModifier[] | undefined = [...modifierState.activeModifiers];
 		let newOpenStates: boolean[] | undefined = [...modifierState.openStates];
 
-		const key = getUuid();
+		const key = crypto.randomUUID();
 		switch (action.type) {
 			case 'ADD': {
 				const title: string = getModifierTitle(modifierState.activeModifiers, action.name);
@@ -129,27 +127,24 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 		};
 	}
 
-	const [modifierState, changeModifierState] = useReducer<
-		React.Reducer<ModifierState, ActiveModifierAction>
-	>(activeModifiersReducer, {
+	const [modifierState, changeModifierState] = useReducer(activeModifiersReducer, {
 		openStates: [],
 		activeModifiers: [],
 	});
-	const previousActiveModifiers = usePrevious<ActiveModifier[] | null>(
-		modifierState.activeModifiers
-	);
+	const previousActiveModifiers = useRef<ActiveModifier[] | null>(null);
 
 	useEffect(() => {
 		// check previous state to see if we need to run the applyModifications function because all modifiers were removed
 		if (!modifierState.activeModifiers || !modifierState.activeModifiers.length) {
 			// No modifications, remove modified image, so the original image will be shown
 			clearModifierImage();
-		} else if (!isEqual(previousActiveModifiers, modifierState.activeModifiers)) {
+		} else if (!isEqual(previousActiveModifiers.current, modifierState.activeModifiers)) {
 			const modifications: ImageModificationInfo[] = compact(
 				modifierState.activeModifiers.map((m: ActiveModifier) => m.info)
 			);
 			applyModifications(modifications); // Do not apply new modifications if the previous modifications are not done yet
 		}
+		previousActiveModifiers.current = modifierState.activeModifiers;
 	}, [modifierState.activeModifiers]);
 
 	// Reset the selected dropdown option back to the placeholder, to users know they can add another modifier
@@ -217,16 +212,9 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 								buttonLabel: t('views/controls-sidebar/controls-sidebar___save'),
 								// defaultPath // TODO default to the users images folder
 								filters: [
-									{
-										name: t(
-											'views/controls-sidebar/controls-sidebar___all-file-types'
-										),
-										extensions: ['*'],
-									},
-									{
-										name: t('views/controls-sidebar/controls-sidebar___images'),
-										extensions: [Extension.png],
-									},
+									{ name: 'PNG', extensions: [Extension.png] },
+									{ name: 'JPEG', extensions: [Extension.jpg, Extension.jpeg] },
+									{ name: 'WebP', extensions: [Extension.webp] },
 								],
 								title: t(
 									'views/controls-sidebar/controls-sidebar___choose-the-location-and-name-to-save-your-file'
@@ -254,10 +242,10 @@ const ControlsSidebar: FunctionComponent<ControlsSidebarProps> = ({
 								modifierState.activeModifiers.length
 									? t(
 											'views/controls-sidebar/controls-sidebar___choose-another-operation'
-									  )
+										)
 									: t(
 											'views/controls-sidebar/controls-sidebar___choose-an-operation'
-									  )
+										)
 							}
 						/>
 					</div>

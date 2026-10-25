@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FunctionComponent, KeyboardEvent } from 'react';
+import { ChangeEvent, FunctionComponent, KeyboardEvent } from 'react';
 
 import clsx from 'clsx';
 

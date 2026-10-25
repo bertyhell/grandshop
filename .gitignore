@@ -34,5 +34,3 @@ src/shared/translations/poeditor
 
 *.asar
 
-tsconfig.json
-tsconfig.*.json

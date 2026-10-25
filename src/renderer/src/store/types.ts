@@ -1,4 +1,4 @@
-import { Action } from 'redux';
+import type { UnknownAction } from '@reduxjs/toolkit';
 
 import { FrontendImageInfo } from '../../../shared/types';
 
@@ -11,26 +11,26 @@ export enum AppActionTypes {
 	SET_COLOR_AT_PIXEL = '@@SET_COLOR_AT_PIXEL',
 }
 
-export interface SetOriginalImageAction extends Action {
+export interface SetOriginalImageAction extends UnknownAction {
 	imageInfo: FrontendImageInfo | null;
 }
 
-export interface SetModifiedImageAction extends Action {
+export interface SetModifiedImageAction extends UnknownAction {
 	imageInfo: FrontendImageInfo | null;
 	index: number;
 }
 
-export interface SetModifiedImagesAction extends Action {
+export interface SetModifiedImagesAction extends UnknownAction {
 	imageInfos: (FrontendImageInfo | null)[];
 }
 
-export interface ClearModifiedImagesAction extends Action {}
+export interface ClearModifiedImagesAction extends UnknownAction {}
 
-export interface SetModificationInProgressAction extends Action {
+export interface SetModificationInProgressAction extends UnknownAction {
 	modificationInProgress: boolean;
 }
 
-export interface SetColorAtPixelAction extends Action {
+export interface SetColorAtPixelAction extends UnknownAction {
 	color: string;
 }
 

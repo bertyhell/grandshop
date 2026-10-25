@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import { getTrackBackground, Range } from 'react-range';
 import { useTranslation } from 'react-i18next';
 import { clamp } from 'lodash-es';
@@ -36,14 +36,14 @@ export const MultiRange: FunctionComponent<MultiRangeProps> = ({
 	const [t] = useTranslation();
 
 	const handleThicknessInputChanged = (value: string) => {
-		try {
-			const val = parseInt(value, 10);
-			onChange([clamp(val, min, max)]);
-		} catch (err) {
+		const val = parseInt(value, 10);
+		if (Number.isNaN(val)) {
 			toastService.warn(
 				t('components/multi-range/multi-range___the-value-must-be-a-valid-number')
 			);
+			return;
 		}
+		onChange([clamp(val, min, max)]);
 	};
 
 	const classes = clsx('c-input-range', className, { 'c-input-range__disabled': disabled });
@@ -87,7 +87,7 @@ export const MultiRange: FunctionComponent<MultiRangeProps> = ({
 													'rgb(196, 196, 196)',
 													'hsl(190, 80%, 40%)',
 													'rgb(196, 196, 196)',
-											  ],
+												],
 								}),
 								alignSelf: 'center',
 							}}

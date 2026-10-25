@@ -1,4 +1,4 @@
-import React, { FunctionComponent, MouseEvent, ReactNode } from 'react';
+import { FunctionComponent, MouseEvent, ReactNode } from 'react';
 
 import clsx from 'clsx';
 
