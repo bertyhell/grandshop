@@ -5,13 +5,13 @@ An image editing program that is really easy to use.
 Current features:
 * Add colored borders
 * Add a decorative image border
-* Change the brightness and contrast
-* Add a sepia effect
-* Make an image black and white
+* Change the brightness, contrast and colour intensity
+* Add a sepia effect, at any strength
+* Make an image black and white, fully or partly
 * Resize an image
-* Add colored text to the image
-* Crop
-* Rotate by any angle
+* Add colored text to the image, with an outline or shadow, and drag it into place
+* Crop, freely or to a square, 4:3, 3:2 or 16:9
+* Rotate by any angle, filling or cutting off the corners
 * Mirror horizontally or vertically
 
 Download: https://github.com/bertyhell/grandshop/releases
