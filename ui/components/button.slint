@@ -32,8 +32,9 @@ export component Button inherits Rectangle {
     HorizontalLayout {
         alignment: center;
         spacing: 8px;
-        padding-left: 12px;
-        padding-right: 12px;
+        // Icon-only buttons are narrow, padding would push the icon off-centre
+        padding-left: root.label != "" ? 12px : 0px;
+        padding-right: root.label != "" ? 12px : 0px;
 
         if root.icon.width > 0: Image {
             source: root.icon;
