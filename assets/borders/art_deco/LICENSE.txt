@@ -1,0 +1,4 @@
+"Border 45" by Arvin61r58, Openclipart
+https://openclipart.org/detail/267269/border-45
+License: public domain (CC0 1.0), like all of Openclipart
+Rendered and cut into pieces with scripts/slice-border.py (corners 0.169 × 0.129).

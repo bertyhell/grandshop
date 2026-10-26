@@ -1,0 +1,4 @@
+"Frame.svg" by Silver Spoon, Wikimedia Commons
+https://commons.wikimedia.org/wiki/File:Frame.svg
+License: CC0 1.0 Universal Public Domain Dedication
+Rendered and cut into pieces with scripts/slice-border.py (corners 0.136 × 0.167).

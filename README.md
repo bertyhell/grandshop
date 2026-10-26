@@ -4,14 +4,14 @@ An image editing program that is really easy to use.
 
 Current features:
 * Add colored borders
-* Add a decorative image border
-* Change the brightness and contrast
-* Add a sepia effect
-* Make an image black and white
+* Add a decorative image border: floral, gold frame, vintage scrollwork, art deco or Christmas holly
+* Change the brightness, contrast and colour intensity
+* Add a sepia effect, at any strength
+* Make an image black and white, fully or partly
 * Resize an image
-* Add colored text to the image
-* Crop
-* Rotate by any angle
+* Add colored text to the image, with an outline or shadow, and drag it into place
+* Crop, freely or to a square, 4:3, 3:2 or 16:9
+* Rotate by any angle, filling or cutting off the corners
 * Mirror horizontally or vertically
 * Enlarge with AI
 * Improve faces with AI
@@ -34,7 +34,7 @@ Grandshop is a native app written in [Rust](https://www.rust-lang.org) with the
 | `src/worker.rs` | Background rendering of the preview, with a cache per modification |
 | `src/controller.rs` | Connects the UI to the image code: cards, open/save, zoom detail |
 | `translations/` | Translations as gettext `.po` files |
-| `assets/` | Bundled font, decorative borders and the app icon |
+| `assets/` | Bundled font, decorative borders and the app icon. The borders are public domain (CC0); each has a `LICENSE.txt` with its source. `scripts/slice-border.py` cuts a new one into pieces |
 | `tests/golden/` | Reference images from the earlier Electron/sharp version |
 
 While editing, the modifications run on a copy of at most 2560 px, so sliders react

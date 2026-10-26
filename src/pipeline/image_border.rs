@@ -180,7 +180,10 @@ mod tests {
 
     #[test]
     fn lists_bundled_borders() {
-        assert_eq!(available_borders(), vec!["floral_curly".to_owned()]);
+        assert_eq!(
+            available_borders(),
+            ["art_deco", "christmas_holly", "floral_curly", "gold_frame", "vintage_scrollwork"].map(str::to_owned)
+        );
     }
 
     #[test]

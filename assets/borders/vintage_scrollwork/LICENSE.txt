@@ -1,0 +1,4 @@
+"Decorative Ornamental Frame Border 2" by GDJ, Openclipart
+https://openclipart.org/detail/222492/decorative-ornamental-frame-border-2
+License: public domain (CC0 1.0), like all of Openclipart
+Rendered and cut into pieces with scripts/slice-border.py (corners 0.31 × 0.468).

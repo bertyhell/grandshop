@@ -2,6 +2,7 @@ import { AppState, Theme } from "../globals.slint";
 import { Spinner } from "../components/spinner.slint";
 import { Button } from "../components/button.slint";
 import { CropFrame } from "../components/crop-frame.slint";
+import { TextHandle } from "../components/text-handle.slint";
 
 component ToolbarButton inherits Button {
     width: 40px;
@@ -128,6 +129,21 @@ export component MainPreview inherits Rectangle {
         image-height: picture.height;
         view-x: self.margin;
         view-y: self.margin;
+        view-width: flick.width;
+        view-height: flick.height;
+    }
+
+    if AppState.has-image && AppState.text-active: TextHandle {
+        x: flick.x;
+        y: flick.y;
+        width: flick.width;
+        height: flick.height;
+        image-x: flick.content-x + picture.x;
+        image-y: flick.content-y + picture.y;
+        image-width: picture.width;
+        image-height: picture.height;
+        view-x: 0;
+        view-y: 0;
         view-width: flick.width;
         view-height: flick.height;
     }

@@ -3,6 +3,8 @@ import { Theme } from "../globals.slint";
 // Dropdown with a placeholder, styled like react-select in the Electron version
 export component Select inherits Rectangle {
     in property <[string]> options;
+    // Optional picture for each option, shown before its text
+    in property <[image]> icons;
     // -1 shows the placeholder
     in property <int> current-index: -1;
     in property <string> placeholder;
@@ -10,8 +12,11 @@ export component Select inherits Rectangle {
     callback selected(index: int);
 
     property <bool> has-value: root.current-index >= 0 && root.current-index < root.options.length;
+    property <bool> has-icons: root.icons.length > 0;
+    property <length> icon-width: 64px;
+    property <length> icon-height: 48px;
 
-    height: 38px;
+    height: root.has-icons ? 60px : 38px;
     background: white;
     border-radius: 4px;
     border-width: 1px;
@@ -43,6 +48,14 @@ export component Select inherits Rectangle {
         padding-left: 10px;
         padding-right: 10px;
         spacing: 8px;
+
+        if root.has-icons && root.has-value: Image {
+            source: root.icons[root.current-index];
+            width: root.icon-width;
+            height: root.icon-height;
+            y: (parent.height - self.height) / 2;
+            image-fit: contain;
+        }
 
         Text {
             text: root.has-value ? root.options[root.current-index] : root.placeholder;
@@ -91,7 +104,7 @@ export component Select inherits Rectangle {
                 padding-bottom: 4px;
 
                 for option[index] in root.options: Rectangle {
-                    height: 38px;
+                    height: root.has-icons ? 60px : 38px;
                     background: index == root.current-index ? #2684ff : option-touch.has-hover ? #deebff : transparent;
 
                     option-touch := TouchArea {
@@ -99,9 +112,18 @@ export component Select inherits Rectangle {
                         clicked => { root.selected(index); }
                     }
 
-                    Text {
+                    if root.has-icons: Image {
                         x: 12px;
-                        width: parent.width - 24px;
+                        y: (parent.height - self.height) / 2;
+                        width: root.icon-width;
+                        height: root.icon-height;
+                        source: root.icons[index];
+                        image-fit: contain;
+                    }
+
+                    Text {
+                        x: root.has-icons ? 12px + root.icon-width + 10px : 12px;
+                        width: parent.width - self.x - 12px;
                         height: parent.height;
                         text: option;
                         font-size: 14px;

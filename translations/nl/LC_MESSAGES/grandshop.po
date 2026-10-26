@@ -28,8 +28,6 @@ msgstr "Het toepassen van de laatste bewerking is mislukt"
 msgid "Border style"
 msgstr "Randstijl"
 
-msgid "Border width"
-msgstr "Randbreedte"
 
 msgid "Border {}"
 msgstr "Rand {}"
@@ -145,8 +143,6 @@ msgstr "Verkleinen {}"
 msgid "Text"
 msgstr "Tekst"
 
-msgid "Text size"
-msgstr "Tekst grootte"
 
 msgid "The image is being opened"
 msgstr "De afbeelding wordt geopend"
@@ -157,8 +153,6 @@ msgstr "De afbeelding wordt opgeslagen"
 msgid "The value must be a valid number"
 msgstr "De waarde moet een geldig getal zijn"
 
-msgid "Thickness"
-msgstr "Dikte"
 
 msgid "Top"
 msgstr "Bovenkant"
@@ -324,3 +318,51 @@ msgstr "Het vergrotingsprogramma is klaar"
 
 msgid "Downloading the enlarging tool failed. Check the internet connection and add the operation again."
 msgstr "Het downloaden van het vergrotingsprogramma is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."
+
+msgid "Strength (%)"
+msgstr "Sterkte (%)"
+
+msgid "Color intensity"
+msgstr "Kleurintensiteit"
+
+msgid "Upside down"
+msgstr "Ondersteboven"
+
+msgid "Cut off the corners"
+msgstr "Hoeken wegknippen"
+
+msgid "Turn left"
+msgstr "Naar links"
+
+msgid "Turn right"
+msgstr "Naar rechts"
+
+msgid "Make the text stand out"
+msgstr "Laat de tekst opvallen"
+
+msgid "No"
+msgstr "Nee"
+
+msgid "Outline"
+msgstr "Rand"
+
+msgid "Shadow"
+msgstr "Schaduw"
+
+msgid "Thickness (%)"
+msgstr "Dikte (%)"
+
+msgid "Border width (%)"
+msgstr "Randbreedte (%)"
+
+msgid "Text size (%)"
+msgstr "Tekstgrootte (%)"
+
+msgid "Shape"
+msgstr "Vorm"
+
+msgid "Free"
+msgstr "Vrij"
+
+msgid "Square"
+msgstr "Vierkant"

@@ -272,15 +272,16 @@ mod tests {
         receiver.recv_timeout(Duration::from_secs(10)).expect("render result")
     }
 
-    fn border(thickness: u32) -> Modification {
-        Modification::AddBorder { thickness, color: Rgba([0, 0, 0, 255]) }
+    /// Border of `percent` of the shorter side
+    fn border(percent: f32) -> Modification {
+        Modification::AddBorder { percent, color: Rgba([0, 0, 0, 255]) }
     }
 
     #[test]
     fn renders_the_stack() {
         let (worker, results) = worker();
         worker.set_document(document(200, 100));
-        worker.render(1, vec![border(10), Modification::Sepia]);
+        worker.render(1, vec![border(10.0), Modification::Sepia { strength: 1.0 }]);
         let output = next(&results);
         assert_eq!(output.generation, 1);
         assert_eq!(output.logical, Dimensions { width: 220, height: 120 });
@@ -307,16 +308,17 @@ mod tests {
     fn only_changed_steps_are_recomputed() {
         let (worker, results) = worker();
         worker.set_document(document(200, 100));
-        worker.render(1, vec![border(10), Modification::Sepia, border(5)]);
+        worker.render(1, vec![border(10.0), Modification::Sepia { strength: 1.0 }, border(5.0)]);
         assert_eq!(next(&results).steps_computed, 3);
 
-        worker.render(2, vec![border(10), Modification::Sepia, border(7)]);
+        worker.render(2, vec![border(10.0), Modification::Sepia { strength: 1.0 }, border(7.0)]);
         let output = next(&results);
         assert_eq!(output.steps_computed, 1);
-        assert_eq!(output.logical, Dimensions { width: 234, height: 134 });
+        // 10 % of 100, then 7 % of 120 rounds to 8
+        assert_eq!(output.logical, Dimensions { width: 236, height: 136 });
 
         // Removing the last card needs no work at all
-        worker.render(3, vec![border(10), Modification::Sepia]);
+        worker.render(3, vec![border(10.0), Modification::Sepia { strength: 1.0 }]);
         let output = next(&results);
         assert_eq!(output.steps_computed, 0);
         assert_eq!(output.logical, Dimensions { width: 220, height: 120 });
@@ -326,20 +328,20 @@ mod tests {
     fn new_document_clears_the_cache() {
         let (worker, results) = worker();
         worker.set_document(document(200, 100));
-        worker.render(1, vec![border(10)]);
+        worker.render(1, vec![border(10.0)]);
         next(&results);
         worker.set_document(document(50, 50));
-        worker.render(2, vec![border(10)]);
+        worker.render(2, vec![border(10.0)]);
         let output = next(&results);
         assert_eq!(output.steps_computed, 1);
-        assert_eq!(output.logical, Dimensions { width: 70, height: 70 });
+        assert_eq!(output.logical, Dimensions { width: 60, height: 60 });
     }
 
     #[test]
     fn failing_steps_are_reported_and_skipped() {
         let (worker, results) = worker();
         worker.set_document(document(100, 100));
-        worker.render(1, vec![Modification::Crop { top: 80, right: 0, bottom: 80, left: 0 }, border(1)]);
+        worker.render(1, vec![Modification::Crop { top: 80, right: 0, bottom: 80, left: 0 }, border(1.0)]);
         let output = next(&results);
         assert_eq!(output.errors.len(), 1);
         assert_eq!(output.errors[0].0, 0);
@@ -353,15 +355,15 @@ mod tests {
             let _ = sender.send(output);
         });
         worker.set_document(document(200, 100));
-        worker.render(1, vec![border(10), Modification::Sepia]);
+        worker.render(1, vec![border(10.0), Modification::Sepia { strength: 1.0 }]);
         assert_eq!(next(&results).steps_computed, 2);
-        worker.render(2, vec![border(10), Modification::Sepia]);
+        worker.render(2, vec![border(10.0), Modification::Sepia { strength: 1.0 }]);
         let output = next(&results);
         assert_eq!(output.steps_computed, 0);
         assert_eq!(output.image.dimensions(), (220, 120));
-        worker.render(3, vec![border(10), border(5)]);
+        worker.render(3, vec![border(10.0), border(5.0)]);
         assert_eq!(next(&results).steps_computed, 2);
-        worker.render(4, vec![border(10)]);
+        worker.render(4, vec![border(10.0)]);
         let output = next(&results);
         assert_eq!(output.steps_computed, 1);
         assert_eq!(output.image.dimensions(), (220, 120));
@@ -372,7 +374,7 @@ mod tests {
         let (worker, results) = worker();
         worker.set_document(document(2500, 2500));
         // Slow steps, requested much faster than they can be rendered
-        let stack = |factor: f32| vec![Modification::Sepia, Modification::Brightness { factor, contrast: 1.0 }, Modification::Sepia];
+        let stack = |factor: f32| vec![Modification::Sepia { strength: 1.0 }, Modification::Brightness { factor, contrast: 1.0, saturation: 1.0 }, Modification::Sepia { strength: 1.0 }];
         for generation in 1..=50 {
             worker.render(generation, stack(1.0 + generation as f32 / 100.0));
         }

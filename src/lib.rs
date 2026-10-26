@@ -3,6 +3,7 @@
 pub mod ai;
 pub mod background;
 pub mod color;
+pub mod crop_aspect;
 pub mod faces;
 pub mod io;
 pub mod pipeline;

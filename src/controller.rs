@@ -9,8 +9,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use grandshop::color::{color_wheel, hsv_to_rgb, rgb_to_hsv};
+use grandshop::crop_aspect::{self, CropBox};
 use grandshop::io::{default_save_file_name, format_file_size, load_image, save_png};
-use grandshop::pipeline::{self, available_borders, Dimensions, Modification};
+use grandshop::pipeline::{self, available_borders, Dimensions, Modification, TextEffect};
 use grandshop::resample::resize_exact;
 use grandshop::settings::Settings;
 use grandshop::{background, faces, upscale};
@@ -29,6 +30,9 @@ const IMAGE_EXTENSIONS: &[&str] = &["jpg", "jpeg", "png", "gif", "tif", "tiff", 
 
 /// Rendered at twice the 300 px it is shown at, so it stays sharp on high DPI screens
 const COLOR_WHEEL_SIZE: u32 = 600;
+
+/// Size of the border style examples in the picker, twice the 64 × 48 they are shown at
+const BORDER_THUMBNAIL_SIZE: (u32, u32) = (128, 96);
 
 /// Wait this long after zooming or panning stops before rendering the sharp tile
 const DETAIL_DELAY: Duration = Duration::from_millis(150);
@@ -116,6 +120,9 @@ impl Controller {
         app_state.set_border_styles(ModelRc::new(VecModel::from(
             borders.iter().map(|name| name.replace('_', " ").into()).collect::<Vec<slint::SharedString>>(),
         )));
+        app_state.set_border_thumbnails(ModelRc::new(VecModel::from(
+            borders.iter().map(|name| to_slint_image(&border_thumbnail(name))).collect::<Vec<Image>>(),
+        )));
         app_state.set_color_wheel(to_slint_image(&color_wheel(COLOR_WHEEL_SIZE)));
         app_state.set_upscale_max_edge(upscale::MAX_RESULT_EDGE as i32);
         app_state.on_hsv_to_color(|hsv| {
@@ -166,8 +173,15 @@ impl Controller {
         on!(on_toggle_modification, |this, index| this.toggle_card(index as usize));
         on!(on_delete_modification, |this, index| this.delete_card(index as usize));
         on!(on_set_number, |this, index, field, value| {
-            this.edit_card(index as usize, |params| set_field(params, field, value))
+            this.edit_card(index as usize, |params| {
+                set_field(params, field, value);
+                // Typing a side by hand gives up the fixed shape
+                if matches!(field, ModField::Top | ModField::Right | ModField::Bottom | ModField::Left) {
+                    params.aspect_index = 0;
+                }
+            })
         });
+        on!(on_set_aspect, |this, index, preset| this.set_aspect(index as usize, preset));
         on!(on_set_color, |this, index, field, color| {
             this.edit_card(index as usize, |p| *color_field(p, field) = color)
         });
@@ -181,11 +195,15 @@ impl Controller {
                 FlagField::Enlarge => p.enlarge = on,
                 FlagField::BestQuality => p.best_quality = on,
                 FlagField::FillBackground => p.fill_background = on,
+                FlagField::RotateFill => p.rotate_fill = on,
             })
         });
         on!(on_set_text, |this, index, text| this.edit_card(index as usize, |p| p.text = text));
         on!(on_set_border_style, |this, index, style| {
             this.edit_card(index as usize, |p| p.border_index = style)
+        });
+        on!(on_set_text_effect, |this, index, effect| {
+            this.edit_card(index as usize, |p| p.text_effect = effect)
         });
         on!(on_preview_clicked, |this, x, y| this.pick_color(x, y));
         on!(on_rotate_left, |this| this.change_view(ViewTransform::rotate_counter_clockwise));
@@ -196,6 +214,7 @@ impl Controller {
         on!(on_crop_dragged, |this, left, top, right, bottom| {
             this.drag_crop(Region { left, top, right, bottom })
         });
+        on!(on_text_dragged, |this, x, y| this.drag_text(x, y));
         on!(on_view_changed, |this, left, top, right, bottom, width, _height| {
             *this.shared.view.lock().unwrap() =
                 ViewState { region: Region { left, top, right, bottom }, shown_width: width };
@@ -486,10 +505,11 @@ impl Controller {
     }
 
     /// The stack the preview shows: while a crop card is open, the image going into it, so
-    /// the whole image can be seen and the crop frame dragged over it.
+    /// the whole image can be seen and the crop frame dragged over it. While a text card is
+    /// open, the image up to that card, so the text grip sits on the text.
     fn shown_modifications(&self) -> Vec<Modification> {
         let modifications = &self.state.borrow().modifications;
-        let end = editing_crop(&*self.cards).unwrap_or(modifications.len()).min(modifications.len());
+        let end = shown_end(&*self.cards).min(modifications.len());
         modifications[..end].to_vec()
     }
 
@@ -510,6 +530,17 @@ impl Controller {
         }
         let source = self.shared.transform.lock().unwrap().region_to_source(shown);
         self.edit_card(index, |p| {
+            if let (false, Some(ratio)) = (p.enlarge, crop_aspect::ratio(p.aspect_index, size.width as u32, size.height as u32)) {
+                let before = CropBox { x0: p.left, y0: p.top, x1: width - p.right, y1: height - p.bottom };
+                let after = CropBox {
+                    x0: source.left * width,
+                    y0: source.top * height,
+                    x1: source.right * width,
+                    y1: source.bottom * height,
+                };
+                set_crop_box(p, crop_aspect::constrain(before, after, ratio, width, height), width, height);
+                return;
+            }
             if p.enlarge {
                 p.left = (-source.left * width).round().clamp(0.0, width);
                 p.right = ((source.right - 1.0) * width).round().clamp(0.0, width);
@@ -525,6 +556,28 @@ impl Controller {
         });
     }
 
+    /// Picks a fixed shape for the crop card: the largest crop of that shape in the middle.
+    fn set_aspect(self: &Rc<Self>, index: usize, preset: i32) {
+        let Some(size) = self.with_state(|s| s.get_input_sizes().row_data(index)).flatten() else { return };
+        let (width, height) = (size.width.max(1) as f32, size.height.max(1) as f32);
+        self.edit_card(index, |p| {
+            p.aspect_index = preset;
+            if let Some(ratio) = crop_aspect::ratio(preset, size.width as u32, size.height as u32) {
+                set_crop_box(p, crop_aspect::largest_centred(width, height, ratio), width, height);
+            }
+        });
+    }
+
+    /// Dragging the text grip; `x` and `y` go from 0 to 1 over the shown preview.
+    fn drag_text(self: &Rc<Self>, x: f32, y: f32) {
+        let Some(index) = editing_text(&*self.cards) else { return };
+        let (x, y) = self.shared.transform.lock().unwrap().to_source((x, y));
+        self.edit_card(index, |p| {
+            p.x_percent = (x * 100.0).clamp(0.0, 100.0);
+            p.y_percent = (y * 100.0).clamp(0.0, 100.0);
+        });
+    }
+
     /// Open cards with a colour picker, and which of their colours the eyedropper sets
     fn open_color_cards(&self) -> Vec<(usize, ColorField)> {
         (0..self.cards.row_count())
@@ -533,7 +586,7 @@ impl Controller {
                 let field = match card.kind {
                     ModKind::AddBorder => ColorField::Color,
                     ModKind::Annotate => ColorField::TextColor,
-                    ModKind::Rotate => ColorField::Background,
+                    ModKind::Rotate if !card.params.rotate_fill => ColorField::Background,
                     ModKind::Crop if card.params.enlarge => ColorField::Background,
                     _ => return None,
                 };
@@ -630,22 +683,24 @@ fn default_params(kind: ModKind, image_width: i32, image_height: i32) -> ModPara
     let mut params = ModParams { border_index: -1, ..Default::default() };
     match kind {
         ModKind::AddBorder => {
-            params.thickness = 100.0;
+            params.thickness = 5.0;
             params.color = Color::from_rgb_u8(0x22, 0x5e, 0xff);
         }
-        ModKind::AddImageBorder => params.border_width = 100.0,
+        ModKind::AddImageBorder => params.border_width = 5.0,
         ModKind::Brightness => {
             params.factor = 1.1;
             params.contrast = 1.1;
+            params.saturation = 1.0;
         }
-        ModKind::Sepia | ModKind::Mirror | ModKind::Greyscale => {}
+        ModKind::Sepia | ModKind::Greyscale => params.strength = 100.0,
+        ModKind::Mirror => {}
         ModKind::Upscale => params.upscale_factor = 2.0,
         ModKind::ImproveFaces => params.strength = 80.0,
         ModKind::RemoveBackground => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Rotate | ModKind::Crop => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Resize => params.size = image_width.max(image_height).min(10_000) as f32,
         ModKind::Annotate => {
-            params.font_size = 30.0;
+            params.font_size = 4.0;
             params.x_percent = 50.0;
             params.y_percent = 95.0;
             params.text_color = Color::from_rgb_u8(0, 0, 0);
@@ -663,6 +718,7 @@ fn set_field(params: &mut ModParams, field: ModField, value: f32) {
         ModField::Angle => &mut params.angle,
         ModField::UpscaleFactor => &mut params.upscale_factor,
         ModField::Strength => &mut params.strength,
+        ModField::Saturation => &mut params.saturation,
         ModField::Size => &mut params.size,
         ModField::FontSize => &mut params.font_size,
         ModField::XPercent => &mut params.x_percent,
@@ -673,6 +729,14 @@ fn set_field(params: &mut ModParams, field: ModField, value: f32) {
         ModField::Left => &mut params.left,
     };
     *target = value;
+}
+
+/// Sets the sides of a crop card from the part of a `width` × `height` image it keeps.
+fn set_crop_box(p: &mut ModParams, crop: CropBox, width: f32, height: f32) {
+    p.left = crop.x0.round().clamp(0.0, width - 1.0);
+    p.top = crop.y0.round().clamp(0.0, height - 1.0);
+    p.right = (width - crop.x1).round().clamp(0.0, width - 1.0 - p.left);
+    p.bottom = (height - crop.y1).round().clamp(0.0, height - 1.0 - p.top);
 }
 
 fn color_field(params: &mut ModParams, field: ColorField) -> &mut Color {
@@ -689,17 +753,21 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
     let rgba = |color: Color| Rgba([color.red(), color.green(), color.blue(), 255]);
     match card.kind {
         ModKind::AddBorder => Modification::AddBorder {
-            thickness: px(p.thickness),
+            percent: p.thickness.max(0.0),
             color: rgba(p.color),
         },
         ModKind::AddImageBorder => Modification::AddImageBorder {
             border: usize::try_from(p.border_index).ok().and_then(|i| borders.get(i)).cloned(),
-            width: px(p.border_width),
+            percent: p.border_width.max(0.0),
         },
-        ModKind::Brightness => Modification::Brightness { factor: p.factor, contrast: p.contrast },
-        ModKind::Sepia => Modification::Sepia,
-        ModKind::Greyscale => Modification::Greyscale,
-        ModKind::Rotate => Modification::Rotate { angle: p.angle, background: rgba(p.background) },
+        ModKind::Brightness => {
+            Modification::Brightness { factor: p.factor, contrast: p.contrast, saturation: p.saturation }
+        }
+        ModKind::Sepia => Modification::Sepia { strength: p.strength / 100.0 },
+        ModKind::Greyscale => Modification::Greyscale { strength: p.strength / 100.0 },
+        ModKind::Rotate => {
+            Modification::Rotate { angle: p.angle, background: rgba(p.background), fill: p.rotate_fill }
+        }
         ModKind::Mirror => Modification::Mirror { horizontal: p.mirror_horizontal, vertical: p.mirror_vertical },
         // Leaves the image as is until the models are downloaded
         ModKind::ImproveFaces if !faces::is_installed() => Modification::ImproveFaces { strength: 0.0 },
@@ -722,10 +790,15 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
         ModKind::Resize => Modification::Resize { size: px(p.size) },
         ModKind::Annotate => Modification::Annotate {
             text: p.text.to_string(),
-            font_size: p.font_size,
+            font_percent: p.font_size,
             x_percent: p.x_percent,
             y_percent: p.y_percent,
             color: rgba(p.text_color),
+            effect: match p.text_effect {
+                1 => TextEffect::Outline,
+                2 => TextEffect::Shadow,
+                _ => TextEffect::None,
+            },
         },
         ModKind::Crop if p.enlarge => Modification::Extend {
             top: px(p.top),
@@ -838,11 +911,26 @@ fn editing_crop(cards: &impl Model<Data = ModEntry>) -> Option<usize> {
     cards.iter().position(|card| card.open && card.kind == ModKind::Crop)
 }
 
-/// Shows the frame of the crop card being edited, in fractions of the preview.
+/// The first open text card, whose grip is shown over the preview
+fn editing_text(cards: &impl Model<Data = ModEntry>) -> Option<usize> {
+    cards.iter().position(|card| card.open && card.kind == ModKind::Annotate)
+}
+
+/// How many cards the preview shows: up to an open crop card, or up to and including an
+/// open text card
+fn shown_end(cards: &impl Model<Data = ModEntry>) -> usize {
+    let crop = editing_crop(cards).unwrap_or(usize::MAX);
+    let text = editing_text(cards).map_or(usize::MAX, |index| index + 1);
+    crop.min(text).min(cards.row_count())
+}
+
+/// Shows the frame of the crop card being edited and the grip of the text card being edited,
+/// in fractions of the preview.
 fn update_crop_frame(ui: &AppWindow, transform: ViewTransform) {
     let state = ui.global::<AppState>();
     let cards = state.get_modifications();
-    let frame = editing_crop(&cards).and_then(|index| {
+    // Hidden when an open text card before it stops the preview earlier
+    let frame = editing_crop(&cards).filter(|&index| index == shown_end(&cards)).and_then(|index| {
         let size = state.get_input_sizes().row_data(index)?;
         let params = cards.row_data(index)?.params;
         let (width, height) = (size.width.max(1) as f32, size.height.max(1) as f32);
@@ -872,6 +960,18 @@ fn update_crop_frame(ui: &AppWindow, transform: ViewTransform) {
         state.set_crop_top(frame.top);
         state.set_crop_right(frame.right);
         state.set_crop_bottom(frame.bottom);
+    }
+
+    // The text grip, unless a crop card before it hides the text
+    let text = editing_text(&cards).filter(|&index| index < shown_end(&cards)).and_then(|index| {
+        let params = cards.row_data(index)?.params;
+        let (x, y) = (params.x_percent / 100.0, params.y_percent / 100.0);
+        Some(transform.region_from_source(Region { left: x, top: y, right: x, bottom: y }))
+    });
+    state.set_text_active(text.is_some());
+    if let Some(point) = text {
+        state.set_text_x(point.left);
+        state.set_text_y(point.top);
     }
 }
 
@@ -976,6 +1076,13 @@ fn estimate_file_size(ui: slint::Weak<AppWindow>, shared: Arc<RenderShared>, out
             }
         });
     });
+}
+
+/// Border style `name` around a plain picture, at twice the size it is shown at
+fn border_thumbnail(name: &str) -> RgbaImage {
+    let (width, height) = BORDER_THUMBNAIL_SIZE;
+    let plain = RgbaImage::from_pixel(width, height, Rgba([0xdd, 0xe6, 0xee, 255]));
+    pipeline::image_border::add_image_border(&plain, name, height as f32 * 0.3).unwrap_or(plain)
 }
 
 fn to_pixel_buffer(image: &RgbaImage) -> SharedPixelBuffer<Rgba8Pixel> {

@@ -1,0 +1,66 @@
+import { AppState, Theme } from "../globals.slint";
+
+// Grip on the first line of the text card being edited, laid over the preview. Dragging it
+// moves the text. Only the grip takes the mouse, so the eyedropper still works elsewhere.
+export component TextHandle inherits Rectangle {
+    // The shown image, in this element's coordinates
+    in property <length> image-x;
+    in property <length> image-y;
+    in property <length> image-width;
+    in property <length> image-height;
+    // Where the image is visible, in this element's coordinates
+    in property <length> view-x;
+    in property <length> view-y;
+    in property <length> view-width;
+    in property <length> view-height;
+
+    property <length> size: 40px;
+    property <length> cx: root.image-x + AppState.text-x * root.image-width;
+    property <length> cy: root.image-y + AppState.text-y * root.image-height;
+    property <color> grip-color: touch.pressed || touch.has-hover ? Theme.focus : Theme.crop-frame;
+
+    Rectangle {
+        x: root.view-x;
+        y: root.view-y;
+        width: root.view-width;
+        height: root.view-height;
+        clip: true;
+
+        Rectangle {
+            x: root.cx - parent.x - root.size / 2;
+            y: root.cy - parent.y - root.size / 2;
+            width: root.size;
+            height: root.size;
+            border-radius: root.size / 2;
+            border-width: 3px;
+            border-color: root.grip-color;
+            background: Theme.crop-handle-shadow;
+            drop-shadow-blur: 4px;
+            drop-shadow-color: Theme.crop-handle-shadow;
+            animate border-color { duration: 120ms; }
+
+            // Arrows in four directions
+            Path {
+                width: 22px;
+                height: 22px;
+                commands: "M 11 1 L 11 21 M 1 11 L 21 11 M 7 5 L 11 1 L 15 5 M 7 17 L 11 21 L 15 17 M 5 7 L 1 11 L 5 15 M 17 7 L 21 11 L 17 15";
+                viewbox-width: 22;
+                viewbox-height: 22;
+                stroke: root.grip-color;
+                stroke-width: 2px;
+            }
+
+            touch := TouchArea {
+                mouse-cursor: MouseCursor.move;
+                accessible-role: none;
+                moved => {
+                    if (self.pressed && root.image-width > 0 && root.image-height > 0) {
+                        AppState.text-dragged(
+                            clamp((root.cx + self.mouse-x - self.pressed-x - root.image-x) / root.image-width, 0, 1),
+                            clamp((root.cy + self.mouse-y - self.pressed-y - root.image-y) / root.image-height, 0, 1));
+                    }
+                }
+            }
+        }
+    }
+}

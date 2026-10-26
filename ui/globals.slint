@@ -24,7 +24,8 @@ export global Theme {
 export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale, improve-faces, remove-background }
 
 // Union of the parameters of every modification kind; each kind uses a few of them.
-// Pixel values are in original-image pixels.
+// Pixel values are in original-image pixels. Border thickness, border width and font size
+// are percentages of the shorter side.
 export struct ModParams {
     thickness: float,
     color: color,
@@ -51,24 +52,32 @@ export struct ModParams {
     upscale-factor: float,
     // Enlarge card uses the large, slow network
     best-quality: bool,
-    // "Improve faces" card: percent of the restored face that is blended in
+    // Sepia, black and white, and "Improve faces" (how much of the restored face), in percent
     strength: float,
     // "Remove background" card fills the background with `background` instead of making it
     // transparent
     fill-background: bool,
+    saturation: float,
+    // Rotate card cuts off the corners instead of filling them with `background`
+    rotate-fill: bool,
+    // Text card: 0 none, 1 outline, 2 shadow
+    text-effect: int,
+    // Crop card: fixed shape, 0 free, then square, 4:3, 3:2, 16:9
+    aspect-index: int,
 }
 
 // Numeric parameters that a slider can change
 export enum ModField {
     thickness, border-width, factor, contrast, size, font-size, x-percent, y-percent, top, right,
     bottom, left, angle, upscale-factor, strength,
+    saturation,
 }
 
 // Colours that a colour picker can change
 export enum ColorField { color, text-color, background }
 
 // On/off parameters
-export enum FlagField { mirror-horizontal, mirror-vertical, enlarge, best-quality, fill-background }
+export enum FlagField { mirror-horizontal, mirror-vertical, enlarge, best-quality, fill-background, rotate-fill }
 
 export struct ModEntry {
     kind: ModKind,
@@ -107,6 +116,8 @@ export global AppState {
     in property <[ModEntry]> modifications;
     in property <[ImageSize]> input-sizes;
     in property <[string]> border-styles;
+    // Small example of each border style, for the style picker
+    in property <[image]> border-thumbnails;
     // Estimated size of the saved PNG, for the "Reduce image" card
     in property <string> estimated-file-size;
     in property <image> color-wheel;
@@ -144,6 +155,12 @@ export global AppState {
     in property <float> crop-right;
     in property <float> crop-bottom;
 
+    // First line of the text card being edited, in fractions of the shown image. While it
+    // is shown, the preview stops after that card, so later cards don't move the text away.
+    in property <bool> text-active: false;
+    in property <float> text-x;
+    in property <float> text-y;
+
     // Notifications in the bottom left corner, oldest first
     in property <[Toast]> toasts;
 
@@ -155,11 +172,15 @@ export global AppState {
     callback set-flag(int, FlagField, bool);
     callback set-text(int, string);
     callback set-border-style(int, int);
+    callback set-text-effect(int, int);
+    callback set-aspect(int, int);
     callback invalid-number();
     // Position in the shown image, from 0 to 1 on both axes
     callback preview-clicked(float, float);
     // A crop frame handle was dragged: the new frame in fractions of the shown image
     callback crop-dragged(float, float, float, float);
+    // The text grip was dragged: the new position in fractions of the shown image
+    callback text-dragged(float, float);
     // Viewer: rotate and flip are view-only and never saved
     callback rotate-left();
     callback rotate-right();
