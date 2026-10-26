@@ -136,31 +136,32 @@ export component CropFrame inherits Rectangle {
         clip: true;
 
         // Background over the parts that get added
+        // Lies at the origin of the view, not of the frame
         if root.enlarge: Rectangle {
             Rectangle {
-                x: root.left - parent.x;
-                y: root.top - parent.y;
+                x: root.left - root.view-x;
+                y: root.top - root.view-y;
                 width: root.right - root.left;
                 height: max(0px, root.image-y - root.top);
                 background: AppState.crop-background;
             }
             Rectangle {
-                x: root.left - parent.x;
-                y: root.image-bottom - parent.y;
+                x: root.left - root.view-x;
+                y: root.image-bottom - root.view-y;
                 width: root.right - root.left;
                 height: max(0px, root.bottom - root.image-bottom);
                 background: AppState.crop-background;
             }
             Rectangle {
-                x: root.left - parent.x;
-                y: root.image-y - parent.y;
+                x: root.left - root.view-x;
+                y: root.image-y - root.view-y;
                 width: max(0px, root.image-x - root.left);
                 height: root.image-height;
                 background: AppState.crop-background;
             }
             Rectangle {
-                x: root.image-right - parent.x;
-                y: root.image-y - parent.y;
+                x: root.image-right - root.view-x;
+                y: root.image-y - root.view-y;
                 width: max(0px, root.right - root.image-right);
                 height: root.image-height;
                 background: AppState.crop-background;
