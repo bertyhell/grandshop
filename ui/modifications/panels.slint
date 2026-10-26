@@ -7,6 +7,7 @@ import { FormField } from "../components/form-field.slint";
 import { RangeInput } from "../components/range-input.slint";
 import { ColorInput } from "../components/color-input.slint";
 import { Select } from "../components/select.slint";
+import { Button, ButtonKind } from "../components/button.slint";
 
 component Panel inherits VerticalLayout {
     padding: 10px;
@@ -67,7 +68,7 @@ export component BrightnessControls inherits Panel {
         label: @tr("Brightness");
         RangeInput {
             minimum: 0;
-            maximum: 5;
+            maximum: 2;
             step: 0.01;
             value: root.params.factor;
             edited(value) => { AppState.set-number(root.index, ModField.factor, value); }
@@ -78,10 +79,37 @@ export component BrightnessControls inherits Panel {
         label: @tr("Contrast");
         RangeInput {
             minimum: 0;
-            maximum: 5;
+            maximum: 2;
             step: 0.01;
             value: root.params.contrast;
             edited(value) => { AppState.set-number(root.index, ModField.contrast, value); }
+        }
+    }
+
+    FormField {
+        label: @tr("Color intensity");
+        RangeInput {
+            minimum: 0;
+            maximum: 2;
+            step: 0.01;
+            value: root.params.saturation;
+            edited(value) => { AppState.set-number(root.index, ModField.saturation, value); }
+        }
+    }
+}
+
+// Sepia and black and white
+export component StrengthControls inherits Panel {
+    in property <int> index;
+    in property <ModParams> params;
+
+    FormField {
+        label: @tr("Strength (%)");
+        RangeInput {
+            minimum: 0;
+            maximum: 100;
+            value: root.params.strength;
+            edited(value) => { AppState.set-number(root.index, ModField.strength, value); }
         }
     }
 }
@@ -185,7 +213,7 @@ export component CropControls inherits Panel {
     }
 
     FormField {
-        label: @tr("Left");
+        label: @tr("Turn left");
         RangeInput {
             maximum: root.input-size.width;
             value: root.params.left;
@@ -194,7 +222,7 @@ export component CropControls inherits Panel {
     }
 
     FormField {
-        label: @tr("Right");
+        label: @tr("Turn right");
         RangeInput {
             maximum: root.input-size.width;
             value: root.params.right;
@@ -223,19 +251,56 @@ export component CropControls inherits Panel {
 export component RotateControls inherits Panel {
     in property <int> index;
     in property <ModParams> params;
+    spacing: 10px;
+
+    // Turns by `degrees` from the current angle, keeping it between -180 and 180
+    function turn(degrees: float) {
+        AppState.set-number(root.index, ModField.angle, 180 - mod(180 - root.params.angle - degrees, 360));
+    }
+
+    HorizontalLayout {
+        spacing: 10px;
+
+        Button {
+            icon: @image-url("../icons/undo.svg");
+            label: @tr("Turn left");
+            kind: ButtonKind.secondary;
+            horizontal-stretch: 1;
+            clicked => { root.turn(-90); }
+        }
+        Button {
+            icon: @image-url("../icons/redo.svg");
+            label: @tr("Turn right");
+            kind: ButtonKind.secondary;
+            horizontal-stretch: 1;
+            clicked => { root.turn(90); }
+        }
+        Button {
+            label: @tr("Upside down");
+            kind: ButtonKind.secondary;
+            horizontal-stretch: 1;
+            clicked => { root.turn(180); }
+        }
+    }
 
     FormField {
         label: @tr("Angle");
         RangeInput {
-            minimum: -360;
-            maximum: 360;
+            minimum: -180;
+            maximum: 180;
             step: 0.01;
             value: root.params.angle;
             edited(value) => { AppState.set-number(root.index, ModField.angle, value); }
         }
     }
 
-    FormField {
+    Switch {
+        text: @tr("Cut off the corners");
+        checked: root.params.rotate-fill;
+        toggled => { AppState.set-flag(root.index, FlagField.rotate-fill, self.checked); }
+    }
+
+    if !root.params.rotate-fill: FormField {
         label: @tr("Background color");
         ColorInput {
             value: root.params.background;

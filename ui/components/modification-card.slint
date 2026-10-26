@@ -2,7 +2,7 @@ import { AppState, ImageSize, ModEntry, ModKind, Theme } from "../globals.slint"
 import { Button, ButtonKind } from "button.slint";
 import {
     AddBorderControls, AddImageBorderControls, AnnotateControls, BrightnessControls,
-    CropControls, MirrorControls, ResizeControls, RotateControls, UpscaleControls,
+    CropControls, MirrorControls, ResizeControls, RotateControls, StrengthControls, UpscaleControls,
 } from "../modifications/panels.slint";
 
 // Collapsible card for one modification in the stack
@@ -23,7 +23,6 @@ export component ModificationCard inherits Rectangle {
         : entry.kind == ModKind.mirror ? @tr("Mirror {}", entry.number)
         : entry.kind == ModKind.upscale ? @tr("Enlarge {}", entry.number)
         : @tr("Black and White {}", entry.number);
-    property <bool> has-controls: entry.kind != ModKind.sepia && entry.kind != ModKind.greyscale;
 
     background: white;
     border-radius: 4px;
@@ -62,7 +61,7 @@ export component ModificationCard inherits Rectangle {
             }
         }
 
-        if root.entry.open && root.has-controls: Rectangle {
+        if root.entry.open: Rectangle {
             height: 1px;
             background: Theme.card-border;
         }
@@ -76,6 +75,10 @@ export component ModificationCard inherits Rectangle {
             params: root.entry.params;
         }
         if root.entry.open && root.entry.kind == ModKind.brightness: BrightnessControls {
+            index: root.index;
+            params: root.entry.params;
+        }
+        if root.entry.open && (root.entry.kind == ModKind.sepia || root.entry.kind == ModKind.greyscale): StrengthControls {
             index: root.index;
             params: root.entry.params;
         }

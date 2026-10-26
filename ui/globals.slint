@@ -51,19 +51,25 @@ export struct ModParams {
     upscale-factor: float,
     // Enlarge card uses the large, slow network
     best-quality: bool,
+    // Sepia and black and white, in percent
+    strength: float,
+    saturation: float,
+    // Rotate card cuts off the corners instead of filling them with `background`
+    rotate-fill: bool,
 }
 
 // Numeric parameters that a slider can change
 export enum ModField {
     thickness, border-width, factor, contrast, size, font-size, x-percent, y-percent, top, right,
-    bottom, left, angle, upscale-factor,
+    bottom, left, angle, upscale-factor, strength,
+    saturation,
 }
 
 // Colours that a colour picker can change
 export enum ColorField { color, text-color, background }
 
 // On/off parameters
-export enum FlagField { mirror-horizontal, mirror-vertical, enlarge, best-quality }
+export enum FlagField { mirror-horizontal, mirror-vertical, enlarge, best-quality, rotate-fill }
 
 export struct ModEntry {
     kind: ModKind,

@@ -261,3 +261,21 @@ msgstr "Het vergrotingsprogramma is klaar"
 
 msgid "Downloading the enlarging tool failed. Check the internet connection and add the operation again."
 msgstr "Het downloaden van het vergrotingsprogramma is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."
+
+msgid "Strength (%)"
+msgstr "Sterkte (%)"
+
+msgid "Color intensity"
+msgstr "Kleurintensiteit"
+
+msgid "Upside down"
+msgstr "Ondersteboven"
+
+msgid "Cut off the corners"
+msgstr "Hoeken wegknippen"
+
+msgid "Turn left"
+msgstr "Naar links"
+
+msgid "Turn right"
+msgstr "Naar rechts"

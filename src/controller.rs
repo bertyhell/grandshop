@@ -174,6 +174,7 @@ impl Controller {
                 FlagField::MirrorVertical => p.mirror_vertical = on,
                 FlagField::Enlarge => p.enlarge = on,
                 FlagField::BestQuality => p.best_quality = on,
+                FlagField::RotateFill => p.rotate_fill = on,
             })
         });
         on!(on_set_text, |this, index, text| this.edit_card(index as usize, |p| p.text = text));
@@ -480,7 +481,7 @@ impl Controller {
                 let field = match card.kind {
                     ModKind::AddBorder => ColorField::Color,
                     ModKind::Annotate => ColorField::TextColor,
-                    ModKind::Rotate => ColorField::Background,
+                    ModKind::Rotate if !card.params.rotate_fill => ColorField::Background,
                     ModKind::Crop if card.params.enlarge => ColorField::Background,
                     _ => return None,
                 };
@@ -583,8 +584,10 @@ fn default_params(kind: ModKind, image_width: i32, image_height: i32) -> ModPara
         ModKind::Brightness => {
             params.factor = 1.1;
             params.contrast = 1.1;
+            params.saturation = 1.0;
         }
-        ModKind::Sepia | ModKind::Mirror | ModKind::Greyscale => {}
+        ModKind::Sepia | ModKind::Greyscale => params.strength = 100.0,
+        ModKind::Mirror => {}
         ModKind::Upscale => params.upscale_factor = 2.0,
         ModKind::Rotate | ModKind::Crop => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Resize => params.size = image_width.max(image_height).min(10_000) as f32,
@@ -606,6 +609,8 @@ fn set_field(params: &mut ModParams, field: ModField, value: f32) {
         ModField::Contrast => &mut params.contrast,
         ModField::Angle => &mut params.angle,
         ModField::UpscaleFactor => &mut params.upscale_factor,
+        ModField::Strength => &mut params.strength,
+        ModField::Saturation => &mut params.saturation,
         ModField::Size => &mut params.size,
         ModField::FontSize => &mut params.font_size,
         ModField::XPercent => &mut params.x_percent,
@@ -639,10 +644,14 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
             border: usize::try_from(p.border_index).ok().and_then(|i| borders.get(i)).cloned(),
             width: px(p.border_width),
         },
-        ModKind::Brightness => Modification::Brightness { factor: p.factor, contrast: p.contrast },
-        ModKind::Sepia => Modification::Sepia,
-        ModKind::Greyscale => Modification::Greyscale,
-        ModKind::Rotate => Modification::Rotate { angle: p.angle, background: rgba(p.background) },
+        ModKind::Brightness => {
+            Modification::Brightness { factor: p.factor, contrast: p.contrast, saturation: p.saturation }
+        }
+        ModKind::Sepia => Modification::Sepia { strength: p.strength / 100.0 },
+        ModKind::Greyscale => Modification::Greyscale { strength: p.strength / 100.0 },
+        ModKind::Rotate => {
+            Modification::Rotate { angle: p.angle, background: rgba(p.background), fill: p.rotate_fill }
+        }
         ModKind::Mirror => Modification::Mirror { horizontal: p.mirror_horizontal, vertical: p.mirror_vertical },
         ModKind::Upscale => {
             let wanted = if p.best_quality { upscale::Quality::Best } else { upscale::Quality::Fast };

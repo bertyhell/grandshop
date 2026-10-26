@@ -10,6 +10,32 @@ pub fn rotated_size(width: u32, height: u32, angle: f32) -> (u32, u32) {
     (new_width, new_height)
 }
 
+/// Size of the largest rectangle with the aspect ratio of the image that fits inside the image
+/// rotated by `angle` degrees, so it shows no background.
+pub fn filled_size(width: u32, height: u32, angle: f32) -> (u32, u32) {
+    let (sin, cos) = (angle as f64).to_radians().sin_cos();
+    let (sin, cos) = (sin.abs(), cos.abs());
+    let (w, h) = (width as f64, height as f64);
+    // Closer to a quarter turn the result stands the other way, so it keeps the shape of the
+    // rotated image
+    let (out_w, out_h) = if sin > cos { (h, w) } else { (w, h) };
+    // The corners of an out_w × out_h box must stay inside the rotated w × h image
+    let scale = (w / (out_w * cos + out_h * sin)).min(h / (out_w * sin + out_h * cos)).min(1.0);
+    // Small margin, so float noise at quarter turns doesn't lose a pixel
+    let side = |length: f64| (length * scale + 1e-6).floor().max(1.0) as u32;
+    (side(out_w), side(out_h))
+}
+
+/// Rotates like [`rotate`] and keeps only the middle part without background corners.
+pub fn rotate_filled(image: &RgbaImage, angle: f32) -> RgbaImage {
+    let rotated = rotate(image, angle, Rgba([0, 0, 0, 0]));
+    let (width, height) = filled_size(image.width(), image.height(), angle);
+    let (width, height) = (width.min(rotated.width()), height.min(rotated.height()));
+    let left = (rotated.width() - width) / 2;
+    let top = (rotated.height() - height) / 2;
+    image::imageops::crop_imm(&rotated, left, top, width, height).to_image()
+}
+
 /// Rotates clockwise by `angle` degrees. The canvas grows to fit and the corners are filled
 /// with `background`, like sharp's `rotate(angle, { background })`.
 pub fn rotate(image: &RgbaImage, angle: f32, background: Rgba<u8>) -> RgbaImage {
@@ -109,5 +135,22 @@ mod tests {
             .unwrap();
         let centre = out.width() as f32 / 2.0;
         assert!(y as f32 > centre + 1.0 && x as f32 > centre, "red ended up at ({x}, {y})");
+    }
+
+    #[test]
+    fn filled_size_of_quarter_turns_is_the_image() {
+        assert_eq!(filled_size(40, 20, 0.0), (40, 20));
+        assert_eq!(filled_size(40, 20, 90.0), (20, 40));
+        assert_eq!(filled_size(40, 20, -180.0), (40, 20));
+        let (w, h) = filled_size(400, 200, 10.0);
+        assert!(w < 400 && h < 200 && (w as f32 / h as f32 - 2.0).abs() < 0.02, "{w}×{h}");
+    }
+
+    #[test]
+    fn filled_rotation_has_no_background() {
+        let image = RgbaImage::from_pixel(300, 200, Rgba([10, 200, 30, 255]));
+        let out = rotate_filled(&image, 17.0);
+        assert_eq!(out.dimensions(), filled_size(300, 200, 17.0));
+        assert!(out.pixels().all(|p| p[3] == 255 && p[1] == 200), "only image pixels");
     }
 }

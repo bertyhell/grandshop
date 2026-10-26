@@ -29,12 +29,15 @@ pub enum Modification {
     AddBorder { thickness: u32, color: Rgba<u8> },
     /// Decorative border drawn over the edges of the image. `None` until a style is picked.
     AddImageBorder { border: Option<String>, width: u32 },
-    /// Multiplies the lightness, then stretches the contrast; 1.0 leaves the image unchanged.
-    Brightness { factor: f32, contrast: f32 },
-    Sepia,
-    Greyscale,
+    /// Multiplies the lightness and the colour intensity, then stretches the contrast; 1.0
+    /// leaves the image unchanged.
+    Brightness { factor: f32, contrast: f32, saturation: f32 },
+    /// Strength 0 to 1; 1 is the full effect.
+    Sepia { strength: f32 },
+    Greyscale { strength: f32 },
     /// Turns the image clockwise by any angle; the canvas grows and the corners get `background`.
-    Rotate { angle: f32, background: Rgba<u8> },
+    /// With `fill`, the corners are cut off instead, keeping the aspect ratio.
+    Rotate { angle: f32, background: Rgba<u8>, fill: bool },
     Mirror { horizontal: bool, vertical: bool },
     /// Shrinks the image to fit inside `size` × `size`.
     Resize { size: u32 },
@@ -87,12 +90,16 @@ pub fn apply_step(
             let border_width = (*width as f32 * scale).max(1.0);
             Ok((image_border::add_image_border(image, name, border_width)?, logical))
         }
-        Modification::Brightness { factor, contrast } => {
-            Ok((brightness::brightness(image, *factor, *contrast), logical))
+        Modification::Brightness { factor, contrast, saturation } => {
+            Ok((brightness::brightness(image, *factor, *contrast, *saturation), logical))
         }
-        Modification::Sepia => Ok((sepia::sepia(image), logical)),
-        Modification::Greyscale => Ok((greyscale::greyscale(image), logical)),
-        Modification::Rotate { angle, background } => {
+        Modification::Sepia { strength } => Ok((sepia::sepia(image, *strength), logical)),
+        Modification::Greyscale { strength } => Ok((greyscale::greyscale(image, *strength), logical)),
+        Modification::Rotate { angle, fill: true, .. } => {
+            let (width, height) = rotate::filled_size(logical.width, logical.height, *angle);
+            Ok((rotate::rotate_filled(image, *angle), Dimensions { width, height }))
+        }
+        Modification::Rotate { angle, background, fill: false } => {
             let (width, height) = rotate::rotated_size(logical.width, logical.height, *angle);
             Ok((rotate::rotate(image, *angle, *background), Dimensions { width, height }))
         }
@@ -228,7 +235,7 @@ mod tests {
                 Modification::AddBorder { thickness: 50, color: Rgba([0, 0, 0, 255]) },
                 Modification::Crop { top: 10, right: 20, bottom: 30, left: 40 },
                 Modification::Resize { size: 520 },
-                Modification::Rotate { angle: 90.0, background: Rgba([0, 0, 0, 255]) },
+                Modification::Rotate { angle: 90.0, background: Rgba([0, 0, 0, 255]), fill: false },
             ],
             1.0,
         );
@@ -295,14 +302,14 @@ mod tests {
         let original = resize_exact(&fixture(), 3840, 2160);
         let proxy = make_proxy(&original);
         let stack = [
-            Modification::Brightness { factor: 1.3, contrast: 1.2 },
+            Modification::Brightness { factor: 1.3, contrast: 1.2, saturation: 1.1 },
             Modification::AddBorder { thickness: 120, color: Rgba([34, 94, 255, 255]) },
             Modification::Crop { top: 40, right: 80, bottom: 120, left: 160 },
-            Modification::Sepia,
+            Modification::Sepia { strength: 1.0 },
             Modification::AddImageBorder { border: Some("floral_curly".into()), width: 200 },
-            Modification::Rotate { angle: 12.5, background: Rgba([255, 255, 255, 255]) },
+            Modification::Rotate { angle: 12.5, background: Rgba([255, 255, 255, 255]), fill: false },
             Modification::Mirror { horizontal: true, vertical: false },
-            Modification::Greyscale,
+            Modification::Greyscale { strength: 1.0 },
         ];
         let full = apply(&original, Dimensions::of(&original), &stack, 1.0);
         let preview = apply(&proxy.image, Dimensions::of(&original), &stack, proxy.scale);
