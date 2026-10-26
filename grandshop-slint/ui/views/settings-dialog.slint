@@ -1,0 +1,83 @@
+import { AppState, Theme } from "../globals.slint";
+import { Button, ButtonKind } from "../components/button.slint";
+import { FormField } from "../components/form-field.slint";
+import { Select } from "../components/select.slint";
+
+// Modal over the whole window. The language only changes when Save is pressed.
+export component SettingsDialog inherits Rectangle {
+    property <int> chosen-language: AppState.language-index;
+
+    background: #00000080;
+
+    // Clicking the backdrop closes the dialog without saving
+    TouchArea {
+        clicked => { AppState.settings-open = false; }
+    }
+
+    // Takes keyboard focus on open, so Escape closes the dialog
+    keys := FocusScope {
+        init => { self.focus(); }
+        key-pressed(event) => {
+            if (event.text == Key.Escape) {
+                AppState.settings-open = false;
+                return accept;
+            }
+            reject
+        }
+    }
+
+    Rectangle {
+        width: min(500px, root.width - 40px);
+        height: 400px;
+        background: white;
+        border-radius: 4px;
+        drop-shadow-blur: 20px;
+        drop-shadow-color: #00000066;
+
+        // Keep clicks inside the dialog away from the backdrop
+        TouchArea { }
+
+        VerticalLayout {
+            padding: 20px;
+            spacing: 10px;
+
+            HorizontalLayout {
+                Text {
+                    text: @tr("Settings");
+                    font-size: 20px;
+                    font-weight: 600;
+                    color: Theme.text;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                }
+
+                Button {
+                    label: "✕";
+                    kind: ButtonKind.secondary;
+                    width: 40px;
+                    accessible-label: @tr("Close");
+                    clicked => { AppState.settings-open = false; }
+                }
+            }
+
+            FormField {
+                label: @tr("Language");
+                Select {
+                    options: AppState.languages;
+                    current-index: root.chosen-language;
+                    selected(index) => { root.chosen-language = index; }
+                }
+            }
+
+            Rectangle { vertical-stretch: 1; }
+
+            Button {
+                label: @tr("Save");
+                clicked => {
+                    AppState.save-settings(root.chosen-language);
+                    AppState.settings-open = false;
+                }
+            }
+        }
+    }
+}

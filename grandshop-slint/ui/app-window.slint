@@ -1,0 +1,62 @@
+import { AppState, Strings, Theme } from "globals.slint";
+import { MainPreview } from "views/main-preview.slint";
+import { ControlsSidebar } from "views/controls-sidebar.slint";
+import { SplitterHandle } from "components/splitter.slint";
+import { ToastStack } from "components/toast-stack.slint";
+import { SettingsDialog } from "views/settings-dialog.slint";
+
+export { AppState, Strings, Theme }
+
+export component AppWindow inherits Window {
+    title: "Grandshop";
+    icon: @image-url("../assets/icons/icon.png");
+    background: Theme.preview-background;
+    preferred-width: 1280px;
+    preferred-height: 800px;
+    min-width: 800px;
+    min-height: 500px;
+
+    // Fraction of the width (minus the handle) taken by the preview pane
+    property <float> split-ratio: 0.6;
+    property <length> min-pane-width: 300px;
+    property <length> available-width: root.width - handle.width;
+
+    preview := MainPreview {
+        x: 0;
+        y: 0;
+        width: root.available-width * root.split-ratio;
+        height: root.height;
+    }
+
+    handle := SplitterHandle {
+        x: preview.width;
+        y: 0;
+        height: root.height;
+        dragged(delta) => {
+            root.split-ratio = clamp(
+                (preview.width + delta) / root.available-width,
+                root.min-pane-width / root.available-width,
+                1 - root.min-pane-width / root.available-width);
+        }
+    }
+
+    ControlsSidebar {
+        x: handle.x + handle.width;
+        y: 0;
+        width: root.width - self.x;
+        height: root.height;
+    }
+
+    if AppState.settings-open: SettingsDialog {
+        width: root.width;
+        height: root.height;
+    }
+
+    // Bottom left, above the viewer toolbar
+    ToastStack {
+        x: 20px;
+        y: 20px;
+        width: 300px;
+        height: root.height - 100px;
+    }
+}

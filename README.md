@@ -1,13 +1,14 @@
 # Grandshop
 
-A image editing program that is really easy to use.
+An image editing program that is really easy to use.
 
 Current features:
 * Add colored borders
+* Add a decorative image border
 * Change the brightness
 * Add a sepia effect
 * Resize an image
-* Add text below the image
+* Add text to the image
 * Crop
 
 Download: https://gitlab.com/bertyhell/grandshop/-/releases
@@ -16,31 +17,78 @@ Download: https://gitlab.com/bertyhell/grandshop/-/releases
 
 ## Developer docs
 
-### Run the program from the repository:
+Grandshop is a native app written in [Rust](https://www.rust-lang.org) with the
+[Slint](https://slint.dev) UI toolkit. The code lives in [`grandshop-slint/`](grandshop-slint):
 
-install node v12.14.1
+| Path | What |
+| --- | --- |
+| `ui/` | The Slint UI: views, components and the controls for each modification |
+| `src/pipeline/` | The image modifications |
+| `src/worker.rs` | Background rendering of the preview, with a cache per modification |
+| `src/controller.rs` | Connects the UI to the image code: cards, open/save, zoom detail |
+| `translations/` | Translations as gettext `.po` files |
+| `assets/` | Bundled font, decorative borders and the app icon |
+| `tests/golden/` | Reference images from the earlier Electron/sharp version |
 
-install dependencies
+While editing, the modifications run on a copy of at most 2560 px, so sliders react
+immediately. Saving runs them on the full resolution image, and zooming in shows the
+visible part at full resolution.
+
+### Run the program from the repository
+
+Install Rust with [rustup](https://rustup.rs). On Linux, also install:
+
 ```bash
-npm i
-electron-rebuild
+sudo apt install libfontconfig1-dev libxkbcommon-dev
 ```
 
-Run the frontend and electron parts of the application:
-```bash
-npm run electron-start
-```
+Then:
 
 ```bash
-npm run react-start
+cd grandshop-slint
+cargo run --release
 ```
+
+`cargo run --release -- photo.jpg` opens a photo right away.
+
+### Tests
+
+```bash
+cd grandshop-slint
+cargo test
+```
+
+The golden tests compare every modification with the output of the earlier sharp based
+version; `tests/golden/params.json` lists the exact parameters.
+
+### Translations
+
+UI texts are marked with `@tr("English text")` in the `.slint` files. The Dutch texts are in
+`translations/nl/LC_MESSAGES/grandshop.po`, which POEditor can import and export. To check
+that every text is translated:
+
+```bash
+cd grandshop-slint
+python3 -I scripts/check-translations.py
+```
+
+To add a language, add `translations/<code>/LC_MESSAGES/grandshop.po` and an entry in
+`LANGUAGES` in `src/settings.rs`.
 
 ## Build a new release
 
+Install the packaging tool once:
+
 ```bash
-npm run dist
+cargo install cargo-packager --locked
 ```
 
-Compile the installer using inno setup
+Then, on each operating system:
 
+```bash
+cd grandshop-slint
+cargo packager --release
+```
 
+The installers end up in `grandshop-slint/target/packages`: an NSIS setup `.exe` on Windows,
+an `.app` and `.dmg` on macOS, and a `.deb` and AppImage on Linux.

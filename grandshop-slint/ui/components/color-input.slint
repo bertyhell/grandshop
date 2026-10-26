@@ -1,0 +1,119 @@
+import { AppState, Hsv, Theme } from "../globals.slint";
+
+// Hue/saturation wheel, a brightness bar and a swatch, like the iro.js picker it replaces.
+// Clicking the preview image also picks a colour (handled in Rust).
+export component ColorInput {
+    in property <color> value;
+
+    callback edited(value: color);
+
+    property <Hsv> hsv: AppState.color-to-hsv(root.value);
+    property <length> wheel-size: 300px;
+    property <length> radius: root.wheel-size / 2;
+    property <length> bar-height: 28px;
+
+    function pick-on-wheel(x: length, y: length) {
+        root.edited(AppState.hsv-to-color({
+            hue: atan2((root.radius - y) / 1px, (x - root.radius) / 1px) / 1deg,
+            saturation: min(1, sqrt(pow((x - root.radius) / 1px, 2) + pow((y - root.radius) / 1px, 2))
+                / (root.radius / 1px)),
+            value: root.hsv.value,
+        }));
+    }
+
+    function pick-value(x: length) {
+        root.edited(AppState.hsv-to-color({
+            hue: root.hsv.hue,
+            saturation: root.hsv.saturation,
+            value: clamp((x - root.bar-height / 2) / (bar.width - root.bar-height), 0, 1),
+        }));
+    }
+
+    HorizontalLayout {
+        spacing: 20px;
+        height: root.wheel-size + 12px + root.bar-height;
+
+        VerticalLayout {
+            width: root.wheel-size;
+            spacing: 12px;
+
+            wheel := Image {
+                width: root.wheel-size;
+                height: root.wheel-size;
+                source: AppState.color-wheel;
+                accessible-role: none;
+
+                // Marker for the current hue and saturation
+                Rectangle {
+                    property <length> distance: root.hsv.saturation * root.radius;
+                    x: root.radius + cos(root.hsv.hue * 1deg) * self.distance - self.width / 2;
+                    y: root.radius - sin(root.hsv.hue * 1deg) * self.distance - self.height / 2;
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 8px;
+                    border-width: 2px;
+                    border-color: white;
+                    background: root.value;
+                    drop-shadow-blur: 2px;
+                    drop-shadow-color: #000000aa;
+                }
+
+                TouchArea {
+                    mouse-cursor: crosshair;
+                    pointer-event(event) => {
+                        if (event.kind == PointerEventKind.down) {
+                            root.pick-on-wheel(self.mouse-x, self.mouse-y);
+                        }
+                    }
+                    moved => {
+                        if (self.pressed) {
+                            root.pick-on-wheel(self.mouse-x, self.mouse-y);
+                        }
+                    }
+                }
+            }
+
+            bar := Rectangle {
+                height: root.bar-height;
+                border-radius: self.height / 2;
+                background: @linear-gradient(90deg, black 0%, AppState.hsv-to-color({ hue: root.hsv.hue, saturation: root.hsv.saturation, value: 1 }) 100%);
+
+                Rectangle {
+                    x: root.hsv.value * (parent.width - parent.height) + (parent.height - self.width) / 2;
+                    y: (parent.height - self.height) / 2;
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 8px;
+                    border-width: 2px;
+                    border-color: white;
+                    background: root.value;
+                    drop-shadow-blur: 2px;
+                    drop-shadow-color: #000000aa;
+                }
+
+                TouchArea {
+                    mouse-cursor: pointer;
+                    pointer-event(event) => {
+                        if (event.kind == PointerEventKind.down) {
+                            root.pick-value(self.mouse-x);
+                        }
+                    }
+                    moved => {
+                        if (self.pressed) {
+                            root.pick-value(self.mouse-x);
+                        }
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            horizontal-stretch: 1;
+            min-width: 40px;
+            border-radius: 4px;
+            background: root.value;
+            accessible-role: text;
+            accessible-label: @tr("Color");
+        }
+    }
+}

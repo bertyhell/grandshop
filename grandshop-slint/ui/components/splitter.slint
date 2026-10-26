@@ -1,0 +1,27 @@
+import { Theme } from "../globals.slint";
+
+// Vertical drag handle between two panes. Reports horizontal drag distance in pixels.
+export component SplitterHandle inherits Rectangle {
+    callback dragged(delta: length);
+
+    width: 15px;
+    background: Theme.splitter-background;
+
+    TouchArea {
+        mouse-cursor: col-resize;
+        moved => {
+            if (self.pressed) {
+                root.dragged(self.mouse-x - self.pressed-x);
+            }
+        }
+    }
+
+    // Grip: two short vertical lines, like the "||" of the old handle
+    Rectangle {
+        width: 4px;
+        height: 20px;
+        border-width: 1px;
+        border-color: Theme.splitter-grip;
+        background: transparent;
+    }
+}

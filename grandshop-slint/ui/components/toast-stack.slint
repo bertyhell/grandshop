@@ -1,0 +1,36 @@
+import { AppState, Theme, Toast, ToastKind } from "../globals.slint";
+
+// Short messages that disappear by themselves, colours from the Electron version
+export component ToastStack {
+    VerticalLayout {
+        spacing: 10px;
+        alignment: end;
+
+        for toast in AppState.toasts: Rectangle {
+            width: min(300px, root.width);
+            border-radius: 4px;
+            background: toast.kind == ToastKind.success ? #7bfc93
+                : toast.kind == ToastKind.warning ? #fff0a1
+                : toast.kind == ToastKind.error ? #ffa689
+                : #72bcdb;
+            drop-shadow-blur: 6px;
+            drop-shadow-color: #00000033;
+            accessible-role: text;
+            accessible-label: toast.message;
+
+            HorizontalLayout {
+                padding-left: 15px;
+                padding-right: 15px;
+                padding-top: 16px;
+                padding-bottom: 16px;
+
+                Text {
+                    text: toast.message;
+                    color: Theme.text;
+                    font-size: 14px;
+                    wrap: word-wrap;
+                }
+            }
+        }
+    }
+}

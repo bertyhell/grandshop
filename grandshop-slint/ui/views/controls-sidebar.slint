@@ -1,0 +1,72 @@
+import { ScrollView } from "std-widgets.slint";
+import { AppState, ModKind, Theme } from "../globals.slint";
+import { Button, ButtonKind } from "../components/button.slint";
+import { Select } from "../components/select.slint";
+import { ModificationCard } from "../components/modification-card.slint";
+
+export component ControlsSidebar inherits Rectangle {
+    background: Theme.sidebar-background;
+
+    VerticalLayout {
+        padding: 10px;
+        spacing: 10px;
+
+        HorizontalLayout {
+            spacing: 10px;
+
+            Button {
+                label: @tr("Open image");
+                horizontal-stretch: 1;
+                clicked => { AppState.open-image(); }
+            }
+
+            if AppState.has-modified-image: Button {
+                label: @tr("Save Image As");
+                horizontal-stretch: 1;
+                clicked => { AppState.save-image(); }
+            }
+
+            Button {
+                icon: @image-url("../icons/cog.svg");
+                kind: ButtonKind.secondary;
+                accessible-label: @tr("Open settings modal");
+                width: 50px;
+                horizontal-stretch: 0;
+                clicked => { AppState.settings-open = true; }
+            }
+        }
+
+        if AppState.has-image: Select {
+            property <[ModKind]> kinds: [
+                ModKind.add-border, ModKind.add-image-border, ModKind.brightness, ModKind.sepia,
+                ModKind.resize, ModKind.annotate, ModKind.crop,
+            ];
+            options: [
+                @tr("Add a colored border"), @tr("Add image border"), @tr("Adjust the brightness"),
+                @tr("Add a sepia effect"), @tr("Reduce image (file size)"), @tr("Add text"),
+                @tr("Crop image"),
+            ];
+            placeholder: AppState.modifications.length > 0
+                ? @tr("Choose another operation") : @tr("Select an operation");
+            // Always back to the placeholder, so another operation can be added
+            current-index: -1;
+            selected(index) => { AppState.add-modification(self.kinds[index]); }
+        }
+
+        ScrollView {
+            vertical-stretch: 1;
+            visible: AppState.has-image;
+
+            VerticalLayout {
+                spacing: 10px;
+                alignment: start;
+
+                for entry[index] in AppState.modifications: ModificationCard {
+                    entry: entry;
+                    index: index;
+                    input-size: AppState.input-sizes[index];
+                }
+            }
+        }
+    }
+}
