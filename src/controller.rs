@@ -31,6 +31,9 @@ const IMAGE_EXTENSIONS: &[&str] = &["jpg", "jpeg", "png", "gif", "tif", "tiff", 
 /// Rendered at twice the 300 px it is shown at, so it stays sharp on high DPI screens
 const COLOR_WHEEL_SIZE: u32 = 600;
 
+/// Size of the border style examples in the picker, twice the 64 × 48 they are shown at
+const BORDER_THUMBNAIL_SIZE: (u32, u32) = (128, 96);
+
 /// Wait this long after zooming or panning stops before rendering the sharp tile
 const DETAIL_DELAY: Duration = Duration::from_millis(150);
 /// Show the sharp tile once the preview is enlarged this much beyond its own pixels
@@ -110,6 +113,9 @@ impl Controller {
         app_state.set_modifications(ModelRc::from(cards.clone()));
         app_state.set_border_styles(ModelRc::new(VecModel::from(
             borders.iter().map(|name| name.replace('_', " ").into()).collect::<Vec<slint::SharedString>>(),
+        )));
+        app_state.set_border_thumbnails(ModelRc::new(VecModel::from(
+            borders.iter().map(|name| to_slint_image(&border_thumbnail(name))).collect::<Vec<Image>>(),
         )));
         app_state.set_color_wheel(to_slint_image(&color_wheel(COLOR_WHEEL_SIZE)));
         app_state.set_upscale_max_edge(upscale::MAX_RESULT_EDGE as i32);
@@ -980,6 +986,13 @@ fn estimate_file_size(ui: slint::Weak<AppWindow>, shared: Arc<RenderShared>, out
             }
         });
     });
+}
+
+/// Border style `name` around a plain picture, at twice the size it is shown at
+fn border_thumbnail(name: &str) -> RgbaImage {
+    let (width, height) = BORDER_THUMBNAIL_SIZE;
+    let plain = RgbaImage::from_pixel(width, height, Rgba([0xdd, 0xe6, 0xee, 255]));
+    pipeline::image_border::add_image_border(&plain, name, height as f32 * 0.3).unwrap_or(plain)
 }
 
 fn to_pixel_buffer(image: &RgbaImage) -> SharedPixelBuffer<Rgba8Pixel> {

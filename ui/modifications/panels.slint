@@ -45,6 +45,7 @@ export component AddImageBorderControls inherits Panel {
         label: @tr("Border style");
         Select {
             options: AppState.border-styles;
+            icons: AppState.border-thumbnails;
             current-index: root.params.border-index;
             selected(style) => { AppState.set-border-style(root.index, style); }
         }
