@@ -1,3 +1,4 @@
+import { Switch } from "std-widgets.slint";
 import { AppState, Theme } from "../globals.slint";
 import { Button, ButtonKind } from "../components/button.slint";
 import { FormField } from "../components/form-field.slint";
@@ -6,6 +7,7 @@ import { Select } from "../components/select.slint";
 // Modal over the whole window. The language only changes when Save is pressed.
 export component SettingsDialog inherits Rectangle {
     property <int> chosen-language: AppState.language-index;
+    property <bool> chosen-gpu: AppState.use-gpu;
 
     background: #00000080;
 
@@ -69,12 +71,42 @@ export component SettingsDialog inherits Rectangle {
                 }
             }
 
+            Switch {
+                text: @tr("Use the graphics card for AI operations");
+                checked: root.chosen-gpu;
+                toggled => { root.chosen-gpu = self.checked; }
+            }
+
+            Text {
+                text: @tr("Turn this off if AI operations crash or give strange colours.");
+                color: Theme.placeholder;
+                font-size: 13px;
+                wrap: word-wrap;
+            }
+
+            HorizontalLayout {
+                spacing: 10px;
+
+                Text {
+                    text: @tr("Downloaded AI tools: {}", AppState.ai-models-size);
+                    color: Theme.text;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                }
+
+                Button {
+                    label: @tr("Delete");
+                    kind: ButtonKind.secondary;
+                    clicked => { AppState.delete-ai-models(); }
+                }
+            }
+
             Rectangle { vertical-stretch: 1; }
 
             Button {
                 label: @tr("Save");
                 clicked => {
-                    AppState.save-settings(root.chosen-language);
+                    AppState.save-settings(root.chosen-language, root.chosen-gpu);
                     AppState.settings-open = false;
                 }
             }

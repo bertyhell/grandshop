@@ -5,12 +5,15 @@
 //! - **Per-step cache**: the output of every step is kept. When a new stack shares a prefix
 //!   with the previous one, rendering resumes after the last unchanged step, so dragging a
 //!   slider on the last card only recomputes that card.
+//! - **Long steps**: the AI modifications report their progress and stop between tiles when a
+//!   newer request arrives.
 
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread::JoinHandle;
 
 use image::RgbaImage;
 
+use crate::ai::{Cancelled, Feedback};
 use crate::pipeline::{apply_step, Dimensions, Modification};
 
 /// An opened image with its preview proxy.
@@ -63,10 +66,14 @@ struct Mailbox {
     shutdown: bool,
 }
 
+/// Gets the index of the modification being applied and the fraction of it done
+type ProgressHandler = Box<dyn Fn(usize, f32) + Send + Sync>;
+
 #[derive(Default)]
 struct Shared {
     mailbox: Mutex<Mailbox>,
     wake: Condvar,
+    progress: Mutex<Option<ProgressHandler>>,
 }
 
 impl Shared {
@@ -105,6 +112,11 @@ impl Worker {
             .spawn(move || run(&thread_shared, cache_steps, on_result))
             .expect("spawning the render thread");
         Self { shared, thread: Some(thread) }
+    }
+
+    /// `on_progress` runs on the worker thread while a long modification is applied.
+    pub fn on_progress(&self, on_progress: impl Fn(usize, f32) + Send + Sync + 'static) {
+        *self.shared.progress.lock().unwrap() = Some(Box::new(on_progress));
     }
 
     /// Switches to a new image. Clears the cache and drops any pending render.
@@ -181,7 +193,7 @@ fn render(
     cache.truncate(reusable);
 
     let mut steps_computed = 0;
-    for modification in &job.modifications[reusable..] {
+    for (index, modification) in job.modifications.iter().enumerate().skip(reusable) {
         if steps_computed > 0 && shared.superseded() {
             return None;
         }
@@ -189,7 +201,14 @@ fn render(
             Some(entry) => (entry.image.clone(), entry.logical),
             None => (document.proxy.clone(), document.original_dimensions()),
         };
-        let entry = match apply_step(&input, logical, modification, document.scale) {
+        let progress = |fraction: f32| {
+            if let Some(handler) = shared.progress.lock().unwrap().as_ref() {
+                handler(index, fraction);
+            }
+        };
+        let feedback = Feedback { cancelled: &|| shared.superseded(), progress: &progress };
+        let entry = match apply_step(&input, logical, modification, document.scale, &feedback) {
+            Err(err) if err.is::<Cancelled>() => return None,
             Ok((image, logical)) => CacheEntry {
                 modification: modification.clone(),
                 image: Arc::new(image),

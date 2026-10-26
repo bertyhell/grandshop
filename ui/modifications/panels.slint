@@ -301,7 +301,7 @@ export component UpscaleControls inherits Panel {
     }
 
     if AppState.upscaler-downloading: Text {
-        text: @tr("Downloading the enlarging tool…");
+        text: @tr("Downloading the enlarging tool… {}%", Math.round(AppState.upscaler-download-progress * 100));
         color: Theme.text;
         font-size: 14px;
         wrap: word-wrap;

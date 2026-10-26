@@ -101,6 +101,12 @@ impl Controller {
     pub fn new(ui: &AppWindow) -> Rc<Self> {
         let shared = Arc::new(RenderShared::default());
         let worker = Worker::new(result_handler(ui.as_weak(), shared.clone()));
+        {
+            let ui = ui.as_weak();
+            worker.on_progress(move |_, fraction| {
+                let _ = ui.upgrade_in_event_loop(move |ui| ui.global::<AppState>().set_render_progress(fraction));
+            });
+        }
         let detail_worker = Worker::with_step_cache(false, detail_handler(ui.as_weak(), shared.clone()));
         let cards = Rc::new(VecModel::default());
         let borders = available_borders();
@@ -369,17 +375,31 @@ impl Controller {
             return;
         }
         self.upscaler_downloads.borrow_mut().push(quality);
-        self.with_state(|s| s.set_upscaler_downloading(true));
+        self.with_state(|s| {
+            s.set_upscaler_downloading(true);
+            s.set_upscaler_download_progress(0.0);
+        });
         self.notify(ToastKind::Info, |s| match quality {
             upscale::Quality::Fast => s.get_upscaler_downloading(),
             upscale::Quality::Best => s.get_upscaler_best_downloading(),
         });
         let this = self.clone();
         let _ = slint::spawn_local(async move {
-            let installed = run_in_background(move || upscale::install(quality)).await;
+            let ui = this.ui.clone();
+            let installed = run_in_background(move || {
+                upscale::install(quality, &|fraction| {
+                    let _ = ui.upgrade_in_event_loop(move |ui| {
+                        ui.global::<AppState>().set_upscaler_download_progress(fraction);
+                    });
+                })
+            })
+            .await;
             this.upscaler_downloads.borrow_mut().retain(|q| *q != quality);
             let downloading = !this.upscaler_downloads.borrow().is_empty();
-            this.with_state(|s| s.set_upscaler_downloading(downloading));
+            this.with_state(|s| {
+                s.set_upscaler_downloading(downloading);
+                crate::show_ai_models_size(s);
+            });
             match installed {
                 Ok(()) => {
                     this.notify(ToastKind::Success, |s| s.get_upscaler_ready());
@@ -561,6 +581,7 @@ impl Controller {
             let has_modifications = !state.modifications.is_empty();
             self.with_state(|s| {
                 s.set_rendering(!shown.is_empty());
+                s.set_render_progress(-1.0);
                 s.set_has_modified_image(has_modifications);
             });
         }
@@ -737,6 +758,7 @@ fn result_handler(
             }
             state.set_input_sizes(ModelRc::new(VecModel::from(sizes)));
             state.set_rendering(false);
+            state.set_render_progress(-1.0);
             update_crop_frame(&ui, *shared.transform.lock().unwrap());
         });
     }

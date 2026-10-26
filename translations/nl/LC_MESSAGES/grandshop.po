@@ -244,17 +244,29 @@ msgstr "Nieuwe grootte: {} × {} pixels"
 msgid "This is too large. Shrink the image first or enlarge fewer times."
 msgstr "Dit is te groot. Verklein de afbeelding eerst of vergroot minder keer."
 
-msgid "Downloading the enlarging tool…"
-msgstr "Het vergrotingsprogramma wordt gedownload…"
+msgid "Downloading the enlarging tool… {}%"
+msgstr "Het vergrotingsprogramma wordt gedownload… {}%"
+
+msgid "Image is being updated... {}%"
+msgstr "Afbeelding wordt geupdate... {}%"
+
+msgid "Use the graphics card for AI operations"
+msgstr "Gebruik de grafische kaart voor AI-bewerkingen"
+
+msgid "Turn this off if AI operations crash or give strange colours."
+msgstr "Zet dit uit als AI-bewerkingen vastlopen of vreemde kleuren geven."
+
+msgid "Downloaded AI tools: {}"
+msgstr "Gedownloade AI-programma's: {}"
 
 msgid "Enlarging uses artificial intelligence and can take a minute for large images."
 msgstr "Vergroten gebruikt artificiële intelligentie en kan voor grote afbeeldingen een minuutje duren."
 
-msgid "Downloading the enlarging tool (10 MB)…"
-msgstr "Het vergrotingsprogramma wordt gedownload (10 MB)…"
+msgid "Downloading the enlarging tool (2 MB)…"
+msgstr "Het vergrotingsprogramma wordt gedownload (2 MB)…"
 
-msgid "Downloading the best quality enlarging tool (64 MB)…"
-msgstr "Het vergrotingsprogramma voor de beste kwaliteit wordt gedownload (64 MB)…"
+msgid "Downloading the best quality enlarging tool (140 MB)…"
+msgstr "Het vergrotingsprogramma voor de beste kwaliteit wordt gedownload (140 MB)…"
 
 msgid "The enlarging tool is ready"
 msgstr "Het vergrotingsprogramma is klaar"

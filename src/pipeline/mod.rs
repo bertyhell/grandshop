@@ -21,6 +21,8 @@ mod srgb;
 use anyhow::Result;
 use image::{Rgba, RgbaImage};
 
+use crate::ai::Feedback;
+
 pub use image_border::available_borders;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -67,12 +69,14 @@ fn scale_px(value: u32, scale: f32) -> u32 {
     (value as f32 * scale).round() as u32
 }
 
-/// Applies one modification. Returns the new image and its logical size.
+/// Applies one modification. Returns the new image and its logical size. The AI
+/// modifications report progress to `feedback` and stop early when it says so.
 pub fn apply_step(
     image: &RgbaImage,
     logical: Dimensions,
     modification: &Modification,
     scale: f32,
+    feedback: &Feedback,
 ) -> Result<(RgbaImage, Dimensions)> {
     match modification {
         Modification::AddBorder { thickness, color } => {
@@ -116,7 +120,7 @@ pub fn apply_step(
                     crate::upscale::MAX_RESULT_EDGE
                 );
             }
-            Ok((crate::upscale::upscale(image, *factor, *quality)?, logical))
+            Ok((crate::upscale::upscale(image, *factor, *quality, feedback)?, logical))
         }
         Modification::Annotate { text, font_size, x_percent, y_percent, color } => Ok((
             annotate::annotate(image, text, font_size * scale, *x_percent, *y_percent, *color),
@@ -166,7 +170,7 @@ pub fn apply(
     let mut logical = original;
     let mut errors = Vec::new();
     for (index, modification) in modifications.iter().enumerate() {
-        match apply_step(&image, logical, modification, scale) {
+        match apply_step(&image, logical, modification, scale, &Feedback::NONE) {
             Ok((next, next_logical)) => {
                 image = next;
                 logical = next_logical;
