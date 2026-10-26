@@ -14,7 +14,7 @@ Current features:
 * Rotate by any angle
 * Mirror horizontally or vertically
 
-Download: https://gitlab.com/bertyhell/grandshop/-/releases
+Download: https://github.com/bertyhell/grandshop/releases
 
 ![screenshot of the ui](screenshot.jpg)
 
@@ -78,17 +78,24 @@ To add a language, add `translations/<code>/LC_MESSAGES/grandshop.po` and an ent
 
 ## Build a new release
 
-Install the packaging tool once:
+Releases are built by GitHub Actions ([`.github/workflows/release.yml`](.github/workflows/release.yml)).
+Bump `version` in `Cargo.toml`, commit it on `master`, then push a matching tag:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow checks that the tag is on `master` and matches the `Cargo.toml` version, runs
+the tests on each OS and publishes a GitHub release with the installers: a `.deb` and
+AppImage for Linux, a `.dmg` for macOS and a setup `.exe` for Windows.
+
+To build the installers for your own OS locally, install the packaging tool once and run
+the build script:
 
 ```bash
 cargo install cargo-packager --locked
-```
-
-Then, on each operating system:
-
-```bash
 ./build.sh --package
 ```
 
-The installers end up in `target/packages`: an NSIS setup `.exe` on Windows,
-an `.app` and `.dmg` on macOS, and a `.deb` and AppImage on Linux.
+They end up in `target/packages`.

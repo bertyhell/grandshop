@@ -1,0 +1,104 @@
+# Builds the installers for Linux, macOS and Windows and publishes them as a GitHub release
+# when a version tag (v1.2.3) is pushed for a commit on master.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    name: Check tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag must point at a commit on master
+        run: |
+          git fetch origin master
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/master; then
+            echo "::error::$GITHUB_REF_NAME is not on master, not releasing"
+            exit 1
+          fi
+
+      - name: Tag must match the version in Cargo.toml
+        run: |
+          version="$(grep -m1 '^version = ' Cargo.toml | cut -d '"' -f2)"
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match Cargo.toml version $version"
+            exit 1
+          fi
+
+  build:
+    name: Build ${{ matrix.name }}
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-latest
+            formats: deb,appimage
+          - name: macOS
+            os: macos-latest
+            formats: app,dmg
+          - name: Windows
+            os: windows-latest
+            formats: nsis
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfontconfig1-dev libxkbcommon-dev libfuse2
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-packager
+
+      - name: Test
+        run: cargo test --release
+
+      - name: Build installers
+        run: cargo packager --release --formats ${{ matrix.formats }}
+        env:
+          # The AppImage tools are AppImages themselves; runners have no FUSE mount
+          APPIMAGE_EXTRACT_AND_RUN: 1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: grandshop-${{ matrix.name }}
+          if-no-files-found: error
+          path: |
+            target/packages/*.deb
+            target/packages/*.AppImage
+            target/packages/*.dmg
+            target/packages/*-setup.exe
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: packages
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: packages/*
+          generate_release_notes: true
