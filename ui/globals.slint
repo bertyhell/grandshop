@@ -141,6 +141,12 @@ export global AppState {
     in property <float> crop-right;
     in property <float> crop-bottom;
 
+    // First line of the text card being edited, in fractions of the shown image. While it
+    // is shown, the preview stops after that card, so later cards don't move the text away.
+    in property <bool> text-active: false;
+    in property <float> text-x;
+    in property <float> text-y;
+
     // Notifications in the bottom left corner, oldest first
     in property <[Toast]> toasts;
 
@@ -159,6 +165,8 @@ export global AppState {
     callback preview-clicked(float, float);
     // A crop frame handle was dragged: the new frame in fractions of the shown image
     callback crop-dragged(float, float, float, float);
+    // The text grip was dragged: the new position in fractions of the shown image
+    callback text-dragged(float, float);
     // Viewer: rotate and flip are view-only and never saved
     callback rotate-left();
     callback rotate-right();

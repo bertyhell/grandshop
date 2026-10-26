@@ -201,6 +201,7 @@ impl Controller {
         on!(on_crop_dragged, |this, left, top, right, bottom| {
             this.drag_crop(Region { left, top, right, bottom })
         });
+        on!(on_text_dragged, |this, x, y| this.drag_text(x, y));
         on!(on_view_changed, |this, left, top, right, bottom, width, _height| {
             *this.shared.view.lock().unwrap() =
                 ViewState { region: Region { left, top, right, bottom }, shown_width: width };
@@ -445,10 +446,11 @@ impl Controller {
     }
 
     /// The stack the preview shows: while a crop card is open, the image going into it, so
-    /// the whole image can be seen and the crop frame dragged over it.
+    /// the whole image can be seen and the crop frame dragged over it. While a text card is
+    /// open, the image up to that card, so the text grip sits on the text.
     fn shown_modifications(&self) -> Vec<Modification> {
         let modifications = &self.state.borrow().modifications;
-        let end = editing_crop(&*self.cards).unwrap_or(modifications.len()).min(modifications.len());
+        let end = shown_end(&*self.cards).min(modifications.len());
         modifications[..end].to_vec()
     }
 
@@ -504,6 +506,16 @@ impl Controller {
             if let Some(ratio) = crop_aspect::ratio(preset, size.width as u32, size.height as u32) {
                 set_crop_box(p, crop_aspect::largest_centred(width, height, ratio), width, height);
             }
+        });
+    }
+
+    /// Dragging the text grip; `x` and `y` go from 0 to 1 over the shown preview.
+    fn drag_text(self: &Rc<Self>, x: f32, y: f32) {
+        let Some(index) = editing_text(&*self.cards) else { return };
+        let (x, y) = self.shared.transform.lock().unwrap().to_source((x, y));
+        self.edit_card(index, |p| {
+            p.x_percent = (x * 100.0).clamp(0.0, 100.0);
+            p.y_percent = (y * 100.0).clamp(0.0, 100.0);
         });
     }
 
@@ -803,11 +815,26 @@ fn editing_crop(cards: &impl Model<Data = ModEntry>) -> Option<usize> {
     cards.iter().position(|card| card.open && card.kind == ModKind::Crop)
 }
 
-/// Shows the frame of the crop card being edited, in fractions of the preview.
+/// The first open text card, whose grip is shown over the preview
+fn editing_text(cards: &impl Model<Data = ModEntry>) -> Option<usize> {
+    cards.iter().position(|card| card.open && card.kind == ModKind::Annotate)
+}
+
+/// How many cards the preview shows: up to an open crop card, or up to and including an
+/// open text card
+fn shown_end(cards: &impl Model<Data = ModEntry>) -> usize {
+    let crop = editing_crop(cards).unwrap_or(usize::MAX);
+    let text = editing_text(cards).map_or(usize::MAX, |index| index + 1);
+    crop.min(text).min(cards.row_count())
+}
+
+/// Shows the frame of the crop card being edited and the grip of the text card being edited,
+/// in fractions of the preview.
 fn update_crop_frame(ui: &AppWindow, transform: ViewTransform) {
     let state = ui.global::<AppState>();
     let cards = state.get_modifications();
-    let frame = editing_crop(&cards).and_then(|index| {
+    // Hidden when an open text card before it stops the preview earlier
+    let frame = editing_crop(&cards).filter(|&index| index == shown_end(&cards)).and_then(|index| {
         let size = state.get_input_sizes().row_data(index)?;
         let params = cards.row_data(index)?.params;
         let (width, height) = (size.width.max(1) as f32, size.height.max(1) as f32);
@@ -837,6 +864,18 @@ fn update_crop_frame(ui: &AppWindow, transform: ViewTransform) {
         state.set_crop_top(frame.top);
         state.set_crop_right(frame.right);
         state.set_crop_bottom(frame.bottom);
+    }
+
+    // The text grip, unless a crop card before it hides the text
+    let text = editing_text(&cards).filter(|&index| index < shown_end(&cards)).and_then(|index| {
+        let params = cards.row_data(index)?.params;
+        let (x, y) = (params.x_percent / 100.0, params.y_percent / 100.0);
+        Some(transform.region_from_source(Region { left: x, top: y, right: x, bottom: y }))
+    });
+    state.set_text_active(text.is_some());
+    if let Some(point) = text {
+        state.set_text_x(point.left);
+        state.set_text_y(point.top);
     }
 }
 
