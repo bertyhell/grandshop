@@ -1,6 +1,7 @@
 import { AppState, Theme } from "../globals.slint";
 import { Spinner } from "../components/spinner.slint";
 import { Button } from "../components/button.slint";
+import { CropFrame } from "../components/crop-frame.slint";
 
 component ToolbarButton inherits Button {
     width: 40px;
@@ -92,6 +93,23 @@ export component MainPreview inherits Rectangle {
                 AppState.preview-clicked(self.mouse-x / self.width, self.mouse-y / self.height);
             }
         }
+    }
+
+    if AppState.has-image && AppState.crop-active: CropFrame {
+        // Reaches beyond the Flickable by half a corner grip
+        property <length> margin: 22px;
+        x: flick.x - self.margin;
+        y: flick.y - self.margin;
+        width: flick.width + 2 * self.margin;
+        height: flick.height + 2 * self.margin;
+        image-x: self.margin + flick.content-x + picture.x;
+        image-y: self.margin + flick.content-y + picture.y;
+        image-width: picture.width;
+        image-height: picture.height;
+        view-x: self.margin;
+        view-y: self.margin;
+        view-width: flick.width;
+        view-height: flick.height;
     }
 
     toolbar := HorizontalLayout {

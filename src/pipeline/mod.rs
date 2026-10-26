@@ -38,6 +38,9 @@ pub enum Modification {
     Mirror { horizontal: bool, vertical: bool },
     /// Shrinks the image to fit inside `size` × `size`.
     Resize { size: u32 },
+    /// Enlarges `factor` times with the AI model; 1 leaves the image as is (model not
+    /// downloaded yet).
+    Upscale { factor: u32 },
     /// Text, one line per `\n`, centred on a point given in percent of the image size.
     Annotate { text: String, font_size: f32, x_percent: f32, y_percent: f32, color: Rgba<u8> },
     /// Removes the given number of pixels from each side.
@@ -99,6 +102,19 @@ pub fn apply_step(
                 crate::resample::fit_inside(logical.width, logical.height, (*size).max(1));
             let target = scale_px(*size, scale).max(1);
             Ok((resize::resize(image, target), Dimensions { width, height }))
+        }
+        Modification::Upscale { factor: 0 | 1 } => Ok((image.clone(), logical)),
+        Modification::Upscale { factor } => {
+            let logical = Dimensions { width: logical.width * factor, height: logical.height * factor };
+            if logical.width.max(logical.height) > crate::upscale::MAX_RESULT_EDGE {
+                anyhow::bail!(
+                    "enlarging to {}×{} goes over the {} pixel limit",
+                    logical.width,
+                    logical.height,
+                    crate::upscale::MAX_RESULT_EDGE
+                );
+            }
+            Ok((crate::upscale::upscale(image, *factor)?, logical))
         }
         Modification::Annotate { text, font_size, x_percent, y_percent, color } => Ok((
             annotate::annotate(image, text, font_size * scale, *x_percent, *y_percent, *color),

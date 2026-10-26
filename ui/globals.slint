@@ -15,6 +15,10 @@ export global Theme {
     out property <color> focus: #2684ff;
     out property <color> range-filled: #149cb8; // hsl(190, 80%, 40%)
     out property <color> range-empty: #c4c4c4;
+    out property <color> crop-shade: #000000a0;
+    out property <color> crop-frame: #ffffff;
+    out property <color> crop-grid: #ffffff66;
+    out property <color> crop-handle-shadow: #00000080;
 }
 
 export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale }
@@ -106,6 +110,14 @@ export global AppState {
     in property <float> detail-right;
     in property <float> detail-bottom;
 
+    // Frame of the crop card being edited, in fractions of the shown image. While it is
+    // shown, the preview shows the image going into that card.
+    in property <bool> crop-active: false;
+    in property <float> crop-left;
+    in property <float> crop-top;
+    in property <float> crop-right;
+    in property <float> crop-bottom;
+
     // Notifications in the bottom left corner, oldest first
     in property <[Toast]> toasts;
 
@@ -120,6 +132,8 @@ export global AppState {
     callback invalid-number();
     // Position in the shown image, from 0 to 1 on both axes
     callback preview-clicked(float, float);
+    // A crop frame handle was dragged: the new frame in fractions of the shown image
+    callback crop-dragged(float, float, float, float);
     // Viewer: rotate and flip are view-only and never saved
     callback rotate-left();
     callback rotate-right();

@@ -4,13 +4,13 @@
 use std::cell::{Cell, RefCell};
 use std::path::PathBuf;
 use std::rc::Rc;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use grandshop::color::{color_wheel, hsv_to_rgb, rgb_to_hsv};
 use grandshop::io::{default_save_file_name, format_file_size, load_image, save_png};
-use grandshop::pipeline::{self, available_borders, Modification};
+use grandshop::pipeline::{self, available_borders, Dimensions, Modification};
 use grandshop::resample::resize_exact;
 use grandshop::view::{Region, ViewTransform};
 use grandshop::worker::{Document, RenderOutput, Worker};
@@ -42,6 +42,8 @@ struct State {
     path: Option<PathBuf>,
     document: Option<Arc<Document>>,
     modifications: Vec<Modification>,
+    /// Stack of the last render request, so unchanged stacks aren't rendered again
+    rendered: Option<Vec<Modification>>,
 }
 
 /// Shared with the worker thread
@@ -60,6 +62,8 @@ struct RenderShared {
     detail: Mutex<Option<(u64, Arc<RgbaImage>)>>,
     /// Proxy pixels per original pixel of the open image
     proxy_scale: Mutex<f32>,
+    /// Number of cards; a render of fewer stops before an open crop card
+    card_count: AtomicUsize,
 }
 
 /// What part of the preview is visible, as reported by the viewer
@@ -171,6 +175,9 @@ impl Controller {
         on!(on_flip_horizontal, |this| this.change_view(ViewTransform::flip_horizontal));
         on!(on_flip_vertical, |this| this.change_view(ViewTransform::flip_vertical));
         on!(on_reset_view, |this| this.change_view(|_| ViewTransform::default()));
+        on!(on_crop_dragged, |this, left, top, right, bottom| {
+            this.drag_crop(Region { left, top, right, bottom })
+        });
         on!(on_view_changed, |this, left, top, right, bottom, width, _height| {
             *this.shared.view.lock().unwrap() =
                 ViewState { region: Region { left, top, right, bottom }, shown_width: width };
@@ -253,6 +260,7 @@ impl Controller {
             let mut state = self.state.borrow_mut();
             state.path = Some(path);
             state.document = Some(document);
+            state.rendered = None;
         }
         // Cards stay when another image is opened, so apply them to the new one
         self.request_render();
@@ -329,11 +337,14 @@ impl Controller {
         self.cards_changed();
     }
 
-    fn toggle_card(&self, index: usize) {
+    fn toggle_card(self: &Rc<Self>, index: usize) {
         if let Some(mut card) = self.cards.row_data(index) {
             card.open = !card.open;
             self.cards.set_row_data(index, card);
             self.update_eyedropper();
+            self.update_crop_frame();
+            // Opening or closing a crop card switches between the image before and after it
+            self.request_render();
         }
     }
 
@@ -357,12 +368,44 @@ impl Controller {
             self.cards.iter().map(|card| to_modification(&card, &self.borders)).collect();
         let has_resize = modifications.iter().any(|m| matches!(m, Modification::Resize { .. }));
         self.shared.estimate_file_size.store(has_resize, Ordering::SeqCst);
+        self.shared.card_count.store(modifications.len(), Ordering::SeqCst);
         self.state.borrow_mut().modifications = modifications;
         self.update_eyedropper();
+        self.update_crop_frame();
         self.request_render();
-        // The sharp tile shows the previous stack, so hide it until it is redone
-        self.with_state(|s| s.set_detail_visible(false));
-        self.schedule_detail();
+    }
+
+    /// The stack the preview shows: while a crop card is open, the image going into it, so
+    /// the whole image can be seen and the crop frame dragged over it.
+    fn shown_modifications(&self) -> Vec<Modification> {
+        let modifications = &self.state.borrow().modifications;
+        let end = editing_crop(&*self.cards).unwrap_or(modifications.len()).min(modifications.len());
+        modifications[..end].to_vec()
+    }
+
+    fn update_crop_frame(&self) {
+        if let Some(ui) = self.ui.upgrade() {
+            update_crop_frame(&ui, *self.shared.transform.lock().unwrap());
+        }
+    }
+
+    /// Dragging a handle of the crop frame; `shown` is the new frame in fractions of the
+    /// preview.
+    fn drag_crop(self: &Rc<Self>, shown: Region) {
+        let Some(index) = editing_crop(&*self.cards) else { return };
+        let Some(size) = self.with_state(|s| s.get_input_sizes().row_data(index)).flatten() else { return };
+        let (width, height) = (size.width as f32, size.height as f32);
+        if width < 2.0 || height < 2.0 {
+            return;
+        }
+        let source = self.shared.transform.lock().unwrap().region_to_source(shown);
+        self.edit_card(index, |p| {
+            // Keep at least one pixel
+            p.left = (source.left * width).round().clamp(0.0, width - 1.0);
+            p.right = ((1.0 - source.right) * width).round().clamp(0.0, width - 1.0 - p.left);
+            p.top = (source.top * height).round().clamp(0.0, height - 1.0);
+            p.bottom = ((1.0 - source.bottom) * height).round().clamp(0.0, height - 1.0 - p.top);
+        });
     }
 
     /// Open cards with a colour picker, and which of their colours the eyedropper sets
@@ -412,6 +455,7 @@ impl Controller {
             s.set_detail_visible(false);
             s.set_preview_image(to_slint_image(&transform.apply(&image)));
         });
+        self.update_crop_frame();
         self.schedule_detail();
     }
 
@@ -437,22 +481,29 @@ impl Controller {
             show_detail(&ui, &self.shared);
         } else if self.detail_requested.get() != latest {
             self.detail_requested.set(latest);
-            self.detail_worker.render(latest, self.state.borrow().modifications.clone());
+            self.detail_worker.render(latest, self.shown_modifications());
         }
     }
 
     fn request_render(self: &Rc<Self>) {
-        let state = self.state.borrow();
-        if state.document.is_none() {
-            return;
+        let shown = self.shown_modifications();
+        {
+            let mut state = self.state.borrow_mut();
+            if state.document.is_none() || state.rendered.as_ref() == Some(&shown) {
+                return;
+            }
+            state.rendered = Some(shown.clone());
+            let has_modifications = !state.modifications.is_empty();
+            self.with_state(|s| {
+                s.set_rendering(!shown.is_empty());
+                s.set_has_modified_image(has_modifications);
+            });
         }
         let generation = self.shared.latest_generation.fetch_add(1, Ordering::SeqCst) + 1;
-        let has_modifications = !state.modifications.is_empty();
-        self.with_state(|s| {
-            s.set_rendering(has_modifications);
-            s.set_has_modified_image(has_modifications);
-        });
-        self.worker.render(generation, state.modifications.clone());
+        self.worker.render(generation, shown);
+        // The sharp tile shows the previous stack, so hide it until it is redone
+        self.with_state(|s| s.set_detail_visible(false));
+        self.schedule_detail();
     }
 }
 
@@ -569,7 +620,9 @@ fn result_handler(
             *reported = failed;
         }
         *shared.last_image.lock().unwrap() = Some(output.image.clone());
-        if shared.estimate_file_size.load(Ordering::SeqCst) {
+        // Stopped before an open crop card: the result is not the final image
+        let partial = output.input_sizes.len() < shared.card_count.load(Ordering::SeqCst);
+        if shared.estimate_file_size.load(Ordering::SeqCst) && !partial {
             estimate_file_size(ui.clone(), shared.clone(), &output);
         }
 
@@ -587,16 +640,50 @@ fn result_handler(
             }
             let state = ui.global::<AppState>();
             state.set_preview_image(Image::from_rgba8(buffer));
-            state.set_image_width(output.logical.width as i32);
-            state.set_image_height(output.logical.height as i32);
-            let sizes: Vec<ImageSize> = output
-                .input_sizes
-                .iter()
-                .map(|size| ImageSize { width: size.width as i32, height: size.height as i32 })
-                .collect();
+            let to_size = |size: &Dimensions| ImageSize { width: size.width as i32, height: size.height as i32 };
+            let mut sizes: Vec<ImageSize> = output.input_sizes.iter().map(to_size).collect();
+            if partial {
+                // The cards after the crop keep their sizes from the last full render
+                sizes.push(to_size(&output.logical));
+                sizes.extend(state.get_input_sizes().iter().skip(sizes.len()));
+            } else {
+                state.set_image_width(output.logical.width as i32);
+                state.set_image_height(output.logical.height as i32);
+            }
             state.set_input_sizes(ModelRc::new(VecModel::from(sizes)));
             state.set_rendering(false);
+            update_crop_frame(&ui, *shared.transform.lock().unwrap());
         });
+    }
+}
+
+/// The first open crop card, whose frame is shown over the preview
+fn editing_crop(cards: &impl Model<Data = ModEntry>) -> Option<usize> {
+    cards.iter().position(|card| card.open && card.kind == ModKind::Crop)
+}
+
+/// Shows the frame of the crop card being edited, in fractions of the preview.
+fn update_crop_frame(ui: &AppWindow, transform: ViewTransform) {
+    let state = ui.global::<AppState>();
+    let cards = state.get_modifications();
+    let frame = editing_crop(&cards).and_then(|index| {
+        let size = state.get_input_sizes().row_data(index)?;
+        let params = cards.row_data(index)?.params;
+        let (width, height) = (size.width.max(1) as f32, size.height.max(1) as f32);
+        let source = Region {
+            left: (params.left / width).clamp(0.0, 1.0),
+            top: (params.top / height).clamp(0.0, 1.0),
+            right: (1.0 - params.right / width).clamp(0.0, 1.0),
+            bottom: (1.0 - params.bottom / height).clamp(0.0, 1.0),
+        };
+        Some(transform.region_from_source(source))
+    });
+    state.set_crop_active(frame.is_some());
+    if let Some(frame) = frame {
+        state.set_crop_left(frame.left);
+        state.set_crop_top(frame.top);
+        state.set_crop_right(frame.right);
+        state.set_crop_bottom(frame.bottom);
     }
 }
 

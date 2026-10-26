@@ -6,5 +6,6 @@ pub mod pipeline;
 pub mod proxy;
 pub mod resample;
 pub mod settings;
+pub mod upscale;
 pub mod view;
 pub mod worker;

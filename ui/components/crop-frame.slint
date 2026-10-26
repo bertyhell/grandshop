@@ -1,0 +1,272 @@
+import { AppState, Theme } from "../globals.slint";
+
+// One draggable grip of the crop frame, centred on the point or edge it moves. Reports the
+// drag distance in pixels.
+component CropHandle {
+    in property <MouseCursor> cursor;
+    // Corner grip: the way its arms point, 1 to the right or down and -1 to the left or up.
+    // Edge grips leave them 0 and show a pill in their middle instead.
+    in property <int> arm-x;
+    in property <int> arm-y;
+    // Edge grips: whether the pill stands upright (left and right edges)
+    in property <bool> vertical;
+    in property <bool> show-pill: true;
+    out property <bool> pressed: touch.pressed;
+    callback dragged(dx: length, dy: length);
+
+    property <bool> corner: root.arm-x != 0;
+    property <color> color: touch.pressed || touch.has-hover ? Theme.focus : Theme.crop-frame;
+    property <length> thickness: 4px;
+    property <length> arm: 22px;
+    property <length> cx: self.width / 2;
+    property <length> cy: self.height / 2;
+
+    // The shadows are drawn first, so they don't darken the arms where they meet
+    for shadow in [true, false]: Rectangle {
+        visible: root.corner;
+
+        Rectangle {
+            // Sits on the outside of the frame line, overlapping it by a pixel
+            x: root.arm-x > 0 ? root.cx - root.thickness + 1px : root.cx + root.thickness - 1px - root.arm;
+            y: root.arm-y > 0 ? root.cy - root.thickness + 1px : root.cy - 1px;
+            width: root.arm;
+            height: root.thickness;
+            border-radius: 1px;
+            background: root.color;
+            drop-shadow-blur: shadow ? 4px : 0px;
+            drop-shadow-color: Theme.crop-handle-shadow;
+            animate background { duration: 120ms; }
+        }
+
+        Rectangle {
+            x: root.arm-x > 0 ? root.cx - root.thickness + 1px : root.cx - 1px;
+            y: root.arm-y > 0 ? root.cy - root.thickness + 1px : root.cy + root.thickness - 1px - root.arm;
+            width: root.thickness;
+            height: root.arm;
+            border-radius: 1px;
+            background: root.color;
+            drop-shadow-blur: shadow ? 4px : 0px;
+            drop-shadow-color: Theme.crop-handle-shadow;
+            animate background { duration: 120ms; }
+        }
+    }
+
+    if !root.corner && root.show-pill: Rectangle {
+        width: root.vertical ? 6px : 30px;
+        height: root.vertical ? 30px : 6px;
+        border-radius: 3px;
+        background: root.color;
+        drop-shadow-blur: 4px;
+        drop-shadow-color: Theme.crop-handle-shadow;
+        animate background { duration: 120ms; }
+    }
+
+    touch := TouchArea {
+        mouse-cursor: root.cursor;
+        moved => {
+            if (self.pressed) {
+                root.dragged(self.mouse-x - self.pressed-x, self.mouse-y - self.pressed-y);
+            }
+        }
+    }
+}
+
+// Frame of the crop card being edited, laid over the preview: shades what gets cut off and
+// has a grip on every corner and edge. Lies outside the Flickable, so dragging a grip doesn't
+// pan, and reaches a little beyond it, so the grips on the image edges aren't cut in half.
+export component CropFrame inherits Rectangle {
+    // The shown image, in this element's coordinates
+    in property <length> image-x;
+    in property <length> image-y;
+    in property <length> image-width;
+    in property <length> image-height;
+    // Where the image is visible, in this element's coordinates
+    in property <length> view-x;
+    in property <length> view-y;
+    in property <length> view-width;
+    in property <length> view-height;
+
+    property <length> left: root.image-x + AppState.crop-left * root.image-width;
+    property <length> top: root.image-y + AppState.crop-top * root.image-height;
+    property <length> right: root.image-x + AppState.crop-right * root.image-width;
+    property <length> bottom: root.image-y + AppState.crop-bottom * root.image-height;
+    // Smallest frame on screen, so the grips stay apart
+    property <length> min-size: 24px;
+    property <length> corner-size: 44px;
+    property <length> edge-depth: 32px;
+    property <bool> dragging: top-left.pressed || top-right.pressed || bottom-left.pressed
+        || bottom-right.pressed || top-edge.pressed || bottom-edge.pressed || left-edge.pressed
+        || right-edge.pressed;
+
+    clip: true;
+
+    pure function moved-edge(edge: length, delta: length, low: length, high: length) -> length {
+        return delta == 0px ? edge : clamp(edge + delta, low, max(low, high));
+    }
+
+    // Moves the edges by the given distances, within the image and keeping the minimum size
+    function drag(dl: length, dt: length, dr: length, db: length) {
+        AppState.crop-dragged(
+            (root.moved-edge(root.left, dl, root.image-x, root.right - root.min-size) - root.image-x) / root.image-width,
+            (root.moved-edge(root.top, dt, root.image-y, root.bottom - root.min-size) - root.image-y) / root.image-height,
+            (root.moved-edge(root.right, dr, root.left + root.min-size, root.image-x + root.image-width) - root.image-x) / root.image-width,
+            (root.moved-edge(root.bottom, db, root.top + root.min-size, root.image-y + root.image-height) - root.image-y) / root.image-height);
+    }
+
+    Rectangle {
+        x: root.view-x;
+        y: root.view-y;
+        width: root.view-width;
+        height: root.view-height;
+        clip: true;
+
+        // Shade over the parts that get cut off
+        Rectangle {
+            x: root.image-x - parent.x;
+            y: root.image-y - parent.y;
+            width: root.image-width;
+            height: max(0px, root.top - root.image-y);
+            background: Theme.crop-shade;
+        }
+        Rectangle {
+            x: root.image-x - parent.x;
+            y: root.bottom - parent.y;
+            width: root.image-width;
+            height: max(0px, root.image-y + root.image-height - root.bottom);
+            background: Theme.crop-shade;
+        }
+        Rectangle {
+            x: root.image-x - parent.x;
+            y: root.top - parent.y;
+            width: max(0px, root.left - root.image-x);
+            height: root.bottom - root.top;
+            background: Theme.crop-shade;
+        }
+        Rectangle {
+            x: root.right - parent.x;
+            y: root.top - parent.y;
+            width: max(0px, root.image-x + root.image-width - root.right);
+            height: root.bottom - root.top;
+            background: Theme.crop-shade;
+        }
+
+        // Rule of thirds while dragging
+        for third in [1, 2]: Rectangle {
+            x: root.left - parent.x + (root.right - root.left) * third / 3;
+            y: root.top - parent.y;
+            width: 1px;
+            height: root.bottom - root.top;
+            background: Theme.crop-grid;
+            opacity: root.dragging ? 1 : 0;
+            animate opacity { duration: 150ms; }
+        }
+        for third in [1, 2]: Rectangle {
+            x: root.left - parent.x;
+            y: root.top - parent.y + (root.bottom - root.top) * third / 3;
+            width: root.right - root.left;
+            height: 1px;
+            background: Theme.crop-grid;
+            opacity: root.dragging ? 1 : 0;
+            animate opacity { duration: 150ms; }
+        }
+
+        // Frame line, with a faint dark outline so it shows on light images too
+        Rectangle {
+            x: root.left - parent.x - 1px;
+            y: root.top - parent.y - 1px;
+            width: root.right - root.left + 2px;
+            height: root.bottom - root.top + 2px;
+            border-width: 1px;
+            border-color: Theme.crop-handle-shadow;
+        }
+        Rectangle {
+            x: root.left - parent.x;
+            y: root.top - parent.y;
+            width: root.right - root.left;
+            height: root.bottom - root.top;
+            border-width: 1px;
+            border-color: Theme.crop-frame;
+        }
+    }
+
+    // Edges first, so the corners win where they overlap
+    top-edge := CropHandle {
+        x: root.left + root.corner-size / 2;
+        y: root.top - root.edge-depth / 2;
+        width: max(0px, root.right - root.left - root.corner-size);
+        height: root.edge-depth;
+        show-pill: root.right - root.left > 2 * root.corner-size;
+        cursor: MouseCursor.ns-resize;
+        dragged(dx, dy) => { root.drag(0px, dy, 0px, 0px); }
+    }
+    bottom-edge := CropHandle {
+        x: root.left + root.corner-size / 2;
+        y: root.bottom - root.edge-depth / 2;
+        width: max(0px, root.right - root.left - root.corner-size);
+        height: root.edge-depth;
+        show-pill: root.right - root.left > 2 * root.corner-size;
+        cursor: MouseCursor.ns-resize;
+        dragged(dx, dy) => { root.drag(0px, 0px, 0px, dy); }
+    }
+    left-edge := CropHandle {
+        x: root.left - root.edge-depth / 2;
+        y: root.top + root.corner-size / 2;
+        width: root.edge-depth;
+        height: max(0px, root.bottom - root.top - root.corner-size);
+        vertical: true;
+        show-pill: root.bottom - root.top > 2 * root.corner-size;
+        cursor: MouseCursor.ew-resize;
+        dragged(dx, dy) => { root.drag(dx, 0px, 0px, 0px); }
+    }
+    right-edge := CropHandle {
+        x: root.right - root.edge-depth / 2;
+        y: root.top + root.corner-size / 2;
+        width: root.edge-depth;
+        height: max(0px, root.bottom - root.top - root.corner-size);
+        vertical: true;
+        show-pill: root.bottom - root.top > 2 * root.corner-size;
+        cursor: MouseCursor.ew-resize;
+        dragged(dx, dy) => { root.drag(0px, 0px, dx, 0px); }
+    }
+
+    top-left := CropHandle {
+        x: root.left - root.corner-size / 2;
+        y: root.top - root.corner-size / 2;
+        width: root.corner-size;
+        height: root.corner-size;
+        arm-x: 1;
+        arm-y: 1;
+        cursor: MouseCursor.nwse-resize;
+        dragged(dx, dy) => { root.drag(dx, dy, 0px, 0px); }
+    }
+    top-right := CropHandle {
+        x: root.right - root.corner-size / 2;
+        y: root.top - root.corner-size / 2;
+        width: root.corner-size;
+        height: root.corner-size;
+        arm-x: -1;
+        arm-y: 1;
+        cursor: MouseCursor.nesw-resize;
+        dragged(dx, dy) => { root.drag(0px, dy, dx, 0px); }
+    }
+    bottom-left := CropHandle {
+        x: root.left - root.corner-size / 2;
+        y: root.bottom - root.corner-size / 2;
+        width: root.corner-size;
+        height: root.corner-size;
+        arm-x: 1;
+        arm-y: -1;
+        cursor: MouseCursor.nesw-resize;
+        dragged(dx, dy) => { root.drag(dx, 0px, 0px, dy); }
+    }
+    bottom-right := CropHandle {
+        x: root.right - root.corner-size / 2;
+        y: root.bottom - root.corner-size / 2;
+        width: root.corner-size;
+        height: root.corner-size;
+        arm-x: -1;
+        arm-y: -1;
+        cursor: MouseCursor.nwse-resize;
+        dragged(dx, dy) => { root.drag(0px, 0px, dx, dy); }
+    }
+}
