@@ -2,3 +2,6 @@
 .DS_Store
 .idea
 .vscode
+
+# Worktrees of Claude Code sessions
+.claude/worktrees/
