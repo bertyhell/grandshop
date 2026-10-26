@@ -215,6 +215,15 @@ export component CropControls inherits Panel {
         toggled => { AppState.set-flag(root.index, FlagField.enlarge, self.checked); }
     }
 
+    if !root.params.enlarge: FormField {
+        label: @tr("Shape");
+        Select {
+            options: [@tr("Free"), @tr("Square"), "4:3", "3:2", "16:9"];
+            current-index: root.params.aspect-index;
+            selected(preset) => { AppState.set-aspect(root.index, preset); }
+        }
+    }
+
     FormField {
         label: @tr("Top");
         RangeInput {

@@ -9,6 +9,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use grandshop::color::{color_wheel, hsv_to_rgb, rgb_to_hsv};
+use grandshop::crop_aspect::{self, CropBox};
 use grandshop::io::{default_save_file_name, format_file_size, load_image, save_png};
 use grandshop::pipeline::{self, available_borders, Dimensions, Modification, TextEffect};
 use grandshop::resample::resize_exact;
@@ -160,8 +161,15 @@ impl Controller {
         on!(on_toggle_modification, |this, index| this.toggle_card(index as usize));
         on!(on_delete_modification, |this, index| this.delete_card(index as usize));
         on!(on_set_number, |this, index, field, value| {
-            this.edit_card(index as usize, |params| set_field(params, field, value))
+            this.edit_card(index as usize, |params| {
+                set_field(params, field, value);
+                // Typing a side by hand gives up the fixed shape
+                if matches!(field, ModField::Top | ModField::Right | ModField::Bottom | ModField::Left) {
+                    params.aspect_index = 0;
+                }
+            })
         });
+        on!(on_set_aspect, |this, index, preset| this.set_aspect(index as usize, preset));
         on!(on_set_color, |this, index, field, color| {
             this.edit_card(index as usize, |p| *color_field(p, field) = color)
         });
@@ -461,6 +469,17 @@ impl Controller {
         }
         let source = self.shared.transform.lock().unwrap().region_to_source(shown);
         self.edit_card(index, |p| {
+            if let (false, Some(ratio)) = (p.enlarge, crop_aspect::ratio(p.aspect_index, size.width as u32, size.height as u32)) {
+                let before = CropBox { x0: p.left, y0: p.top, x1: width - p.right, y1: height - p.bottom };
+                let after = CropBox {
+                    x0: source.left * width,
+                    y0: source.top * height,
+                    x1: source.right * width,
+                    y1: source.bottom * height,
+                };
+                set_crop_box(p, crop_aspect::constrain(before, after, ratio, width, height), width, height);
+                return;
+            }
             if p.enlarge {
                 p.left = (-source.left * width).round().clamp(0.0, width);
                 p.right = ((source.right - 1.0) * width).round().clamp(0.0, width);
@@ -473,6 +492,18 @@ impl Controller {
             p.right = ((1.0 - source.right) * width).round().clamp(0.0, width - 1.0 - p.left);
             p.top = (source.top * height).round().clamp(0.0, height - 1.0);
             p.bottom = ((1.0 - source.bottom) * height).round().clamp(0.0, height - 1.0 - p.top);
+        });
+    }
+
+    /// Picks a fixed shape for the crop card: the largest crop of that shape in the middle.
+    fn set_aspect(self: &Rc<Self>, index: usize, preset: i32) {
+        let Some(size) = self.with_state(|s| s.get_input_sizes().row_data(index)).flatten() else { return };
+        let (width, height) = (size.width.max(1) as f32, size.height.max(1) as f32);
+        self.edit_card(index, |p| {
+            p.aspect_index = preset;
+            if let Some(ratio) = crop_aspect::ratio(preset, size.width as u32, size.height as u32) {
+                set_crop_box(p, crop_aspect::largest_centred(width, height, ratio), width, height);
+            }
         });
     }
 
@@ -624,6 +655,14 @@ fn set_field(params: &mut ModParams, field: ModField, value: f32) {
         ModField::Left => &mut params.left,
     };
     *target = value;
+}
+
+/// Sets the sides of a crop card from the part of a `width` × `height` image it keeps.
+fn set_crop_box(p: &mut ModParams, crop: CropBox, width: f32, height: f32) {
+    p.left = crop.x0.round().clamp(0.0, width - 1.0);
+    p.top = crop.y0.round().clamp(0.0, height - 1.0);
+    p.right = (width - crop.x1).round().clamp(0.0, width - 1.0 - p.left);
+    p.bottom = (height - crop.y1).round().clamp(0.0, height - 1.0 - p.top);
 }
 
 fn color_field(params: &mut ModParams, field: ColorField) -> &mut Color {

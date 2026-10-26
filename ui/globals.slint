@@ -59,6 +59,8 @@ export struct ModParams {
     rotate-fill: bool,
     // Text card: 0 none, 1 outline, 2 shadow
     text-effect: int,
+    // Crop card: fixed shape, 0 free, then square, 4:3, 3:2, 16:9
+    aspect-index: int,
 }
 
 // Numeric parameters that a slider can change
@@ -151,6 +153,7 @@ export global AppState {
     callback set-text(int, string);
     callback set-border-style(int, int);
     callback set-text-effect(int, int);
+    callback set-aspect(int, int);
     callback invalid-number();
     // Position in the shown image, from 0 to 1 on both axes
     callback preview-clicked(float, float);

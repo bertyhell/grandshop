@@ -294,3 +294,12 @@ msgstr "Randbreedte (%)"
 
 msgid "Text size (%)"
 msgstr "Tekstgrootte (%)"
+
+msgid "Shape"
+msgstr "Vorm"
+
+msgid "Free"
+msgstr "Vrij"
+
+msgid "Square"
+msgstr "Vierkant"
