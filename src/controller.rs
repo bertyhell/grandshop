@@ -2,7 +2,7 @@
 //! loading and saving, and feeding render results from the worker into the preview.
 
 use std::cell::{Cell, RefCell};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
@@ -12,6 +12,7 @@ use grandshop::color::{color_wheel, hsv_to_rgb, rgb_to_hsv};
 use grandshop::io::{default_save_file_name, format_file_size, load_image, save_png};
 use grandshop::pipeline::{self, available_borders, Dimensions, Modification};
 use grandshop::resample::resize_exact;
+use grandshop::settings::Settings;
 use grandshop::upscale;
 use grandshop::view::{Region, ViewTransform};
 use grandshop::worker::{Document, RenderOutput, Worker};
@@ -212,16 +213,19 @@ impl Controller {
     pub fn open_image(self: &Rc<Self>) {
         let this = self.clone();
         let _ = slint::spawn_local(async move {
-            let Some(file) = rfd::AsyncFileDialog::new()
+            let mut dialog = rfd::AsyncFileDialog::new()
                 .set_title(this.text(|s| s.get_open_dialog_title()))
                 .add_filter(this.text(|s| s.get_pictures()), IMAGE_EXTENSIONS)
-                .add_filter(this.text(|s| s.get_all_files()), &["*"])
-                .pick_file()
-                .await
-            else {
-                return;
-            };
-            this.load(file.path().to_owned()).await;
+                .add_filter(this.text(|s| s.get_all_files()), &["*"]);
+            if let Some(folder) = Settings::load_default().last_open_folder.filter(|f| f.is_dir()) {
+                dialog = dialog.set_directory(folder);
+            }
+            let Some(file) = dialog.pick_file().await else { return };
+            let path = file.path().to_owned();
+            if let Some(folder) = path.parent().map(Path::to_owned) {
+                Settings::update(|s| s.last_open_folder = Some(folder));
+            }
+            this.load(path).await;
         });
     }
 
@@ -287,11 +291,18 @@ impl Controller {
                 .set_file_name(default_save_file_name(&path, chrono::Local::now().date_naive()))
                 .add_filter(this.text(|s| s.get_pictures()), &["png"])
                 .add_filter(this.text(|s| s.get_all_files()), &["*"]);
-            if let Some(folder) = path.parent() {
+            let folder = Settings::load_default()
+                .last_save_folder
+                .filter(|f| f.is_dir())
+                .or_else(|| path.parent().map(Path::to_owned));
+            if let Some(folder) = folder {
                 dialog = dialog.set_directory(folder);
             }
             let Some(file) = dialog.save_file().await else { return };
             let target = file.path().to_owned();
+            if let Some(folder) = target.parent().map(Path::to_owned) {
+                Settings::update(|s| s.last_save_folder = Some(folder));
+            }
 
             this.with_state(|s| s.set_saving(true));
             let saved = run_in_background(move || {

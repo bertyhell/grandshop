@@ -12,6 +12,12 @@ pub struct Settings {
     /// Language code from `LANGUAGES`; `None` follows the system language
     #[serde(default)]
     pub language: Option<String>,
+    /// Folder of the last opened image, where the open dialog starts
+    #[serde(default)]
+    pub last_open_folder: Option<PathBuf>,
+    /// Folder of the last saved image, where the save dialog starts
+    #[serde(default)]
+    pub last_save_folder: Option<PathBuf>,
 }
 
 impl Settings {
@@ -34,6 +40,21 @@ impl Settings {
             std::fs::create_dir_all(folder)?;
         }
         std::fs::write(path, serde_json::to_vec_pretty(self)?)
+    }
+
+    /// Settings at the default path, or the defaults.
+    pub fn load_default() -> Self {
+        Self::default_path().as_deref().map(Self::load).unwrap_or_default()
+    }
+
+    /// Loads the settings at the default path, applies `change` and saves them again.
+    pub fn update(change: impl FnOnce(&mut Self)) {
+        let Some(path) = Self::default_path() else { return };
+        let mut settings = Self::load(&path);
+        change(&mut settings);
+        if let Err(err) = settings.save(&path) {
+            eprintln!("saving settings to {}: {err}", path.display());
+        }
     }
 
     /// The language to show: the saved one, else the system language if translated, else English.
@@ -70,15 +91,19 @@ mod tests {
     fn save_and_load_round_trip() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("nested/settings.json");
-        let settings = Settings { language: Some("nl".into()) };
+        let settings = Settings {
+            language: Some("nl".into()),
+            last_open_folder: Some("/photos".into()),
+            last_save_folder: Some("/exports".into()),
+        };
         settings.save(&path).unwrap();
         assert_eq!(Settings::load(&path), settings);
     }
 
     #[test]
     fn saved_language_wins_and_regions_are_ignored() {
-        assert_eq!(Settings { language: Some("nl".into()) }.effective_language(), "nl");
-        assert_eq!(Settings { language: Some("nl-BE".into()) }.effective_language(), "nl");
-        assert_eq!(Settings { language: Some("fr".into()) }.effective_language(), "en");
+        assert_eq!(Settings { language: Some("nl".into()), ..Default::default() }.effective_language(), "nl");
+        assert_eq!(Settings { language: Some("nl-BE".into()), ..Default::default() }.effective_language(), "nl");
+        assert_eq!(Settings { language: Some("fr".into()), ..Default::default() }.effective_language(), "en");
     }
 }

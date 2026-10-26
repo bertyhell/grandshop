@@ -25,8 +25,7 @@ fn main() -> Result<(), slint::PlatformError> {
 
 /// Applies the saved language and lets the settings dialog change it.
 fn setup_settings(app: &AppWindow) {
-    let path = Settings::default_path();
-    let settings = path.as_deref().map(Settings::load).unwrap_or_default();
+    let settings = Settings::load_default();
     let state = app.global::<AppState>();
 
     let names: Vec<SharedString> =
@@ -39,13 +38,7 @@ fn setup_settings(app: &AppWindow) {
         let Some(ui) = weak.upgrade() else { return };
         let Some((code, _, _)) = usize::try_from(index).ok().and_then(|i| LANGUAGES.get(i)) else { return };
         select_language(&ui.global::<AppState>(), code);
-
-        let settings = Settings { language: Some((*code).to_owned()) };
-        if let Some(path) = &path
-            && let Err(err) = settings.save(path)
-        {
-            eprintln!("saving settings to {}: {err}", path.display());
-        }
+        Settings::update(|settings| settings.language = Some((*code).to_owned()));
     });
 }
 
