@@ -60,6 +60,10 @@ pub enum Modification {
     /// Fills in the parts under the brush marks (x, y, radius in original-image pixels) with
     /// the AI model. Leaves the image as is while `downloaded` is false.
     RemoveObjects { dabs: Vec<[f32; 3]>, downloaded: bool },
+    /// Removes grain, noise and JPEG blocks with the AI model; `strength` 0 to 1 blends from
+    /// the original to the repaired photo, and 0 leaves the image as is (model not downloaded
+    /// yet).
+    Repair { strength: f32 },
     /// Text, one line per `\n`, centred on a point given in percent of the image size. The font
     /// size is a percentage of the shorter side.
     Annotate { text: String, font_percent: f32, x_percent: f32, y_percent: f32, color: Rgba<u8>, effect: TextEffect },
@@ -158,6 +162,8 @@ pub fn apply_step(
         Modification::RemoveBackground { fill, .. } => {
             Ok((crate::background::remove_background(image, *fill, feedback)?, logical))
         }
+        Modification::Repair { strength } if *strength <= 0.0 => Ok((image.clone(), logical)),
+        Modification::Repair { strength } => Ok((crate::repair::repair(image, strength.min(1.0), feedback)?, logical)),
         Modification::RemoveObjects { downloaded: false, .. } => Ok((image.clone(), logical)),
         Modification::RemoveObjects { dabs, .. } => {
             let dabs: Vec<[f32; 3]> = dabs.iter().map(|d| d.map(|v| v * scale)).collect();

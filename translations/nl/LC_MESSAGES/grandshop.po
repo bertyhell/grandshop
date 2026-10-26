@@ -337,6 +337,27 @@ msgstr "Het programma om voorwerpen te verwijderen is klaar"
 msgid "Downloading the object removal tool failed. Check the internet connection and add the operation again."
 msgstr "Het downloaden van het programma om voorwerpen te verwijderen is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."
 
+msgid "Repair old photo (AI)"
+msgstr "Oude foto herstellen (AI)"
+
+msgid "Repair {}"
+msgstr "Herstellen {}"
+
+msgid "Downloading the repair tool… {}%"
+msgstr "Het herstelprogramma wordt gedownload… {}%"
+
+msgid "Artificial intelligence removes grain, noise and blocky spots from old or low quality photos. This can take a few minutes for large photos."
+msgstr "Artificiële intelligentie verwijdert korrel, ruis en blokjes uit oude foto's of foto's van lage kwaliteit. Voor grote foto's kan dit enkele minuten duren."
+
+msgid "Downloading the repair tool (77 MB)…"
+msgstr "Het herstelprogramma wordt gedownload (77 MB)…"
+
+msgid "The repair tool is ready"
+msgstr "Het herstelprogramma is klaar"
+
+msgid "Downloading the repair tool failed. Check the internet connection and add the operation again."
+msgstr "Het downloaden van het herstelprogramma is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."
+
 msgid "Enlarge times"
 msgstr "Aantal keer vergroten"
 

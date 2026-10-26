@@ -14,7 +14,7 @@ use grandshop::io::{default_save_file_name, format_file_size, load_image, save_p
 use grandshop::pipeline::{self, available_borders, Dimensions, Modification, TextEffect};
 use grandshop::resample::resize_exact;
 use grandshop::settings::Settings;
-use grandshop::{background, colourise, faces, inpaint, upscale};
+use grandshop::{background, colourise, faces, inpaint, repair, upscale};
 use grandshop::view::{Region, ViewTransform};
 use grandshop::worker::{Document, RenderOutput, Worker};
 use image::{Rgba, RgbaImage};
@@ -408,6 +408,9 @@ impl Controller {
         if kind == ModKind::RemoveObjects {
             self.install_ai_tool(AiTool::Objects);
         }
+        if kind == ModKind::Repair {
+            self.install_ai_tool(AiTool::Repair);
+        }
 
         // The new card works on the current result until the next render reports its size
         self.with_state(|s| {
@@ -434,6 +437,7 @@ impl Controller {
             AiTool::Background => s.set_background_download_progress(0.0),
             AiTool::Colourise => s.set_colourise_download_progress(0.0),
             AiTool::Objects => s.set_objects_download_progress(0.0),
+            AiTool::Repair => s.set_repair_download_progress(0.0),
         });
         self.notify(ToastKind::Info, |s| match tool {
             AiTool::Enlarge(upscale::Quality::Fast) => s.get_upscaler_downloading(),
@@ -442,6 +446,7 @@ impl Controller {
             AiTool::Background => s.get_background_downloading(),
             AiTool::Colourise => s.get_colourise_downloading(),
             AiTool::Objects => s.get_objects_downloading(),
+            AiTool::Repair => s.get_repair_downloading(),
         });
         let this = self.clone();
         let _ = slint::spawn_local(async move {
@@ -456,6 +461,7 @@ impl Controller {
                             AiTool::Background => state.set_background_download_progress(fraction),
                             AiTool::Colourise => state.set_colourise_download_progress(fraction),
                             AiTool::Objects => state.set_objects_download_progress(fraction),
+                            AiTool::Repair => state.set_repair_download_progress(fraction),
                         }
                     });
                 })
@@ -472,6 +478,7 @@ impl Controller {
                         AiTool::Background => s.get_background_ready(),
                         AiTool::Colourise => s.get_colourise_ready(),
                         AiTool::Objects => s.get_objects_ready(),
+                        AiTool::Repair => s.get_repair_ready(),
                     });
                     // The cards now really change the image
                     this.cards_changed();
@@ -484,6 +491,7 @@ impl Controller {
                         AiTool::Background => s.get_background_failed(),
                         AiTool::Colourise => s.get_colourise_failed(),
                         AiTool::Objects => s.get_objects_failed(),
+                        AiTool::Repair => s.get_repair_failed(),
                     });
                 }
             }
@@ -497,12 +505,14 @@ impl Controller {
         let background = downloads.contains(&AiTool::Background);
         let colourise = downloads.contains(&AiTool::Colourise);
         let objects = downloads.contains(&AiTool::Objects);
+        let repair = downloads.contains(&AiTool::Repair);
         self.with_state(|s| {
             s.set_upscaler_downloading(enlarging);
             s.set_faces_downloading(faces);
             s.set_background_downloading(background);
             s.set_colourise_downloading(colourise);
             s.set_objects_downloading(objects);
+            s.set_repair_downloading(repair);
         });
     }
 
@@ -782,7 +792,7 @@ fn default_params(kind: ModKind, image_width: i32, image_height: i32) -> ModPara
         ModKind::Mirror => {}
         ModKind::Upscale => params.upscale_factor = 2.0,
         ModKind::ImproveFaces => params.strength = 80.0,
-        ModKind::Colourise => params.strength = 100.0,
+        ModKind::Colourise | ModKind::Repair => params.strength = 100.0,
         ModKind::RemoveObjects => params.brush_size = 4.0,
         ModKind::RemoveBackground => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Rotate | ModKind::Crop => params.background = Color::from_rgb_u8(255, 255, 255),
@@ -865,6 +875,8 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
             dabs: p.mask_dabs.iter().take(p.applied_dabs.max(0) as usize * 3).collect::<Vec<f32>>().as_chunks::<3>().0.to_vec(),
             downloaded: inpaint::is_installed(),
         },
+        ModKind::Repair if !repair::is_installed() => Modification::Repair { strength: 0.0 },
+        ModKind::Repair => Modification::Repair { strength: (p.strength / 100.0).clamp(0.0, 1.0) },
         ModKind::Colourise if !colourise::is_installed() => Modification::Colourise { strength: 0.0 },
         ModKind::Colourise => Modification::Colourise { strength: (p.strength / 100.0).clamp(0.0, 1.0) },
         ModKind::RemoveBackground => Modification::RemoveBackground {
@@ -919,6 +931,7 @@ enum AiTool {
     Background,
     Colourise,
     Objects,
+    Repair,
 }
 
 impl AiTool {
@@ -929,6 +942,7 @@ impl AiTool {
             AiTool::Background => background::is_installed(),
             AiTool::Colourise => colourise::is_installed(),
             AiTool::Objects => inpaint::is_installed(),
+            AiTool::Repair => repair::is_installed(),
         }
     }
 
@@ -939,6 +953,7 @@ impl AiTool {
             AiTool::Background => background::install(progress),
             AiTool::Colourise => colourise::install(progress),
             AiTool::Objects => inpaint::install(progress),
+            AiTool::Repair => repair::install(progress),
         }
     }
 }

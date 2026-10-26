@@ -18,6 +18,7 @@ Current features:
 * Remove the background with AI
 * Colour black and white photos with AI
 * Remove objects or scratches with AI
+* Repair old photos (grain, noise, JPEG blocks) with AI
 
 Download: https://github.com/bertyhell/grandshop/releases
 
@@ -91,12 +92,14 @@ needed, checked against its SHA-256 and kept in the app's data folder (on Linux
 | BiRefNet (general, lite) | Remove background | MIT |
 | DDColor | Colour black and white photos | Apache-2.0 |
 | LaMa (big-lama, [Carve's ONNX port](https://huggingface.co/Carve/LaMa-ONNX)) | Remove objects or scratches | Apache-2.0 |
+| SCUNet (real, PSNR, [ONNX export](https://huggingface.co/Heliosoph/scunet-onnx)) | Repair old photo | Apache-2.0 |
 
 To try the models: `cargo test --release upscale -- --ignored --nocapture` on the test image,
 and `GRANDSHOP_FACES_PHOTO=photo.jpg cargo test --release faces -- --ignored --nocapture` or
 `GRANDSHOP_BACKGROUND_PHOTO=photo.jpg cargo test --release background -- --ignored --nocapture`
 or `GRANDSHOP_COLOURISE_PHOTO=photo.jpg cargo test --release colourise -- --ignored --nocapture`
 or `GRANDSHOP_INPAINT_PHOTO=photo.jpg cargo test --release inpaint -- --ignored --nocapture`
+or `GRANDSHOP_REPAIR_PHOTO=photo.jpg cargo test --release repair -- --ignored --nocapture`
 on a photo of your own.
 
 ### Translations

@@ -544,3 +544,33 @@ export component RemoveObjectsControls inherits Panel {
         wrap: word-wrap;
     }
 }
+
+export component RepairControls inherits Panel {
+    in property <int> index;
+    in property <ModParams> params;
+    spacing: 10px;
+
+    FormField {
+        label: @tr("Strength (%)");
+        RangeInput {
+            minimum: 0;
+            maximum: 100;
+            value: root.params.strength;
+            edited(value) => { AppState.set-number(root.index, ModField.strength, value); }
+        }
+    }
+
+    if AppState.repair-downloading: Text {
+        text: @tr("Downloading the repair tool… {}%", Math.round(AppState.repair-download-progress * 100));
+        color: Theme.text;
+        font-size: 14px;
+        wrap: word-wrap;
+    }
+
+    Text {
+        text: @tr("Artificial intelligence removes grain, noise and blocky spots from old or low quality photos. This can take a few minutes for large photos.");
+        color: Theme.placeholder;
+        font-size: 13px;
+        wrap: word-wrap;
+    }
+}

@@ -10,6 +10,7 @@ pub mod inpaint;
 pub mod io;
 pub mod pipeline;
 pub mod proxy;
+pub mod repair;
 pub mod resample;
 pub mod settings;
 pub mod upscale;

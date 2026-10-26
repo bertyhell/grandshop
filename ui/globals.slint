@@ -21,7 +21,7 @@ export global Theme {
     out property <color> crop-handle-shadow: #00000080;
 }
 
-export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale, improve-faces, remove-background, colourise, remove-objects }
+export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale, improve-faces, remove-background, colourise, remove-objects, repair }
 
 // Union of the parameters of every modification kind; each kind uses a few of them.
 // Pixel values are in original-image pixels. Border thickness, border width and font size
@@ -52,8 +52,8 @@ export struct ModParams {
     upscale-factor: float,
     // Enlarge card uses the large, slow network
     best-quality: bool,
-    // Sepia, black and white, "Improve faces" (how much of the restored face) and "Colourise"
-    // (how much of the guessed colours), in percent
+    // Sepia, black and white, "Improve faces" (how much of the restored face), "Colourise"
+    // (how much of the guessed colours) and "Repair" (how much of the repaired photo), in percent
     strength: float,
     // "Remove background" card fills the background with `background` instead of making it
     // transparent
@@ -146,6 +146,9 @@ export global AppState {
     // The AI model for "Remove objects" is being downloaded, and the fraction done
     in property <bool> objects-downloading: false;
     in property <float> objects-download-progress: 0;
+    // The AI model for "Repair old photo" is being downloaded, and the fraction done
+    in property <bool> repair-downloading: false;
+    in property <float> repair-download-progress: 0;
     // Longest side an enlarged image may get
     in property <int> upscale-max-edge;
     // Clicking the preview picks a colour for the open cards with a colour picker
@@ -252,6 +255,9 @@ export global Strings {
     out property <string> upscaler-downloading: @tr("Downloading the enlarging tool (2 MB)…");
     out property <string> upscaler-best-downloading: @tr("Downloading the best quality enlarging tool (140 MB)…");
     out property <string> upscaler-ready: @tr("The enlarging tool is ready");
+    out property <string> repair-downloading: @tr("Downloading the repair tool (77 MB)…");
+    out property <string> repair-ready: @tr("The repair tool is ready");
+    out property <string> repair-failed: @tr("Downloading the repair tool failed. Check the internet connection and add the operation again.");
     out property <string> objects-downloading: @tr("Downloading the object removal tool (210 MB)…");
     out property <string> objects-ready: @tr("The object removal tool is ready");
     out property <string> objects-failed: @tr("Downloading the object removal tool failed. Check the internet connection and add the operation again.");
