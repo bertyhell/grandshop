@@ -14,7 +14,7 @@ use grandshop::io::{default_save_file_name, format_file_size, load_image, save_p
 use grandshop::pipeline::{self, available_borders, Dimensions, Modification, TextEffect};
 use grandshop::resample::resize_exact;
 use grandshop::settings::Settings;
-use grandshop::{background, faces, upscale};
+use grandshop::{background, colourise, faces, upscale};
 use grandshop::view::{Region, ViewTransform};
 use grandshop::worker::{Document, RenderOutput, Worker};
 use image::{Rgba, RgbaImage};
@@ -382,6 +382,9 @@ impl Controller {
         if kind == ModKind::RemoveBackground {
             self.install_ai_tool(AiTool::Background);
         }
+        if kind == ModKind::Colourise {
+            self.install_ai_tool(AiTool::Colourise);
+        }
 
         // The new card works on the current result until the next render reports its size
         self.with_state(|s| {
@@ -406,12 +409,14 @@ impl Controller {
             AiTool::Enlarge(_) => s.set_upscaler_download_progress(0.0),
             AiTool::Faces => s.set_faces_download_progress(0.0),
             AiTool::Background => s.set_background_download_progress(0.0),
+            AiTool::Colourise => s.set_colourise_download_progress(0.0),
         });
         self.notify(ToastKind::Info, |s| match tool {
             AiTool::Enlarge(upscale::Quality::Fast) => s.get_upscaler_downloading(),
             AiTool::Enlarge(upscale::Quality::Best) => s.get_upscaler_best_downloading(),
             AiTool::Faces => s.get_faces_downloading(),
             AiTool::Background => s.get_background_downloading(),
+            AiTool::Colourise => s.get_colourise_downloading(),
         });
         let this = self.clone();
         let _ = slint::spawn_local(async move {
@@ -424,6 +429,7 @@ impl Controller {
                             AiTool::Enlarge(_) => state.set_upscaler_download_progress(fraction),
                             AiTool::Faces => state.set_faces_download_progress(fraction),
                             AiTool::Background => state.set_background_download_progress(fraction),
+                            AiTool::Colourise => state.set_colourise_download_progress(fraction),
                         }
                     });
                 })
@@ -438,6 +444,7 @@ impl Controller {
                         AiTool::Enlarge(_) => s.get_upscaler_ready(),
                         AiTool::Faces => s.get_faces_ready(),
                         AiTool::Background => s.get_background_ready(),
+                        AiTool::Colourise => s.get_colourise_ready(),
                     });
                     // The cards now really change the image
                     this.cards_changed();
@@ -448,6 +455,7 @@ impl Controller {
                         AiTool::Enlarge(_) => s.get_upscaler_failed(),
                         AiTool::Faces => s.get_faces_failed(),
                         AiTool::Background => s.get_background_failed(),
+                        AiTool::Colourise => s.get_colourise_failed(),
                     });
                 }
             }
@@ -459,10 +467,12 @@ impl Controller {
         let enlarging = downloads.iter().any(|t| matches!(t, AiTool::Enlarge(_)));
         let faces = downloads.contains(&AiTool::Faces);
         let background = downloads.contains(&AiTool::Background);
+        let colourise = downloads.contains(&AiTool::Colourise);
         self.with_state(|s| {
             s.set_upscaler_downloading(enlarging);
             s.set_faces_downloading(faces);
             s.set_background_downloading(background);
+            s.set_colourise_downloading(colourise);
         });
     }
 
@@ -696,6 +706,7 @@ fn default_params(kind: ModKind, image_width: i32, image_height: i32) -> ModPara
         ModKind::Mirror => {}
         ModKind::Upscale => params.upscale_factor = 2.0,
         ModKind::ImproveFaces => params.strength = 80.0,
+        ModKind::Colourise => params.strength = 100.0,
         ModKind::RemoveBackground => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Rotate | ModKind::Crop => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Resize => params.size = image_width.max(image_height).min(10_000) as f32,
@@ -772,6 +783,8 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
         // Leaves the image as is until the models are downloaded
         ModKind::ImproveFaces if !faces::is_installed() => Modification::ImproveFaces { strength: 0.0 },
         ModKind::ImproveFaces => Modification::ImproveFaces { strength: (p.strength / 100.0).clamp(0.0, 1.0) },
+        ModKind::Colourise if !colourise::is_installed() => Modification::Colourise { strength: 0.0 },
+        ModKind::Colourise => Modification::Colourise { strength: (p.strength / 100.0).clamp(0.0, 1.0) },
         ModKind::RemoveBackground => Modification::RemoveBackground {
             fill: p.fill_background.then(|| rgba(p.background)),
             downloaded: background::is_installed(),
@@ -822,6 +835,7 @@ enum AiTool {
     Enlarge(upscale::Quality),
     Faces,
     Background,
+    Colourise,
 }
 
 impl AiTool {
@@ -830,6 +844,7 @@ impl AiTool {
             AiTool::Enlarge(quality) => upscale::is_installed(quality),
             AiTool::Faces => faces::is_installed(),
             AiTool::Background => background::is_installed(),
+            AiTool::Colourise => colourise::is_installed(),
         }
     }
 
@@ -838,6 +853,7 @@ impl AiTool {
             AiTool::Enlarge(quality) => upscale::install(quality, progress),
             AiTool::Faces => faces::install(progress),
             AiTool::Background => background::install(progress),
+            AiTool::Colourise => colourise::install(progress),
         }
     }
 }

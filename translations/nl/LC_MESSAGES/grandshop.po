@@ -280,6 +280,30 @@ msgstr "Het achtergrondprogramma is klaar"
 msgid "Downloading the background tool failed. Check the internet connection and add the operation again."
 msgstr "Het downloaden van het achtergrondprogramma is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."
 
+msgid "Colour a black and white photo (AI)"
+msgstr "Een zwart-witfoto inkleuren (AI)"
+
+msgid "Colour {}"
+msgstr "Inkleuren {}"
+
+msgid "Colour strength (%)"
+msgstr "Sterkte van de kleuren (%)"
+
+msgid "Downloading the colouring tool… {}%"
+msgstr "Het inkleurprogramma wordt gedownload… {}%"
+
+msgid "Artificial intelligence guesses the colours of a black and white photo. The colours are a guess, not the real ones."
+msgstr "Artificiële intelligentie raadt de kleuren van een zwart-witfoto. De kleuren zijn een gok, niet de echte."
+
+msgid "Downloading the colouring tool (980 MB)…"
+msgstr "Het inkleurprogramma wordt gedownload (980 MB)…"
+
+msgid "The colouring tool is ready"
+msgstr "Het inkleurprogramma is klaar"
+
+msgid "Downloading the colouring tool failed. Check the internet connection and add the operation again."
+msgstr "Het downloaden van het inkleurprogramma is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."
+
 msgid "Enlarge times"
 msgstr "Aantal keer vergroten"
 
@@ -324,9 +348,6 @@ msgstr "Sterkte (%)"
 
 msgid "Color intensity"
 msgstr "Kleurintensiteit"
-
-msgid "Upside down"
-msgstr "Ondersteboven"
 
 msgid "Cut off the corners"
 msgstr "Hoeken wegknippen"

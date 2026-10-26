@@ -54,6 +54,9 @@ pub enum Modification {
     /// Makes the background transparent with the AI model, or `fill` when given. Leaves the
     /// image as is while `downloaded` is false.
     RemoveBackground { fill: Option<Rgba<u8>>, downloaded: bool },
+    /// Colours a black-and-white photo with the AI model; `strength` 0 to 1 goes from grey to
+    /// the full guessed colours, and 0 leaves the image as is (model not downloaded yet).
+    Colourise { strength: f32 },
     /// Text, one line per `\n`, centred on a point given in percent of the image size. The font
     /// size is a percentage of the shorter side.
     Annotate { text: String, font_percent: f32, x_percent: f32, y_percent: f32, color: Rgba<u8>, effect: TextEffect },
@@ -151,6 +154,10 @@ pub fn apply_step(
         Modification::RemoveBackground { downloaded: false, .. } => Ok((image.clone(), logical)),
         Modification::RemoveBackground { fill, .. } => {
             Ok((crate::background::remove_background(image, *fill, feedback)?, logical))
+        }
+        Modification::Colourise { strength } if *strength <= 0.0 => Ok((image.clone(), logical)),
+        Modification::Colourise { strength } => {
+            Ok((crate::colourise::colourise(image, strength.min(1.0), feedback)?, logical))
         }
         Modification::Annotate { text, font_percent, x_percent, y_percent, color, effect } => Ok((
             annotate::annotate(

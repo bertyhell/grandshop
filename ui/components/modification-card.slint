@@ -2,7 +2,7 @@ import { AppState, ImageSize, ModEntry, ModKind, Theme } from "../globals.slint"
 import { Button, ButtonKind } from "button.slint";
 import {
     AddBorderControls, AddImageBorderControls, AnnotateControls, BrightnessControls,
-    CropControls, ImproveFacesControls, MirrorControls, RemoveBackgroundControls, ResizeControls, RotateControls,
+    ColouriseControls, CropControls, ImproveFacesControls, MirrorControls, RemoveBackgroundControls, ResizeControls, RotateControls,
     StrengthControls,
     UpscaleControls,
 } from "../modifications/panels.slint";
@@ -26,6 +26,7 @@ export component ModificationCard inherits Rectangle {
         : entry.kind == ModKind.upscale ? @tr("Enlarge {}", entry.number)
         : entry.kind == ModKind.improve-faces ? @tr("Improve faces {}", entry.number)
         : entry.kind == ModKind.remove-background ? @tr("Remove background {}", entry.number)
+        : entry.kind == ModKind.colourise ? @tr("Colour {}", entry.number)
         : @tr("Black and White {}", entry.number);
 
     background: white;
@@ -118,6 +119,10 @@ export component ModificationCard inherits Rectangle {
             params: root.entry.params;
         }
         if root.entry.open && root.entry.kind == ModKind.remove-background: RemoveBackgroundControls {
+            index: root.index;
+            params: root.entry.params;
+        }
+        if root.entry.open && root.entry.kind == ModKind.colourise: ColouriseControls {
             index: root.index;
             params: root.entry.params;
         }

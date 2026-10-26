@@ -21,7 +21,7 @@ export global Theme {
     out property <color> crop-handle-shadow: #00000080;
 }
 
-export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale, improve-faces, remove-background }
+export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale, improve-faces, remove-background, colourise }
 
 // Union of the parameters of every modification kind; each kind uses a few of them.
 // Pixel values are in original-image pixels. Border thickness, border width and font size
@@ -52,7 +52,8 @@ export struct ModParams {
     upscale-factor: float,
     // Enlarge card uses the large, slow network
     best-quality: bool,
-    // Sepia, black and white, and "Improve faces" (how much of the restored face), in percent
+    // Sepia, black and white, "Improve faces" (how much of the restored face) and "Colourise"
+    // (how much of the guessed colours), in percent
     strength: float,
     // "Remove background" card fills the background with `background` instead of making it
     // transparent
@@ -130,6 +131,9 @@ export global AppState {
     // The AI model for "Remove background" is being downloaded, and the fraction done
     in property <bool> background-downloading: false;
     in property <float> background-download-progress: 0;
+    // The AI model for "Colourise" is being downloaded, and the fraction done
+    in property <bool> colourise-downloading: false;
+    in property <float> colourise-download-progress: 0;
     // Longest side an enlarged image may get
     in property <int> upscale-max-edge;
     // Clicking the preview picks a colour for the open cards with a colour picker
@@ -222,6 +226,9 @@ export global Strings {
     out property <string> upscaler-downloading: @tr("Downloading the enlarging tool (2 MB)…");
     out property <string> upscaler-best-downloading: @tr("Downloading the best quality enlarging tool (140 MB)…");
     out property <string> upscaler-ready: @tr("The enlarging tool is ready");
+    out property <string> colourise-downloading: @tr("Downloading the colouring tool (980 MB)…");
+    out property <string> colourise-ready: @tr("The colouring tool is ready");
+    out property <string> colourise-failed: @tr("Downloading the colouring tool failed. Check the internet connection and add the operation again.");
     out property <string> background-downloading: @tr("Downloading the background tool (225 MB)…");
     out property <string> background-ready: @tr("The background tool is ready");
     out property <string> background-failed: @tr("Downloading the background tool failed. Check the internet connection and add the operation again.");

@@ -16,6 +16,7 @@ Current features:
 * Enlarge with AI
 * Improve faces with AI
 * Remove the background with AI
+* Colour black and white photos with AI
 
 Download: https://github.com/bertyhell/grandshop/releases
 
@@ -87,10 +88,12 @@ needed, checked against its SHA-256 and kept in the app's data folder (on Linux
 | SCRFD 2.5G (InsightFace) | Improve faces: finding them | Non-commercial research use |
 | GFPGAN 1.4 | Improve faces: restoring them | Apache-2.0 |
 | BiRefNet (general, lite) | Remove background | MIT |
+| DDColor | Colour black and white photos | Apache-2.0 |
 
 To try the models: `cargo test --release upscale -- --ignored --nocapture` on the test image,
 and `GRANDSHOP_FACES_PHOTO=photo.jpg cargo test --release faces -- --ignored --nocapture` or
 `GRANDSHOP_BACKGROUND_PHOTO=photo.jpg cargo test --release background -- --ignored --nocapture`
+or `GRANDSHOP_COLOURISE_PHOTO=photo.jpg cargo test --release colourise -- --ignored --nocapture`
 on a photo of your own.
 
 ### Translations

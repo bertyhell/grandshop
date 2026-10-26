@@ -297,12 +297,6 @@ export component RotateControls inherits Panel {
             horizontal-stretch: 1;
             clicked => { root.turn(90); }
         }
-        Button {
-            label: @tr("Upside down");
-            kind: ButtonKind.secondary;
-            horizontal-stretch: 1;
-            clicked => { root.turn(180); }
-        }
     }
 
     FormField {
@@ -464,6 +458,36 @@ export component RemoveBackgroundControls inherits Panel {
         text: root.params.fill-background
             ? @tr("Finds the people or things in front with artificial intelligence and fills everything behind them.")
             : @tr("Finds the people or things in front with artificial intelligence and makes everything behind them see-through. Save as PNG to keep it see-through.");
+        color: Theme.placeholder;
+        font-size: 13px;
+        wrap: word-wrap;
+    }
+}
+
+export component ColouriseControls inherits Panel {
+    in property <int> index;
+    in property <ModParams> params;
+    spacing: 10px;
+
+    FormField {
+        label: @tr("Colour strength (%)");
+        RangeInput {
+            minimum: 0;
+            maximum: 100;
+            value: root.params.strength;
+            edited(value) => { AppState.set-number(root.index, ModField.strength, value); }
+        }
+    }
+
+    if AppState.colourise-downloading: Text {
+        text: @tr("Downloading the colouring tool… {}%", Math.round(AppState.colourise-download-progress * 100));
+        color: Theme.text;
+        font-size: 14px;
+        wrap: word-wrap;
+    }
+
+    Text {
+        text: @tr("Artificial intelligence guesses the colours of a black and white photo. The colours are a guess, not the real ones.");
         color: Theme.placeholder;
         font-size: 13px;
         wrap: word-wrap;
