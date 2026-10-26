@@ -1,0 +1,5 @@
+"Holly Bells Frame" by j4p4n, Openclipart
+https://openclipart.org/detail/355884/holly-bells-frame
+License: public domain (CC0 1.0), like all of Openclipart
+Rendered and cut into pieces with scripts/slice-border.py (corners 0.21 × 0.10,
+--backing white --backing-gap 45).
