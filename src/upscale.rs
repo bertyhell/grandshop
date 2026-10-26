@@ -18,8 +18,6 @@ const MODEL_URL: &str =
     "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.5.0/realesr-general-x4v3.pth";
 const MODEL_SHA256: &str = "8dc7edb9ac80ccdc30c3a5dca6616509367f05fbc184ad95b731f05bece96292";
 const MODEL_FILE: &str = "realesr-general-x4v3.pth";
-/// Shown to the user before downloading
-pub const MODEL_SIZE_MB: u32 = 5;
 
 /// The network always enlarges four times; smaller factors downscale its output
 const NETWORK_SCALE: u32 = 4;
@@ -242,13 +240,25 @@ pub fn upscale(image: &RgbaImage, factor: u32) -> Result<RgbaImage> {
 mod tests {
     use super::*;
 
-    /// Needs the weights: `GRANDSHOP_UPSCALE_MODEL=path/to/realesr-general-x4v3.pth cargo test
-    /// --release upscale -- --ignored --nocapture`
+    /// Downloads into the real data folder: `cargo test upscale -- --ignored`
+    #[test]
+    #[ignore]
+    fn downloads_and_verifies_the_model() {
+        install().unwrap();
+        assert!(is_installed());
+        let image = RgbaImage::from_pixel(20, 10, image::Rgba([10, 200, 30, 128]));
+        let big = upscale(&image, 3).unwrap();
+        assert_eq!(big.dimensions(), (60, 30));
+        assert!(big.pixels().all(|p| p[3].abs_diff(128) <= 2));
+    }
+
+    /// Needs the weights, downloaded or at `GRANDSHOP_UPSCALE_MODEL`:
+    /// `cargo test --release upscale -- --ignored --nocapture`
     #[test]
     #[ignore]
     fn enlarges_the_fixture() {
-        let path = std::env::var("GRANDSHOP_UPSCALE_MODEL").expect("GRANDSHOP_UPSCALE_MODEL");
-        let model = Model::load(Path::new(&path)).unwrap();
+        let path = std::env::var_os("GRANDSHOP_UPSCALE_MODEL").map(PathBuf::from).or_else(model_path).unwrap();
+        let model = Model::load(&path).unwrap();
         let photo = crate::io::load_image(Path::new("tests/fixtures/paint.jpg")).unwrap();
         let small = crate::resample::resize_exact(&photo, 300, 200);
         let start = std::time::Instant::now();

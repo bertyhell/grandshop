@@ -219,3 +219,33 @@ msgstr "Spiegel verticaal"
 
 msgid "Angle"
 msgstr "Hoek"
+
+msgid "Enlarge image (AI)"
+msgstr "Afbeelding vergroten (AI)"
+
+msgid "Enlarge {}"
+msgstr "Vergroten {}"
+
+msgid "Enlarge times"
+msgstr "Aantal keer vergroten"
+
+msgid "New size: {} × {} pixels"
+msgstr "Nieuwe grootte: {} × {} pixels"
+
+msgid "This is too large. Shrink the image first or enlarge fewer times."
+msgstr "Dit is te groot. Verklein de afbeelding eerst of vergroot minder keer."
+
+msgid "Downloading the enlarging tool…"
+msgstr "Het vergrotingsprogramma wordt gedownload…"
+
+msgid "Enlarging uses artificial intelligence and can take a minute for large images."
+msgstr "Vergroten gebruikt artificiële intelligentie en kan voor grote afbeeldingen een minuutje duren."
+
+msgid "Downloading the enlarging tool (5 MB)…"
+msgstr "Het vergrotingsprogramma wordt gedownload (5 MB)…"
+
+msgid "The enlarging tool is ready"
+msgstr "Het vergrotingsprogramma is klaar"
+
+msgid "Downloading the enlarging tool failed. Check the internet connection and add the operation again."
+msgstr "Het downloaden van het vergrotingsprogramma is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."

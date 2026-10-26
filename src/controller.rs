@@ -12,6 +12,7 @@ use grandshop::color::{color_wheel, hsv_to_rgb, rgb_to_hsv};
 use grandshop::io::{default_save_file_name, format_file_size, load_image, save_png};
 use grandshop::pipeline::{self, available_borders, Dimensions, Modification};
 use grandshop::resample::resize_exact;
+use grandshop::upscale;
 use grandshop::view::{Region, ViewTransform};
 use grandshop::worker::{Document, RenderOutput, Worker};
 use image::{Rgba, RgbaImage};
@@ -87,6 +88,8 @@ pub struct Controller {
     detail_timer: slint::Timer,
     /// Generation of the last full resolution render that was asked for
     detail_requested: Cell<u64>,
+    /// The AI model for "Enlarge image" is being downloaded
+    upscaler_downloading: Cell<bool>,
     state: RefCell<State>,
     cards: Rc<VecModel<ModEntry>>,
     borders: Vec<String>,
@@ -107,6 +110,7 @@ impl Controller {
             borders.iter().map(|name| name.replace('_', " ").into()).collect::<Vec<slint::SharedString>>(),
         )));
         app_state.set_color_wheel(to_slint_image(&color_wheel(COLOR_WHEEL_SIZE)));
+        app_state.set_upscale_max_edge(upscale::MAX_RESULT_EDGE as i32);
         app_state.on_hsv_to_color(|hsv| {
             let [r, g, b] = hsv_to_rgb(hsv.hue, hsv.saturation, hsv.value);
             Color::from_rgb_u8(r, g, b)
@@ -132,6 +136,7 @@ impl Controller {
             detail_worker,
             detail_timer: slint::Timer::default(),
             detail_requested: Cell::new(0),
+            upscaler_downloading: Cell::new(false),
             state: RefCell::default(),
             cards,
             borders,
@@ -326,6 +331,9 @@ impl Controller {
             }
         }
         self.cards.push(ModEntry { kind, number, open: true, params: default_params(kind, width, height) });
+        if kind == ModKind::Upscale {
+            self.install_upscaler();
+        }
 
         // The new card works on the current result until the next render reports its size
         self.with_state(|s| {
@@ -335,6 +343,34 @@ impl Controller {
             s.set_input_sizes(ModelRc::new(VecModel::from(sizes)));
         });
         self.cards_changed();
+    }
+
+    /// Downloads the AI model the first time an "Enlarge image" card is added. Until it is
+    /// there, the card leaves the image as is.
+    fn install_upscaler(self: &Rc<Self>) {
+        if upscale::is_installed() || self.upscaler_downloading.get() {
+            return;
+        }
+        self.upscaler_downloading.set(true);
+        self.with_state(|s| s.set_upscaler_downloading(true));
+        self.notify(ToastKind::Info, |s| s.get_upscaler_downloading());
+        let this = self.clone();
+        let _ = slint::spawn_local(async move {
+            let installed = run_in_background(upscale::install).await;
+            this.upscaler_downloading.set(false);
+            this.with_state(|s| s.set_upscaler_downloading(false));
+            match installed {
+                Ok(()) => {
+                    this.notify(ToastKind::Success, |s| s.get_upscaler_ready());
+                    // The cards now turn into real enlargements
+                    this.cards_changed();
+                }
+                Err(err) => {
+                    eprintln!("{err:#}");
+                    this.notify(ToastKind::Error, |s| s.get_upscaler_failed());
+                }
+            }
+        });
     }
 
     fn toggle_card(self: &Rc<Self>, index: usize) {
@@ -520,6 +556,7 @@ fn default_params(kind: ModKind, image_width: i32, image_height: i32) -> ModPara
             params.contrast = 1.1;
         }
         ModKind::Sepia | ModKind::Crop | ModKind::Mirror | ModKind::Greyscale => {}
+        ModKind::Upscale => params.upscale_factor = 2.0,
         ModKind::Rotate => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Resize => params.size = image_width.max(image_height).min(10_000) as f32,
         ModKind::Annotate => {
@@ -539,6 +576,7 @@ fn set_field(params: &mut ModParams, field: ModField, value: f32) {
         ModField::Factor => &mut params.factor,
         ModField::Contrast => &mut params.contrast,
         ModField::Angle => &mut params.angle,
+        ModField::UpscaleFactor => &mut params.upscale_factor,
         ModField::Size => &mut params.size,
         ModField::FontSize => &mut params.font_size,
         ModField::XPercent => &mut params.x_percent,
@@ -577,6 +615,9 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
         ModKind::Greyscale => Modification::Greyscale,
         ModKind::Rotate => Modification::Rotate { angle: p.angle, background: rgba(p.background) },
         ModKind::Mirror => Modification::Mirror { horizontal: p.mirror_horizontal, vertical: p.mirror_vertical },
+        // Leaves the image as is until the model is downloaded
+        ModKind::Upscale if !upscale::is_installed() => Modification::Upscale { factor: 1 },
+        ModKind::Upscale => Modification::Upscale { factor: p.upscale_factor.round().clamp(2.0, 4.0) as u32 },
         ModKind::Resize => Modification::Resize { size: px(p.size) },
         ModKind::Annotate => Modification::Annotate {
             text: p.text.to_string(),

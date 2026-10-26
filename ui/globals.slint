@@ -21,7 +21,7 @@ export global Theme {
     out property <color> crop-handle-shadow: #00000080;
 }
 
-export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale }
+export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale }
 
 // Union of the parameters of every modification kind; each kind uses a few of them.
 // Pixel values are in original-image pixels.
@@ -46,12 +46,13 @@ export struct ModParams {
     background: color,
     mirror-horizontal: bool,
     mirror-vertical: bool,
+    upscale-factor: float,
 }
 
 // Numeric parameters that a slider can change
 export enum ModField {
     thickness, border-width, factor, contrast, size, font-size, x-percent, y-percent, top, right,
-    bottom, left, angle,
+    bottom, left, angle, upscale-factor,
 }
 
 // Colours that a colour picker can change
@@ -98,6 +99,10 @@ export global AppState {
     // Estimated size of the saved PNG, for the "Reduce image" card
     in property <string> estimated-file-size;
     in property <image> color-wheel;
+    // The AI model for "Enlarge image" is being downloaded
+    in property <bool> upscaler-downloading: false;
+    // Longest side an enlarged image may get
+    in property <int> upscale-max-edge;
     // Clicking the preview picks a colour for the open cards with a colour picker
     in property <bool> eyedropper-active: false;
 
@@ -166,4 +171,7 @@ export global Strings {
     out property <string> save-dialog-title: @tr("Choose the location and name to save your image");
     out property <string> pictures: @tr("Pictures");
     out property <string> all-files: @tr("All files");
+    out property <string> upscaler-downloading: @tr("Downloading the enlarging tool (5 MB)…");
+    out property <string> upscaler-ready: @tr("The enlarging tool is ready");
+    out property <string> upscaler-failed: @tr("Downloading the enlarging tool failed. Check the internet connection and add the operation again.");
 }

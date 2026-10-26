@@ -245,6 +245,19 @@ mod tests {
     }
 
     #[test]
+    fn upscale_without_model_keeps_the_image_and_too_large_fails() {
+        let image = RgbaImage::new(100, 50);
+        let output = apply(&image, Dimensions::of(&image), &[Modification::Upscale { factor: 1 }], 1.0);
+        assert_eq!(output.image, image);
+        assert!(output.errors.is_empty());
+
+        let huge = Dimensions { width: crate::upscale::MAX_RESULT_EDGE, height: 10 };
+        let output = apply(&image, huge, &[Modification::Upscale { factor: 2 }], 1.0);
+        assert_eq!(output.errors.len(), 1);
+        assert_eq!(output.logical, huge);
+    }
+
+    #[test]
     fn proxy_and_logical_sizes_agree() {
         let original = RgbaImage::from_pixel(6000, 4000, Rgba([90, 120, 150, 255]));
         let proxy = make_proxy(&original);

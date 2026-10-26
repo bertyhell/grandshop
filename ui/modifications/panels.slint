@@ -246,3 +246,50 @@ export component MirrorControls inherits Panel {
         toggled => { AppState.set-flag(root.index, FlagField.mirror-vertical, self.checked); }
     }
 }
+
+export component UpscaleControls inherits Panel {
+    in property <int> index;
+    in property <ModParams> params;
+    in property <ImageSize> input-size;
+    property <int> longest: max(root.input-size.width, root.input-size.height, 1);
+    property <bool> too-large: root.longest * root.params.upscale-factor > AppState.upscale-max-edge;
+    spacing: 10px;
+
+    FormField {
+        label: @tr("Enlarge times");
+        RangeInput {
+            minimum: 2;
+            maximum: 4;
+            value: root.params.upscale-factor;
+            edited(value) => { AppState.set-number(root.index, ModField.upscale-factor, value); }
+        }
+    }
+
+    Text {
+        text: @tr("New size: {} × {} pixels", root.input-size.width * root.params.upscale-factor,
+            root.input-size.height * root.params.upscale-factor);
+        color: Theme.text;
+        font-size: 14px;
+    }
+
+    if root.too-large: Text {
+        text: @tr("This is too large. Shrink the image first or enlarge fewer times.");
+        color: #b00020;
+        font-size: 14px;
+        wrap: word-wrap;
+    }
+
+    if AppState.upscaler-downloading: Text {
+        text: @tr("Downloading the enlarging tool…");
+        color: Theme.text;
+        font-size: 14px;
+        wrap: word-wrap;
+    }
+
+    Text {
+        text: @tr("Enlarging uses artificial intelligence and can take a minute for large images.");
+        color: Theme.placeholder;
+        font-size: 13px;
+        wrap: word-wrap;
+    }
+}
