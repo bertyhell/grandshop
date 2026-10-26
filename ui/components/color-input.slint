@@ -1,9 +1,14 @@
-import { AppState, Hsv, Theme } from "../globals.slint";
+import { AppState, ColorField, Hsv, Theme } from "../globals.slint";
+import { Button, ButtonKind } from "button.slint";
 
 // Hue/saturation wheel, a brightness bar and a swatch, like the iro.js picker it replaces.
-// Clicking the preview image also picks a colour (handled in Rust).
+// Clicking the preview image also picks a colour (handled in Rust); the eyedropper button
+// makes the next click pick for this picker only.
 export component ColorInput {
     in property <color> value;
+    // Card and colour this picker edits, for the eyedropper
+    in property <int> index;
+    in property <ColorField> field;
 
     callback edited(value: color);
 
@@ -17,7 +22,8 @@ export component ColorInput {
             hue: atan2((root.radius - y) / 1px, (x - root.radius) / 1px) / 1deg,
             saturation: min(1, sqrt(pow((x - root.radius) / 1px, 2) + pow((y - root.radius) / 1px, 2))
                 / (root.radius / 1px)),
-            value: root.hsv.value,
+            // Black stays black whatever the hue, so jump to full brightness to show the pick
+            value: root.hsv.value == 0 ? 1 : root.hsv.value,
         }));
     }
 
@@ -107,13 +113,34 @@ export component ColorInput {
             }
         }
 
-        Rectangle {
+        VerticalLayout {
             horizontal-stretch: 1;
+            spacing: 12px;
+
+            property <bool> picking: AppState.eyedropper-index == root.index && AppState.eyedropper-field == root.field;
+
+            Button {
+                icon: @image-url("../icons/eye-dropper.svg");
+                accessible-label: @tr("Pick a colour from the image");
+                kind: parent.picking ? ButtonKind.primary : ButtonKind.secondary;
+                clicked => {
+                    if (parent.picking) {
+                        AppState.eyedropper-index = -1;
+                    } else {
+                        AppState.eyedropper-index = root.index;
+                        AppState.eyedropper-field = root.field;
+                    }
+                }
+            }
+
+        Rectangle {
+            vertical-stretch: 1;
             min-width: 40px;
             border-radius: 4px;
             background: root.value;
             accessible-role: text;
             accessible-label: @tr("Color");
+        }
         }
     }
 }
