@@ -89,8 +89,8 @@ pub struct Controller {
     detail_timer: slint::Timer,
     /// Generation of the last full resolution render that was asked for
     detail_requested: Cell<u64>,
-    /// The AI model for "Enlarge image" is being downloaded
-    upscaler_downloading: Cell<bool>,
+    /// The AI models for "Enlarge image" that are being downloaded
+    upscaler_downloads: RefCell<Vec<upscale::Quality>>,
     state: RefCell<State>,
     cards: Rc<VecModel<ModEntry>>,
     borders: Vec<String>,
@@ -137,7 +137,7 @@ impl Controller {
             detail_worker,
             detail_timer: slint::Timer::default(),
             detail_requested: Cell::new(0),
-            upscaler_downloading: Cell::new(false),
+            upscaler_downloads: RefCell::default(),
             state: RefCell::default(),
             cards,
             borders,
@@ -166,10 +166,14 @@ impl Controller {
             this.edit_card(index as usize, |p| *color_field(p, field) = color)
         });
         on!(on_set_flag, |this, index, field, on| {
+            if field == FlagField::BestQuality && on {
+                this.install_upscaler(upscale::Quality::Best);
+            }
             this.edit_card(index as usize, |p| match field {
                 FlagField::MirrorHorizontal => p.mirror_horizontal = on,
                 FlagField::MirrorVertical => p.mirror_vertical = on,
                 FlagField::Enlarge => p.enlarge = on,
+                FlagField::BestQuality => p.best_quality = on,
             })
         });
         on!(on_set_text, |this, index, text| this.edit_card(index as usize, |p| p.text = text));
@@ -344,7 +348,7 @@ impl Controller {
         }
         self.cards.push(ModEntry { kind, number, open: true, params: default_params(kind, width, height) });
         if kind == ModKind::Upscale {
-            self.install_upscaler();
+            self.install_upscaler(upscale::Quality::Fast);
         }
 
         // The new card works on the current result until the next render reports its size
@@ -357,20 +361,25 @@ impl Controller {
         self.cards_changed();
     }
 
-    /// Downloads the AI model the first time an "Enlarge image" card is added. Until it is
-    /// there, the card leaves the image as is.
-    fn install_upscaler(self: &Rc<Self>) {
-        if upscale::is_installed() || self.upscaler_downloading.get() {
+    /// Downloads the AI model for `quality` the first time it is asked for: the fast one when
+    /// an "Enlarge image" card is added, the best one when that switch is turned on. Until
+    /// it is there, the card falls back to the fast model or leaves the image as is.
+    fn install_upscaler(self: &Rc<Self>, quality: upscale::Quality) {
+        if upscale::is_installed(quality) || self.upscaler_downloads.borrow().contains(&quality) {
             return;
         }
-        self.upscaler_downloading.set(true);
+        self.upscaler_downloads.borrow_mut().push(quality);
         self.with_state(|s| s.set_upscaler_downloading(true));
-        self.notify(ToastKind::Info, |s| s.get_upscaler_downloading());
+        self.notify(ToastKind::Info, |s| match quality {
+            upscale::Quality::Fast => s.get_upscaler_downloading(),
+            upscale::Quality::Best => s.get_upscaler_best_downloading(),
+        });
         let this = self.clone();
         let _ = slint::spawn_local(async move {
-            let installed = run_in_background(upscale::install).await;
-            this.upscaler_downloading.set(false);
-            this.with_state(|s| s.set_upscaler_downloading(false));
+            let installed = run_in_background(move || upscale::install(quality)).await;
+            this.upscaler_downloads.borrow_mut().retain(|q| *q != quality);
+            let downloading = !this.upscaler_downloads.borrow().is_empty();
+            this.with_state(|s| s.set_upscaler_downloading(downloading));
             match installed {
                 Ok(()) => {
                     this.notify(ToastKind::Success, |s| s.get_upscaler_ready());
@@ -635,9 +644,17 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
         ModKind::Greyscale => Modification::Greyscale,
         ModKind::Rotate => Modification::Rotate { angle: p.angle, background: rgba(p.background) },
         ModKind::Mirror => Modification::Mirror { horizontal: p.mirror_horizontal, vertical: p.mirror_vertical },
-        // Leaves the image as is until the model is downloaded
-        ModKind::Upscale if !upscale::is_installed() => Modification::Upscale { factor: 1 },
-        ModKind::Upscale => Modification::Upscale { factor: p.upscale_factor.round().clamp(2.0, 4.0) as u32 },
+        ModKind::Upscale => {
+            let wanted = if p.best_quality { upscale::Quality::Best } else { upscale::Quality::Fast };
+            // Uses the fast model while the best one downloads, and leaves the image as is
+            // until either is there
+            match [wanted, upscale::Quality::Fast].into_iter().find(|q| upscale::is_installed(*q)) {
+                Some(quality) => {
+                    Modification::Upscale { factor: p.upscale_factor.round().clamp(2.0, 4.0) as u32, quality }
+                }
+                None => Modification::Upscale { factor: 1, quality: wanted },
+            }
+        }
         ModKind::Resize => Modification::Resize { size: px(p.size) },
         ModKind::Annotate => Modification::Annotate {
             text: p.text.to_string(),

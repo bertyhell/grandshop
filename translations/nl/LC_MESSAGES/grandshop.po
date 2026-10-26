@@ -229,6 +229,12 @@ msgstr "Afbeelding vergroten (AI)"
 msgid "Enlarge {}"
 msgstr "Vergroten {}"
 
+msgid "Best quality (much slower)"
+msgstr "Beste kwaliteit (veel trager)"
+
+msgid "Best quality can take several minutes, even for small images."
+msgstr "Beste kwaliteit kan enkele minuten duren, zelfs voor kleine afbeeldingen."
+
 msgid "Enlarge times"
 msgstr "Aantal keer vergroten"
 
@@ -244,8 +250,11 @@ msgstr "Het vergrotingsprogramma wordt gedownload…"
 msgid "Enlarging uses artificial intelligence and can take a minute for large images."
 msgstr "Vergroten gebruikt artificiële intelligentie en kan voor grote afbeeldingen een minuutje duren."
 
-msgid "Downloading the enlarging tool (5 MB)…"
-msgstr "Het vergrotingsprogramma wordt gedownload (5 MB)…"
+msgid "Downloading the enlarging tool (10 MB)…"
+msgstr "Het vergrotingsprogramma wordt gedownload (10 MB)…"
+
+msgid "Downloading the best quality enlarging tool (64 MB)…"
+msgstr "Het vergrotingsprogramma voor de beste kwaliteit wordt gedownload (64 MB)…"
 
 msgid "The enlarging tool is ready"
 msgstr "Het vergrotingsprogramma is klaar"

@@ -49,6 +49,8 @@ export struct ModParams {
     // Crop card adds `top`/`right`/`bottom`/`left` pixels of `background` instead
     enlarge: bool,
     upscale-factor: float,
+    // Enlarge card uses the large, slow network
+    best-quality: bool,
 }
 
 // Numeric parameters that a slider can change
@@ -61,7 +63,7 @@ export enum ModField {
 export enum ColorField { color, text-color, background }
 
 // On/off parameters
-export enum FlagField { mirror-horizontal, mirror-vertical, enlarge }
+export enum FlagField { mirror-horizontal, mirror-vertical, enlarge, best-quality }
 
 export struct ModEntry {
     kind: ModKind,
@@ -176,7 +178,8 @@ export global Strings {
     out property <string> save-dialog-title: @tr("Choose the location and name to save your image");
     out property <string> pictures: @tr("Pictures");
     out property <string> all-files: @tr("All files");
-    out property <string> upscaler-downloading: @tr("Downloading the enlarging tool (5 MB)…");
+    out property <string> upscaler-downloading: @tr("Downloading the enlarging tool (10 MB)…");
+    out property <string> upscaler-best-downloading: @tr("Downloading the best quality enlarging tool (64 MB)…");
     out property <string> upscaler-ready: @tr("The enlarging tool is ready");
     out property <string> upscaler-failed: @tr("Downloading the enlarging tool failed. Check the internet connection and add the operation again.");
 }

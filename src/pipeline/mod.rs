@@ -40,7 +40,7 @@ pub enum Modification {
     Resize { size: u32 },
     /// Enlarges `factor` times with the AI model; 1 leaves the image as is (model not
     /// downloaded yet).
-    Upscale { factor: u32 },
+    Upscale { factor: u32, quality: crate::upscale::Quality },
     /// Text, one line per `\n`, centred on a point given in percent of the image size.
     Annotate { text: String, font_size: f32, x_percent: f32, y_percent: f32, color: Rgba<u8> },
     /// Removes the given number of pixels from each side.
@@ -105,8 +105,8 @@ pub fn apply_step(
             let target = scale_px(*size, scale).max(1);
             Ok((resize::resize(image, target), Dimensions { width, height }))
         }
-        Modification::Upscale { factor: 0 | 1 } => Ok((image.clone(), logical)),
-        Modification::Upscale { factor } => {
+        Modification::Upscale { factor: 0 | 1, .. } => Ok((image.clone(), logical)),
+        Modification::Upscale { factor, quality } => {
             let logical = Dimensions { width: logical.width * factor, height: logical.height * factor };
             if logical.width.max(logical.height) > crate::upscale::MAX_RESULT_EDGE {
                 anyhow::bail!(
@@ -116,7 +116,7 @@ pub fn apply_step(
                     crate::upscale::MAX_RESULT_EDGE
                 );
             }
-            Ok((crate::upscale::upscale(image, *factor)?, logical))
+            Ok((crate::upscale::upscale(image, *factor, *quality)?, logical))
         }
         Modification::Annotate { text, font_size, x_percent, y_percent, color } => Ok((
             annotate::annotate(image, text, font_size * scale, *x_percent, *y_percent, *color),
@@ -256,13 +256,14 @@ mod tests {
 
     #[test]
     fn upscale_without_model_keeps_the_image_and_too_large_fails() {
+        use crate::upscale::Quality;
         let image = RgbaImage::new(100, 50);
-        let output = apply(&image, Dimensions::of(&image), &[Modification::Upscale { factor: 1 }], 1.0);
+        let output = apply(&image, Dimensions::of(&image), &[Modification::Upscale { factor: 1, quality: Quality::Fast }], 1.0);
         assert_eq!(output.image, image);
         assert!(output.errors.is_empty());
 
         let huge = Dimensions { width: crate::upscale::MAX_RESULT_EDGE, height: 10 };
-        let output = apply(&image, huge, &[Modification::Upscale { factor: 2 }], 1.0);
+        let output = apply(&image, huge, &[Modification::Upscale { factor: 2, quality: Quality::Fast }], 1.0);
         assert_eq!(output.errors.len(), 1);
         assert_eq!(output.logical, huge);
     }

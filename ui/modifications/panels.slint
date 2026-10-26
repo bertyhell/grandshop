@@ -280,6 +280,12 @@ export component UpscaleControls inherits Panel {
         }
     }
 
+    Switch {
+        text: @tr("Best quality (much slower)");
+        checked: root.params.best-quality;
+        toggled => { AppState.set-flag(root.index, FlagField.best-quality, self.checked); }
+    }
+
     Text {
         text: @tr("New size: {} × {} pixels", root.input-size.width * root.params.upscale-factor,
             root.input-size.height * root.params.upscale-factor);
@@ -302,7 +308,9 @@ export component UpscaleControls inherits Panel {
     }
 
     Text {
-        text: @tr("Enlarging uses artificial intelligence and can take a minute for large images.");
+        text: root.params.best-quality
+            ? @tr("Best quality can take several minutes, even for small images.")
+            : @tr("Enlarging uses artificial intelligence and can take a minute for large images.");
         color: Theme.placeholder;
         font-size: 13px;
         wrap: word-wrap;
