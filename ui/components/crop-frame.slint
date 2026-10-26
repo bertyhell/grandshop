@@ -71,7 +71,8 @@ component CropHandle {
     }
 }
 
-// Frame of the crop card being edited, laid over the preview: shades what gets cut off and
+// Frame of the crop card being edited, laid over the preview: shades what gets cut off (or
+// fills what gets added, when enlarging) and
 // has a grip on every corner and edge. Lies outside the Flickable, so dragging a grip doesn't
 // pan, and reaches a little beyond it, so the grips on the image edges aren't cut in half.
 export component CropFrame inherits Rectangle {
@@ -98,19 +99,33 @@ export component CropFrame inherits Rectangle {
         || bottom-right.pressed || top-edge.pressed || bottom-edge.pressed || left-edge.pressed
         || right-edge.pressed;
 
+    property <bool> enlarge: AppState.crop-enlarge;
+    // How far each edge can go: cropping keeps it inside the image, enlarging outside it, up
+    // to one image size away
+    property <length> image-right: root.image-x + root.image-width;
+    property <length> image-bottom: root.image-y + root.image-height;
+    property <length> left-low: root.enlarge ? root.image-x - root.image-width : root.image-x;
+    property <length> left-high: root.enlarge ? root.image-x : root.right - root.min-size;
+    property <length> top-low: root.enlarge ? root.image-y - root.image-height : root.image-y;
+    property <length> top-high: root.enlarge ? root.image-y : root.bottom - root.min-size;
+    property <length> right-low: root.enlarge ? root.image-right : root.left + root.min-size;
+    property <length> right-high: root.enlarge ? root.image-right + root.image-width : root.image-right;
+    property <length> bottom-low: root.enlarge ? root.image-bottom : root.top + root.min-size;
+    property <length> bottom-high: root.enlarge ? root.image-bottom + root.image-height : root.image-bottom;
+
     clip: true;
 
     pure function moved-edge(edge: length, delta: length, low: length, high: length) -> length {
         return delta == 0px ? edge : clamp(edge + delta, low, max(low, high));
     }
 
-    // Moves the edges by the given distances, within the image and keeping the minimum size
+    // Moves the edges by the given distances, within their range
     function drag(dl: length, dt: length, dr: length, db: length) {
         AppState.crop-dragged(
-            (root.moved-edge(root.left, dl, root.image-x, root.right - root.min-size) - root.image-x) / root.image-width,
-            (root.moved-edge(root.top, dt, root.image-y, root.bottom - root.min-size) - root.image-y) / root.image-height,
-            (root.moved-edge(root.right, dr, root.left + root.min-size, root.image-x + root.image-width) - root.image-x) / root.image-width,
-            (root.moved-edge(root.bottom, db, root.top + root.min-size, root.image-y + root.image-height) - root.image-y) / root.image-height);
+            (root.moved-edge(root.left, dl, root.left-low, root.left-high) - root.image-x) / root.image-width,
+            (root.moved-edge(root.top, dt, root.top-low, root.top-high) - root.image-y) / root.image-height,
+            (root.moved-edge(root.right, dr, root.right-low, root.right-high) - root.image-x) / root.image-width,
+            (root.moved-edge(root.bottom, db, root.bottom-low, root.bottom-high) - root.image-y) / root.image-height);
     }
 
     Rectangle {
@@ -119,6 +134,38 @@ export component CropFrame inherits Rectangle {
         width: root.view-width;
         height: root.view-height;
         clip: true;
+
+        // Background over the parts that get added
+        if root.enlarge: Rectangle {
+            Rectangle {
+                x: root.left - parent.x;
+                y: root.top - parent.y;
+                width: root.right - root.left;
+                height: max(0px, root.image-y - root.top);
+                background: AppState.crop-background;
+            }
+            Rectangle {
+                x: root.left - parent.x;
+                y: root.image-bottom - parent.y;
+                width: root.right - root.left;
+                height: max(0px, root.bottom - root.image-bottom);
+                background: AppState.crop-background;
+            }
+            Rectangle {
+                x: root.left - parent.x;
+                y: root.image-y - parent.y;
+                width: max(0px, root.image-x - root.left);
+                height: root.image-height;
+                background: AppState.crop-background;
+            }
+            Rectangle {
+                x: root.image-right - parent.x;
+                y: root.image-y - parent.y;
+                width: max(0px, root.right - root.image-right);
+                height: root.image-height;
+                background: AppState.crop-background;
+            }
+        }
 
         // Shade over the parts that get cut off
         Rectangle {

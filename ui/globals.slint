@@ -46,6 +46,8 @@ export struct ModParams {
     background: color,
     mirror-horizontal: bool,
     mirror-vertical: bool,
+    // Crop card adds `top`/`right`/`bottom`/`left` pixels of `background` instead
+    enlarge: bool,
     upscale-factor: float,
 }
 
@@ -59,7 +61,7 @@ export enum ModField {
 export enum ColorField { color, text-color, background }
 
 // On/off parameters
-export enum FlagField { mirror-horizontal, mirror-vertical }
+export enum FlagField { mirror-horizontal, mirror-vertical, enlarge }
 
 export struct ModEntry {
     kind: ModKind,
@@ -116,8 +118,11 @@ export global AppState {
     in property <float> detail-bottom;
 
     // Frame of the crop card being edited, in fractions of the shown image. While it is
-    // shown, the preview shows the image going into that card.
+    // shown, the preview shows the image going into that card. When enlarging, the frame
+    // lies outside the image and the space between is filled with `crop-background`.
     in property <bool> crop-active: false;
+    in property <bool> crop-enlarge: false;
+    in property <color> crop-background;
     in property <float> crop-left;
     in property <float> crop-top;
     in property <float> crop-right;

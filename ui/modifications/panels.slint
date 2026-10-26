@@ -167,6 +167,13 @@ export component CropControls inherits Panel {
     in property <int> index;
     in property <ModParams> params;
     in property <ImageSize> input-size;
+    spacing: 10px;
+
+    Switch {
+        text: @tr("Enlarge instead of crop");
+        checked: root.params.enlarge;
+        toggled => { AppState.set-flag(root.index, FlagField.enlarge, self.checked); }
+    }
 
     FormField {
         label: @tr("Top");
@@ -201,6 +208,14 @@ export component CropControls inherits Panel {
             maximum: root.input-size.height;
             value: root.params.bottom;
             edited(value) => { AppState.set-number(root.index, ModField.bottom, value); }
+        }
+    }
+
+    if root.params.enlarge: FormField {
+        label: @tr("Background color");
+        ColorInput {
+            value: root.params.background;
+            edited(value) => { AppState.set-color(root.index, ColorField.background, value); }
         }
     }
 }

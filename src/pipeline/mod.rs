@@ -45,6 +45,8 @@ pub enum Modification {
     Annotate { text: String, font_size: f32, x_percent: f32, y_percent: f32, color: Rgba<u8> },
     /// Removes the given number of pixels from each side.
     Crop { top: u32, right: u32, bottom: u32, left: u32 },
+    /// Adds the given number of pixels of `background` to each side.
+    Extend { top: u32, right: u32, bottom: u32, left: u32, background: Rgba<u8> },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -134,6 +136,14 @@ pub fn apply_step(
             };
             let edges = [top, right, bottom, left].map(|v| scale_px(*v, scale));
             Ok((crop::crop(image, edges[0], edges[1], edges[2], edges[3]), logical))
+        }
+        Modification::Extend { top, right, bottom, left, background } => {
+            let logical = Dimensions {
+                width: logical.width + left + right,
+                height: logical.height + top + bottom,
+            };
+            let edges = [top, right, bottom, left].map(|v| scale_px(*v, scale));
+            Ok((crop::extend(image, edges[0], edges[1], edges[2], edges[3], *background), logical))
         }
     }
 }

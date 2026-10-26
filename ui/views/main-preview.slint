@@ -18,6 +18,14 @@ export component MainPreview inherits Rectangle {
     property <float> focus-u: 0.5;
     property <float> focus-v: 0.5;
 
+    // Zooms out when enlarging starts, so there is room around the image to drag the frame
+    property <bool> enlarging: AppState.crop-active && AppState.crop-enlarge;
+    changed enlarging => {
+        if (self.enlarging) {
+            root.set-zoom(min(root.zoom, 0.6));
+        }
+    }
+
     function set-zoom(new-zoom: float) {
         root.focus-u = (flick.width / 2 - flick.content-x - picture.x) / picture.width;
         root.focus-v = (flick.height / 2 - flick.content-y - picture.y) / picture.height;

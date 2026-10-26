@@ -168,6 +168,7 @@ impl Controller {
             this.edit_card(index as usize, |p| match field {
                 FlagField::MirrorHorizontal => p.mirror_horizontal = on,
                 FlagField::MirrorVertical => p.mirror_vertical = on,
+                FlagField::Enlarge => p.enlarge = on,
             })
         });
         on!(on_set_text, |this, index, text| this.edit_card(index as usize, |p| p.text = text));
@@ -436,6 +437,13 @@ impl Controller {
         }
         let source = self.shared.transform.lock().unwrap().region_to_source(shown);
         self.edit_card(index, |p| {
+            if p.enlarge {
+                p.left = (-source.left * width).round().clamp(0.0, width);
+                p.right = ((source.right - 1.0) * width).round().clamp(0.0, width);
+                p.top = (-source.top * height).round().clamp(0.0, height);
+                p.bottom = ((source.bottom - 1.0) * height).round().clamp(0.0, height);
+                return;
+            }
             // Keep at least one pixel
             p.left = (source.left * width).round().clamp(0.0, width - 1.0);
             p.right = ((1.0 - source.right) * width).round().clamp(0.0, width - 1.0 - p.left);
@@ -453,6 +461,7 @@ impl Controller {
                     ModKind::AddBorder => ColorField::Color,
                     ModKind::Annotate => ColorField::TextColor,
                     ModKind::Rotate => ColorField::Background,
+                    ModKind::Crop if card.params.enlarge => ColorField::Background,
                     _ => return None,
                 };
                 card.open.then_some((index, field))
@@ -555,9 +564,9 @@ fn default_params(kind: ModKind, image_width: i32, image_height: i32) -> ModPara
             params.factor = 1.1;
             params.contrast = 1.1;
         }
-        ModKind::Sepia | ModKind::Crop | ModKind::Mirror | ModKind::Greyscale => {}
+        ModKind::Sepia | ModKind::Mirror | ModKind::Greyscale => {}
         ModKind::Upscale => params.upscale_factor = 2.0,
-        ModKind::Rotate => params.background = Color::from_rgb_u8(255, 255, 255),
+        ModKind::Rotate | ModKind::Crop => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Resize => params.size = image_width.max(image_height).min(10_000) as f32,
         ModKind::Annotate => {
             params.font_size = 30.0;
@@ -625,6 +634,13 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
             x_percent: p.x_percent,
             y_percent: p.y_percent,
             color: rgba(p.text_color),
+        },
+        ModKind::Crop if p.enlarge => Modification::Extend {
+            top: px(p.top),
+            right: px(p.right),
+            bottom: px(p.bottom),
+            left: px(p.left),
+            background: rgba(p.background),
         },
         ModKind::Crop => Modification::Crop {
             top: px(p.top),
@@ -711,12 +727,24 @@ fn update_crop_frame(ui: &AppWindow, transform: ViewTransform) {
         let size = state.get_input_sizes().row_data(index)?;
         let params = cards.row_data(index)?.params;
         let (width, height) = (size.width.max(1) as f32, size.height.max(1) as f32);
-        let source = Region {
-            left: (params.left / width).clamp(0.0, 1.0),
-            top: (params.top / height).clamp(0.0, 1.0),
-            right: (1.0 - params.right / width).clamp(0.0, 1.0),
-            bottom: (1.0 - params.bottom / height).clamp(0.0, 1.0),
+        // Enlarging puts the frame outside the image, at most one image size away
+        let source = if params.enlarge {
+            Region {
+                left: -(params.left / width).clamp(0.0, 1.0),
+                top: -(params.top / height).clamp(0.0, 1.0),
+                right: 1.0 + (params.right / width).clamp(0.0, 1.0),
+                bottom: 1.0 + (params.bottom / height).clamp(0.0, 1.0),
+            }
+        } else {
+            Region {
+                left: (params.left / width).clamp(0.0, 1.0),
+                top: (params.top / height).clamp(0.0, 1.0),
+                right: (1.0 - params.right / width).clamp(0.0, 1.0),
+                bottom: (1.0 - params.bottom / height).clamp(0.0, 1.0),
+            }
         };
+        state.set_crop_enlarge(params.enlarge);
+        state.set_crop_background(params.background);
         Some(transform.region_from_source(source))
     });
     state.set_crop_active(frame.is_some());

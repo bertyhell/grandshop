@@ -211,6 +211,9 @@ msgstr "Draai afbeelding"
 msgid "Rotate {}"
 msgstr "Draai {}"
 
+msgid "Enlarge instead of crop"
+msgstr "Vergroten in plaats van bijsnijden"
+
 msgid "Mirror horizontally"
 msgstr "Spiegel horizontaal"
 
