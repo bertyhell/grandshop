@@ -11,6 +11,8 @@ component CropHandle {
     // Edge grips: whether the pill stands upright (left and right edges)
     in property <bool> vertical;
     in property <bool> show-pill: true;
+    // Centre grip: shows a round knob instead of arms or a pill
+    in property <bool> knob;
     out property <bool> pressed: touch.pressed;
     callback dragged(dx: length, dy: length);
 
@@ -51,7 +53,17 @@ component CropHandle {
         }
     }
 
-    if !root.corner && root.show-pill: Rectangle {
+    if root.knob: Rectangle {
+        width: 28px;
+        height: 28px;
+        border-radius: 14px;
+        background: root.color;
+        drop-shadow-blur: 4px;
+        drop-shadow-color: Theme.crop-handle-shadow;
+        animate background { duration: 120ms; }
+    }
+
+    if !root.corner && !root.knob && root.show-pill: Rectangle {
         width: root.vertical ? 6px : 30px;
         height: root.vertical ? 30px : 6px;
         border-radius: 3px;
@@ -96,7 +108,7 @@ export component CropFrame inherits Rectangle {
     property <length> corner-size: 44px;
     property <length> edge-depth: 32px;
     property <bool> dragging: top-left.pressed || top-right.pressed || bottom-left.pressed
-        || bottom-right.pressed || top-edge.pressed || bottom-edge.pressed || left-edge.pressed
+        || bottom-right.pressed || centre.pressed || top-edge.pressed || bottom-edge.pressed || left-edge.pressed
         || right-edge.pressed;
 
     property <bool> enlarge: AppState.crop-enlarge;
@@ -126,6 +138,26 @@ export component CropFrame inherits Rectangle {
             (root.moved-edge(root.top, dt, root.top-low, root.top-high) - root.image-y) / root.image-height,
             (root.moved-edge(root.right, dr, root.right-low, root.right-high) - root.image-x) / root.image-width,
             (root.moved-edge(root.bottom, db, root.bottom-low, root.bottom-high) - root.image-y) / root.image-height);
+    }
+
+    // Moves the whole frame without resizing it, keeping every edge within its range
+    function move(dx: length, dy: length) {
+        if (dx == 0px && dy == 0px) {
+            return;
+        }
+        root.drag-by(
+            clamp(dx, max(root.left-low - root.left, root.right-low - root.right),
+                max(0px, min(root.left-high - root.left, root.right-high - root.right))),
+            clamp(dy, max(root.top-low - root.top, root.bottom-low - root.bottom),
+                max(0px, min(root.top-high - root.top, root.bottom-high - root.bottom))));
+    }
+
+    function drag-by(dx: length, dy: length) {
+        AppState.crop-dragged(
+            (root.left + dx - root.image-x) / root.image-width,
+            (root.top + dy - root.image-y) / root.image-height,
+            (root.right + dx - root.image-x) / root.image-width,
+            (root.bottom + dy - root.image-y) / root.image-height);
     }
 
     Rectangle {
@@ -235,6 +267,18 @@ export component CropFrame inherits Rectangle {
             border-width: 1px;
             border-color: Theme.crop-frame;
         }
+    }
+
+    // Centre grip first, so the edges and corners win on a small frame
+    centre := CropHandle {
+        x: (root.left + root.right) / 2 - root.corner-size / 2;
+        y: (root.top + root.bottom) / 2 - root.corner-size / 2;
+        width: root.corner-size;
+        height: root.corner-size;
+        knob: root.right - root.left > 2 * root.corner-size && root.bottom - root.top > 2 * root.corner-size;
+        visible: self.knob;
+        cursor: MouseCursor.move;
+        dragged(dx, dy) => { root.move(dx, dy); }
     }
 
     // Edges first, so the corners win where they overlap
