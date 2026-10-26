@@ -353,7 +353,7 @@ mod tests {
         let (worker, results) = worker();
         worker.set_document(document(2500, 2500));
         // Slow steps, requested much faster than they can be rendered
-        let stack = |factor: f32| vec![Modification::Sepia, Modification::Brightness { factor }, Modification::Sepia];
+        let stack = |factor: f32| vec![Modification::Sepia, Modification::Brightness { factor, contrast: 1.0 }, Modification::Sepia];
         for generation in 1..=50 {
             worker.render(generation, stack(1.0 + generation as f32 / 100.0));
         }

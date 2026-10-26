@@ -17,7 +17,7 @@ export global Theme {
     out property <color> range-empty: #c4c4c4;
 }
 
-export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop }
+export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale }
 
 // Union of the parameters of every modification kind; each kind uses a few of them.
 // Pixel values are in original-image pixels.
@@ -27,6 +27,7 @@ export struct ModParams {
     border-index: int,
     border-width: float,
     factor: float,
+    contrast: float,
     size: float,
     text: string,
     font-size: float,
@@ -36,12 +37,24 @@ export struct ModParams {
     right: float,
     bottom: float,
     left: float,
+    text-color: color,
+    angle: float,
+    background: color,
+    mirror-horizontal: bool,
+    mirror-vertical: bool,
 }
 
 // Numeric parameters that a slider can change
 export enum ModField {
-    thickness, border-width, factor, size, font-size, x-percent, y-percent, top, right, bottom, left,
+    thickness, border-width, factor, contrast, size, font-size, x-percent, y-percent, top, right,
+    bottom, left, angle,
 }
+
+// Colours that a colour picker can change
+export enum ColorField { color, text-color, background }
+
+// On/off parameters
+export enum FlagField { mirror-horizontal, mirror-vertical }
 
 export struct ModEntry {
     kind: ModKind,
@@ -81,7 +94,7 @@ export global AppState {
     // Estimated size of the saved PNG, for the "Reduce image" card
     in property <string> estimated-file-size;
     in property <image> color-wheel;
-    // Clicking the preview picks a colour for the open border cards
+    // Clicking the preview picks a colour for the open cards with a colour picker
     in property <bool> eyedropper-active: false;
 
     // Sharp full resolution tile over part of the preview when zoomed in. The position is
@@ -100,7 +113,8 @@ export global AppState {
     callback toggle-modification(int);
     callback delete-modification(int);
     callback set-number(int, ModField, float);
-    callback set-color(int, color);
+    callback set-color(int, ColorField, color);
+    callback set-flag(int, FlagField, bool);
     callback set-text(int, string);
     callback set-border-style(int, int);
     callback invalid-number();

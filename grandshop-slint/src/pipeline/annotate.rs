@@ -12,10 +12,17 @@ fn font() -> &'static FontRef<'static> {
     })
 }
 
-/// Draws black text, one line per `\n`. Each line is centred horizontally on `x_percent` of
+/// Draws text in `color`, one line per `\n`. Each line is centred horizontally on `x_percent` of
 /// the width, and the block starts with its first line centred on `y_percent` of the height.
 /// `font_size` is the em size in pixels, like CSS `font-size`.
-pub fn annotate(image: &RgbaImage, text: &str, font_size: f32, x_percent: f32, y_percent: f32) -> RgbaImage {
+pub fn annotate(
+    image: &RgbaImage,
+    text: &str,
+    font_size: f32,
+    x_percent: f32,
+    y_percent: f32,
+    color: Rgba<u8>,
+) -> RgbaImage {
     let mut out = image.clone();
     if text.trim().is_empty() || font_size <= 0.0 {
         return out;
@@ -34,7 +41,7 @@ pub fn annotate(image: &RgbaImage, text: &str, font_size: f32, x_percent: f32, y
         let top = (height * y_percent / 100.0 - line_height / 2.0 + index as f32 * line_height)
             .round()
             .clamp(0.0, height);
-        draw_text_mut(&mut out, Rgba([0, 0, 0, 255]), left as i32, top as i32, scale, font, line);
+        draw_text_mut(&mut out, color, left as i32, top as i32, scale, font, line);
     }
     out
 }
@@ -42,6 +49,8 @@ pub fn annotate(image: &RgbaImage, text: &str, font_size: f32, x_percent: f32, y
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const BLACK: Rgba<u8> = Rgba([0, 0, 0, 255]);
 
     fn dark_pixel_bounds(image: &RgbaImage) -> Option<(u32, u32, u32, u32)> {
         let mut bounds: Option<(u32, u32, u32, u32)> = None;
@@ -57,23 +66,31 @@ mod tests {
     #[test]
     fn empty_text_draws_nothing() {
         let image = RgbaImage::from_pixel(100, 100, Rgba([255, 255, 255, 255]));
-        assert_eq!(annotate(&image, "  ", 30.0, 50.0, 50.0), image);
+        assert_eq!(annotate(&image, "  ", 30.0, 50.0, 50.0, BLACK), image);
     }
 
     #[test]
     fn text_is_centred_on_the_position() {
         let image = RgbaImage::from_pixel(400, 200, Rgba([255, 255, 255, 255]));
-        let (x0, y0, x1, y1) = dark_pixel_bounds(&annotate(&image, "Hello", 40.0, 50.0, 50.0)).unwrap();
+        let (x0, y0, x1, y1) = dark_pixel_bounds(&annotate(&image, "Hello", 40.0, 50.0, 50.0, BLACK)).unwrap();
         let (cx, cy) = ((x0 + x1) / 2, (y0 + y1) / 2);
         assert!(cx.abs_diff(200) <= 4, "horizontal centre {cx}");
         assert!(cy.abs_diff(100) <= 12, "vertical centre {cy}");
     }
 
     #[test]
+    fn uses_the_text_colour() {
+        let image = RgbaImage::from_pixel(200, 100, Rgba([255, 255, 255, 255]));
+        let out = annotate(&image, "Hi", 60.0, 50.0, 50.0, Rgba([255, 0, 0, 255]));
+        assert!(out.pixels().any(|p| *p == Rgba([255, 0, 0, 255])));
+        assert!(out.pixels().all(|p| p[0] == 255), "only red and white");
+    }
+
+    #[test]
     fn each_line_goes_below_the_previous() {
         let image = RgbaImage::from_pixel(400, 300, Rgba([255, 255, 255, 255]));
-        let one = dark_pixel_bounds(&annotate(&image, "Hello", 40.0, 50.0, 30.0)).unwrap();
-        let two = dark_pixel_bounds(&annotate(&image, "Hello\nWorld", 40.0, 50.0, 30.0)).unwrap();
+        let one = dark_pixel_bounds(&annotate(&image, "Hello", 40.0, 50.0, 30.0, BLACK)).unwrap();
+        let two = dark_pixel_bounds(&annotate(&image, "Hello\nWorld", 40.0, 50.0, 30.0, BLACK)).unwrap();
         assert_eq!(one.1, two.1);
         assert!(two.3 > one.3 + 30, "second line should extend the block downwards");
     }

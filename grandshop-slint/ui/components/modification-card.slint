@@ -2,7 +2,7 @@ import { AppState, ImageSize, ModEntry, ModKind, Theme } from "../globals.slint"
 import { Button, ButtonKind } from "button.slint";
 import {
     AddBorderControls, AddImageBorderControls, AnnotateControls, BrightnessControls,
-    CropControls, ResizeControls,
+    CropControls, MirrorControls, ResizeControls, RotateControls,
 } from "../modifications/panels.slint";
 
 // Collapsible card for one modification in the stack
@@ -14,12 +14,15 @@ export component ModificationCard inherits Rectangle {
     property <string> title:
         entry.kind == ModKind.add-border ? @tr("Border {}", entry.number)
         : entry.kind == ModKind.add-image-border ? @tr("Image border {}", entry.number)
-        : entry.kind == ModKind.brightness ? @tr("Brightness {}", entry.number)
+        : entry.kind == ModKind.brightness ? @tr("Brightness and contrast {}", entry.number)
         : entry.kind == ModKind.sepia ? @tr("Sepia {}", entry.number)
         : entry.kind == ModKind.resize ? @tr("Shrink {}", entry.number)
         : entry.kind == ModKind.annotate ? @tr("Caption {}", entry.number)
-        : @tr("Crop {}", entry.number);
-    property <bool> has-controls: entry.kind != ModKind.sepia;
+        : entry.kind == ModKind.crop ? @tr("Crop {}", entry.number)
+        : entry.kind == ModKind.rotate ? @tr("Rotate {}", entry.number)
+        : entry.kind == ModKind.mirror ? @tr("Mirror {}", entry.number)
+        : @tr("Black and White {}", entry.number);
+    property <bool> has-controls: entry.kind != ModKind.sepia && entry.kind != ModKind.greyscale;
 
     background: white;
     border-radius: 4px;
@@ -88,6 +91,14 @@ export component ModificationCard inherits Rectangle {
             index: root.index;
             params: root.entry.params;
             input-size: root.input-size;
+        }
+        if root.entry.open && root.entry.kind == ModKind.rotate: RotateControls {
+            index: root.index;
+            params: root.entry.params;
+        }
+        if root.entry.open && root.entry.kind == ModKind.mirror: MirrorControls {
+            index: root.index;
+            params: root.entry.params;
         }
     }
 }

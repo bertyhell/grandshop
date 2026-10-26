@@ -1,8 +1,8 @@
 // Controls for each modification kind. Every change is sent to Rust, which updates the card
 // and re-renders the preview.
 
-import { TextEdit } from "std-widgets.slint";
-import { AppState, ImageSize, ModField, ModParams, Theme } from "../globals.slint";
+import { Switch, TextEdit } from "std-widgets.slint";
+import { AppState, ColorField, FlagField, ImageSize, ModField, ModParams, Theme } from "../globals.slint";
 import { FormField } from "../components/form-field.slint";
 import { RangeInput } from "../components/range-input.slint";
 import { ColorInput } from "../components/color-input.slint";
@@ -30,7 +30,7 @@ export component AddBorderControls inherits Panel {
         label: @tr("Color");
         ColorInput {
             value: root.params.color;
-            edited(value) => { AppState.set-color(root.index, value); }
+            edited(value) => { AppState.set-color(root.index, ColorField.color, value); }
         }
     }
 }
@@ -63,12 +63,26 @@ export component BrightnessControls inherits Panel {
     in property <int> index;
     in property <ModParams> params;
 
-    RangeInput {
-        minimum: 0;
-        maximum: 5;
-        step: 0.01;
-        value: root.params.factor;
-        edited(value) => { AppState.set-number(root.index, ModField.factor, value); }
+    FormField {
+        label: @tr("Brightness");
+        RangeInput {
+            minimum: 0;
+            maximum: 5;
+            step: 0.01;
+            value: root.params.factor;
+            edited(value) => { AppState.set-number(root.index, ModField.factor, value); }
+        }
+    }
+
+    FormField {
+        label: @tr("Contrast");
+        RangeInput {
+            minimum: 0;
+            maximum: 5;
+            step: 0.01;
+            value: root.params.contrast;
+            edited(value) => { AppState.set-number(root.index, ModField.contrast, value); }
+        }
     }
 }
 
@@ -139,6 +153,14 @@ export component AnnotateControls inherits Panel {
             edited(value) => { AppState.set-number(root.index, ModField.y-percent, value); }
         }
     }
+
+    FormField {
+        label: @tr("Text color");
+        ColorInput {
+            value: root.params.text-color;
+            edited(value) => { AppState.set-color(root.index, ColorField.text-color, value); }
+        }
+    }
 }
 
 export component CropControls inherits Panel {
@@ -180,5 +202,47 @@ export component CropControls inherits Panel {
             value: root.params.bottom;
             edited(value) => { AppState.set-number(root.index, ModField.bottom, value); }
         }
+    }
+}
+
+export component RotateControls inherits Panel {
+    in property <int> index;
+    in property <ModParams> params;
+
+    FormField {
+        label: @tr("Angle");
+        RangeInput {
+            minimum: -360;
+            maximum: 360;
+            step: 0.01;
+            value: root.params.angle;
+            edited(value) => { AppState.set-number(root.index, ModField.angle, value); }
+        }
+    }
+
+    FormField {
+        label: @tr("Background color");
+        ColorInput {
+            value: root.params.background;
+            edited(value) => { AppState.set-color(root.index, ColorField.background, value); }
+        }
+    }
+}
+
+export component MirrorControls inherits Panel {
+    in property <int> index;
+    in property <ModParams> params;
+    spacing: 10px;
+
+    Switch {
+        text: @tr("Mirror horizontally");
+        checked: root.params.mirror-horizontal;
+        toggled => { AppState.set-flag(root.index, FlagField.mirror-horizontal, self.checked); }
+    }
+
+    Switch {
+        text: @tr("Mirror vertically");
+        checked: root.params.mirror-vertical;
+        toggled => { AppState.set-flag(root.index, FlagField.mirror-vertical, self.checked); }
     }
 }

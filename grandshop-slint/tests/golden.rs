@@ -63,7 +63,7 @@ fn add_border() {
 #[test]
 fn brightness() {
     for (file, factor) in [("brightness-0.5.png", 0.5), ("brightness-1.1.png", 1.1), ("brightness-2.0.png", 2.0)] {
-        check(file, Modification::Brightness { factor }, 1.0, 0.001);
+        check(file, Modification::Brightness { factor, contrast: 1.0 }, 1.0, 0.001);
     }
 }
 
@@ -91,6 +91,7 @@ fn annotate() {
         font_size: 30.0,
         x_percent: 50.0,
         y_percent: 95.0,
+        color: image::Rgba([0, 0, 0, 255]),
     };
     check("annotate-hello-world-30-50-95.png", modification, 0.5, 0.002);
 }

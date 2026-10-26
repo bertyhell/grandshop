@@ -10,9 +10,13 @@ mod add_border;
 mod annotate;
 mod brightness;
 mod crop;
+mod greyscale;
 pub mod image_border;
+mod mirror;
 mod resize;
+mod rotate;
 mod sepia;
+mod srgb;
 
 use anyhow::Result;
 use image::{Rgba, RgbaImage};
@@ -25,13 +29,17 @@ pub enum Modification {
     AddBorder { thickness: u32, color: Rgba<u8> },
     /// Decorative border drawn over the edges of the image. `None` until a style is picked.
     AddImageBorder { border: Option<String>, width: u32 },
-    /// Multiplies the lightness, 1.0 leaves the image unchanged.
-    Brightness { factor: f32 },
+    /// Multiplies the lightness, then stretches the contrast; 1.0 leaves the image unchanged.
+    Brightness { factor: f32, contrast: f32 },
     Sepia,
+    Greyscale,
+    /// Turns the image clockwise by any angle; the canvas grows and the corners get `background`.
+    Rotate { angle: f32, background: Rgba<u8> },
+    Mirror { horizontal: bool, vertical: bool },
     /// Shrinks the image to fit inside `size` × `size`.
     Resize { size: u32 },
-    /// Black text, one line per `\n`, centred on a point given in percent of the image size.
-    Annotate { text: String, font_size: f32, x_percent: f32, y_percent: f32 },
+    /// Text, one line per `\n`, centred on a point given in percent of the image size.
+    Annotate { text: String, font_size: f32, x_percent: f32, y_percent: f32, color: Rgba<u8> },
     /// Removes the given number of pixels from each side.
     Crop { top: u32, right: u32, bottom: u32, left: u32 },
 }
@@ -74,16 +82,26 @@ pub fn apply_step(
             let border_width = (*width as f32 * scale).max(1.0);
             Ok((image_border::add_image_border(image, name, border_width)?, logical))
         }
-        Modification::Brightness { factor } => Ok((brightness::brightness(image, *factor), logical)),
+        Modification::Brightness { factor, contrast } => {
+            Ok((brightness::brightness(image, *factor, *contrast), logical))
+        }
         Modification::Sepia => Ok((sepia::sepia(image), logical)),
+        Modification::Greyscale => Ok((greyscale::greyscale(image), logical)),
+        Modification::Rotate { angle, background } => {
+            let (width, height) = rotate::rotated_size(logical.width, logical.height, *angle);
+            Ok((rotate::rotate(image, *angle, *background), Dimensions { width, height }))
+        }
+        Modification::Mirror { horizontal, vertical } => {
+            Ok((mirror::mirror(image, *horizontal, *vertical), logical))
+        }
         Modification::Resize { size } => {
             let (width, height) =
                 crate::resample::fit_inside(logical.width, logical.height, (*size).max(1));
             let target = scale_px(*size, scale).max(1);
             Ok((resize::resize(image, target), Dimensions { width, height }))
         }
-        Modification::Annotate { text, font_size, x_percent, y_percent } => Ok((
-            annotate::annotate(image, text, font_size * scale, *x_percent, *y_percent),
+        Modification::Annotate { text, font_size, x_percent, y_percent, color } => Ok((
+            annotate::annotate(image, text, font_size * scale, *x_percent, *y_percent, *color),
             logical,
         )),
         Modification::Crop { top, right, bottom, left } => {
@@ -184,11 +202,12 @@ mod tests {
                 Modification::AddBorder { thickness: 50, color: Rgba([0, 0, 0, 255]) },
                 Modification::Crop { top: 10, right: 20, bottom: 30, left: 40 },
                 Modification::Resize { size: 520 },
+                Modification::Rotate { angle: 90.0, background: Rgba([0, 0, 0, 255]) },
             ],
             1.0,
         );
-        // 1000×500 → border 1100×600 → crop 1040×560 → fit in 520
-        assert_eq!(output.logical, Dimensions { width: 520, height: 280 });
+        // 1000×500 → border 1100×600 → crop 1040×560 → fit in 520 → quarter turn
+        assert_eq!(output.logical, Dimensions { width: 280, height: 520 });
         assert_eq!(Dimensions::of(&output.image), output.logical);
     }
 
@@ -236,11 +255,14 @@ mod tests {
         let original = resize_exact(&fixture(), 3840, 2160);
         let proxy = make_proxy(&original);
         let stack = [
-            Modification::Brightness { factor: 1.3 },
+            Modification::Brightness { factor: 1.3, contrast: 1.2 },
             Modification::AddBorder { thickness: 120, color: Rgba([34, 94, 255, 255]) },
             Modification::Crop { top: 40, right: 80, bottom: 120, left: 160 },
             Modification::Sepia,
             Modification::AddImageBorder { border: Some("floral_curly".into()), width: 200 },
+            Modification::Rotate { angle: 12.5, background: Rgba([255, 255, 255, 255]) },
+            Modification::Mirror { horizontal: true, vertical: false },
+            Modification::Greyscale,
         ];
         let full = apply(&original, Dimensions::of(&original), &stack, 1.0);
         let preview = apply(&proxy.image, Dimensions::of(&original), &stack, proxy.scale);

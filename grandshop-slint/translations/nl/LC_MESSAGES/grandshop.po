@@ -19,9 +19,6 @@ msgstr "Voeg een afbeeldingsrand toe"
 msgid "Add text"
 msgstr "Tekst toevoegen"
 
-msgid "Adjust the brightness"
-msgstr "Pas de helderheid aan"
-
 msgid "All files"
 msgstr "Alle bestanden"
 
@@ -39,9 +36,6 @@ msgstr "Rand {}"
 
 msgid "Bottom"
 msgstr "Onderkant"
-
-msgid "Brightness {}"
-msgstr "Helderheid {}"
 
 msgid "Caption {}"
 msgstr "Bijschrift {}"
@@ -180,3 +174,48 @@ msgstr "Inzoomen"
 
 msgid "Zoom out"
 msgstr "Uitzoomen"
+
+msgid "Adjust the brightness and contrast"
+msgstr "Pas de helderheid en het contrast aan"
+
+msgid "Brightness and contrast {}"
+msgstr "Helderheid en contrast {}"
+
+msgid "Brightness"
+msgstr "Helderheid"
+
+msgid "Contrast"
+msgstr "Contrast"
+
+msgid "Text color"
+msgstr "Tekst kleur"
+
+msgid "Background color"
+msgstr "Achtergrond kleur"
+
+msgid "Black and White image"
+msgstr "Zwart en Wit"
+
+msgid "Black and White {}"
+msgstr "Zwart en Wit {}"
+
+msgid "Mirror image"
+msgstr "Spiegel afbeelding"
+
+msgid "Mirror {}"
+msgstr "Spiegelen {}"
+
+msgid "Rotate image"
+msgstr "Draai afbeelding"
+
+msgid "Rotate {}"
+msgstr "Draai {}"
+
+msgid "Mirror horizontally"
+msgstr "Spiegel horizontaal"
+
+msgid "Mirror vertically"
+msgstr "Spiegel verticaal"
+
+msgid "Angle"
+msgstr "Hoek"

@@ -18,7 +18,10 @@ use image::{Rgba, RgbaImage};
 use slint::{Color, ComponentHandle, Image, Model, ModelRc, Rgba8Pixel, SharedPixelBuffer, VecModel};
 
 use crate::toast;
-use crate::{AppState, AppWindow, Hsv, ImageSize, ModEntry, ModField, ModKind, ModParams, Strings, ToastKind};
+use crate::{
+    AppState, AppWindow, ColorField, FlagField, Hsv, ImageSize, ModEntry, ModField, ModKind, ModParams, Strings,
+    ToastKind,
+};
 
 const IMAGE_EXTENSIONS: &[&str] = &["jpg", "jpeg", "png", "gif", "tif", "tiff", "webp", "bmp", "svg"];
 
@@ -149,7 +152,15 @@ impl Controller {
         on!(on_set_number, |this, index, field, value| {
             this.edit_card(index as usize, |params| set_field(params, field, value))
         });
-        on!(on_set_color, |this, index, color| this.edit_card(index as usize, |p| p.color = color));
+        on!(on_set_color, |this, index, field, color| {
+            this.edit_card(index as usize, |p| *color_field(p, field) = color)
+        });
+        on!(on_set_flag, |this, index, field, on| {
+            this.edit_card(index as usize, |p| match field {
+                FlagField::MirrorHorizontal => p.mirror_horizontal = on,
+                FlagField::MirrorVertical => p.mirror_vertical = on,
+            })
+        });
         on!(on_set_text, |this, index, text| this.edit_card(index as usize, |p| p.text = text));
         on!(on_set_border_style, |this, index, style| {
             this.edit_card(index as usize, |p| p.border_index = style)
@@ -354,17 +365,24 @@ impl Controller {
         self.schedule_detail();
     }
 
-    fn open_border_cards(&self) -> Vec<usize> {
+    /// Open cards with a colour picker, and which of their colours the eyedropper sets
+    fn open_color_cards(&self) -> Vec<(usize, ColorField)> {
         (0..self.cards.row_count())
-            .filter(|&index| {
+            .filter_map(|index| {
                 let card = self.cards.row_data(index).unwrap();
-                card.open && card.kind == ModKind::AddBorder
+                let field = match card.kind {
+                    ModKind::AddBorder => ColorField::Color,
+                    ModKind::Annotate => ColorField::TextColor,
+                    ModKind::Rotate => ColorField::Background,
+                    _ => return None,
+                };
+                card.open.then_some((index, field))
             })
             .collect()
     }
 
     fn update_eyedropper(&self) {
-        let active = !self.open_border_cards().is_empty();
+        let active = !self.open_color_cards().is_empty();
         self.with_state(|s| s.set_eyedropper_active(active));
     }
 
@@ -378,8 +396,8 @@ impl Controller {
         let px = ((x * image.width() as f32) as u32).min(image.width() - 1);
         let py = ((y * image.height() as f32) as u32).min(image.height() - 1);
         let Rgba([r, g, b, _]) = *image.get_pixel(px, py);
-        for index in self.open_border_cards() {
-            self.edit_card(index, |params| params.color = Color::from_rgb_u8(r, g, b));
+        for (index, field) in self.open_color_cards() {
+            self.edit_card(index, |params| *color_field(params, field) = Color::from_rgb_u8(r, g, b));
         }
     }
 
@@ -446,13 +464,18 @@ fn default_params(kind: ModKind, image_width: i32, image_height: i32) -> ModPara
             params.color = Color::from_rgb_u8(0x22, 0x5e, 0xff);
         }
         ModKind::AddImageBorder => params.border_width = 100.0,
-        ModKind::Brightness => params.factor = 1.1,
-        ModKind::Sepia | ModKind::Crop => {}
+        ModKind::Brightness => {
+            params.factor = 1.1;
+            params.contrast = 1.1;
+        }
+        ModKind::Sepia | ModKind::Crop | ModKind::Mirror | ModKind::Greyscale => {}
+        ModKind::Rotate => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Resize => params.size = image_width.max(image_height).min(10_000) as f32,
         ModKind::Annotate => {
             params.font_size = 30.0;
             params.x_percent = 50.0;
             params.y_percent = 95.0;
+            params.text_color = Color::from_rgb_u8(0, 0, 0);
         }
     }
     params
@@ -463,6 +486,8 @@ fn set_field(params: &mut ModParams, field: ModField, value: f32) {
         ModField::Thickness => &mut params.thickness,
         ModField::BorderWidth => &mut params.border_width,
         ModField::Factor => &mut params.factor,
+        ModField::Contrast => &mut params.contrast,
+        ModField::Angle => &mut params.angle,
         ModField::Size => &mut params.size,
         ModField::FontSize => &mut params.font_size,
         ModField::XPercent => &mut params.x_percent,
@@ -475,26 +500,39 @@ fn set_field(params: &mut ModParams, field: ModField, value: f32) {
     *target = value;
 }
 
+fn color_field(params: &mut ModParams, field: ColorField) -> &mut Color {
+    match field {
+        ColorField::Color => &mut params.color,
+        ColorField::TextColor => &mut params.text_color,
+        ColorField::Background => &mut params.background,
+    }
+}
+
 fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
     let p = &card.params;
     let px = |value: f32| value.round().max(0.0) as u32;
+    let rgba = |color: Color| Rgba([color.red(), color.green(), color.blue(), 255]);
     match card.kind {
         ModKind::AddBorder => Modification::AddBorder {
             thickness: px(p.thickness),
-            color: Rgba([p.color.red(), p.color.green(), p.color.blue(), 255]),
+            color: rgba(p.color),
         },
         ModKind::AddImageBorder => Modification::AddImageBorder {
             border: usize::try_from(p.border_index).ok().and_then(|i| borders.get(i)).cloned(),
             width: px(p.border_width),
         },
-        ModKind::Brightness => Modification::Brightness { factor: p.factor },
+        ModKind::Brightness => Modification::Brightness { factor: p.factor, contrast: p.contrast },
         ModKind::Sepia => Modification::Sepia,
+        ModKind::Greyscale => Modification::Greyscale,
+        ModKind::Rotate => Modification::Rotate { angle: p.angle, background: rgba(p.background) },
+        ModKind::Mirror => Modification::Mirror { horizontal: p.mirror_horizontal, vertical: p.mirror_vertical },
         ModKind::Resize => Modification::Resize { size: px(p.size) },
         ModKind::Annotate => Modification::Annotate {
             text: p.text.to_string(),
             font_size: p.font_size,
             x_percent: p.x_percent,
             y_percent: p.y_percent,
+            color: rgba(p.text_color),
         },
         ModKind::Crop => Modification::Crop {
             top: px(p.top),
