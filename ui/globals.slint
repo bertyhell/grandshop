@@ -21,7 +21,7 @@ export global Theme {
     out property <color> crop-handle-shadow: #00000080;
 }
 
-export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale, improve-faces }
+export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale, improve-faces, remove-background }
 
 // Union of the parameters of every modification kind; each kind uses a few of them.
 // Pixel values are in original-image pixels.
@@ -53,6 +53,9 @@ export struct ModParams {
     best-quality: bool,
     // "Improve faces" card: percent of the restored face that is blended in
     strength: float,
+    // "Remove background" card fills the background with `background` instead of making it
+    // transparent
+    fill-background: bool,
 }
 
 // Numeric parameters that a slider can change
@@ -65,7 +68,7 @@ export enum ModField {
 export enum ColorField { color, text-color, background }
 
 // On/off parameters
-export enum FlagField { mirror-horizontal, mirror-vertical, enlarge, best-quality }
+export enum FlagField { mirror-horizontal, mirror-vertical, enlarge, best-quality, fill-background }
 
 export struct ModEntry {
     kind: ModKind,
@@ -113,6 +116,9 @@ export global AppState {
     // The AI models for "Improve faces" are being downloaded, and the fraction done
     in property <bool> faces-downloading: false;
     in property <float> faces-download-progress: 0;
+    // The AI model for "Remove background" is being downloaded, and the fraction done
+    in property <bool> background-downloading: false;
+    in property <float> background-download-progress: 0;
     // Longest side an enlarged image may get
     in property <int> upscale-max-edge;
     // Clicking the preview picks a colour for the open cards with a colour picker
@@ -195,6 +201,9 @@ export global Strings {
     out property <string> upscaler-downloading: @tr("Downloading the enlarging tool (2 MB)…");
     out property <string> upscaler-best-downloading: @tr("Downloading the best quality enlarging tool (140 MB)…");
     out property <string> upscaler-ready: @tr("The enlarging tool is ready");
+    out property <string> background-downloading: @tr("Downloading the background tool (225 MB)…");
+    out property <string> background-ready: @tr("The background tool is ready");
+    out property <string> background-failed: @tr("Downloading the background tool failed. Check the internet connection and add the operation again.");
     out property <string> faces-downloading: @tr("Downloading the face tool (345 MB)…");
     out property <string> faces-ready: @tr("The face tool is ready");
     out property <string> faces-failed: @tr("Downloading the face tool failed. Check the internet connection and add the operation again.");

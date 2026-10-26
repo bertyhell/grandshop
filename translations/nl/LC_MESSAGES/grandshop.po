@@ -259,6 +259,33 @@ msgstr "Het gezichtsprogramma is klaar"
 msgid "Downloading the face tool failed. Check the internet connection and add the operation again."
 msgstr "Het downloaden van het gezichtsprogramma is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."
 
+msgid "Remove background (AI)"
+msgstr "Achtergrond verwijderen (AI)"
+
+msgid "Remove background {}"
+msgstr "Achtergrond verwijderen {}"
+
+msgid "Fill the background with a colour"
+msgstr "Vul de achtergrond met een kleur"
+
+msgid "Downloading the background tool… {}%"
+msgstr "Het achtergrondprogramma wordt gedownload… {}%"
+
+msgid "Finds the people or things in front with artificial intelligence and fills everything behind them."
+msgstr "Zoekt met artificiële intelligentie de mensen of dingen vooraan en vult alles erachter op."
+
+msgid "Finds the people or things in front with artificial intelligence and makes everything behind them see-through. Save as PNG to keep it see-through."
+msgstr "Zoekt met artificiële intelligentie de mensen of dingen vooraan en maakt alles erachter doorzichtig. Bewaar als PNG om het doorzichtig te houden."
+
+msgid "Downloading the background tool (225 MB)…"
+msgstr "Het achtergrondprogramma wordt gedownload (225 MB)…"
+
+msgid "The background tool is ready"
+msgstr "Het achtergrondprogramma is klaar"
+
+msgid "Downloading the background tool failed. Check the internet connection and add the operation again."
+msgstr "Het downloaden van het achtergrondprogramma is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."
+
 msgid "Enlarge times"
 msgstr "Aantal keer vergroten"
 

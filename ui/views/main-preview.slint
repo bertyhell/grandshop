@@ -67,6 +67,18 @@ export component MainPreview inherits Rectangle {
         changed width => { root.report-view(); }
         changed height => { root.report-view(); }
 
+        // Shows through where the image is transparent
+        Image {
+            x: picture.x;
+            y: picture.y;
+            width: picture.width;
+            height: picture.height;
+            source: @image-url("../icons/checker.svg");
+            horizontal-tiling: repeat;
+            vertical-tiling: repeat;
+            accessible-role: none;
+        }
+
         picture := Image {
             width: AppState.preview-image.width * 1px * flick.fit * root.zoom;
             height: AppState.preview-image.height * 1px * flick.fit * root.zoom;

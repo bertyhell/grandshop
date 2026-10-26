@@ -46,6 +46,9 @@ pub enum Modification {
     /// Restores the faces with the AI model; `strength` 0 to 1 blends from the original to the
     /// restored face, and 0 leaves the image as is (model not downloaded yet).
     ImproveFaces { strength: f32 },
+    /// Makes the background transparent with the AI model, or `fill` when given. Leaves the
+    /// image as is while `downloaded` is false.
+    RemoveBackground { fill: Option<Rgba<u8>>, downloaded: bool },
     /// Text, one line per `\n`, centred on a point given in percent of the image size.
     Annotate { text: String, font_size: f32, x_percent: f32, y_percent: f32, color: Rgba<u8> },
     /// Removes the given number of pixels from each side.
@@ -128,6 +131,10 @@ pub fn apply_step(
         Modification::ImproveFaces { strength } if *strength <= 0.0 => Ok((image.clone(), logical)),
         Modification::ImproveFaces { strength } => {
             Ok((crate::faces::improve_faces(image, strength.min(1.0), feedback)?, logical))
+        }
+        Modification::RemoveBackground { downloaded: false, .. } => Ok((image.clone(), logical)),
+        Modification::RemoveBackground { fill, .. } => {
+            Ok((crate::background::remove_background(image, *fill, feedback)?, logical))
         }
         Modification::Annotate { text, font_size, x_percent, y_percent, color } => Ok((
             annotate::annotate(image, text, font_size * scale, *x_percent, *y_percent, *color),

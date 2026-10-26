@@ -346,3 +346,39 @@ export component ImproveFacesControls inherits Panel {
         wrap: word-wrap;
     }
 }
+
+export component RemoveBackgroundControls inherits Panel {
+    in property <int> index;
+    in property <ModParams> params;
+    spacing: 10px;
+
+    Switch {
+        text: @tr("Fill the background with a colour");
+        checked: root.params.fill-background;
+        toggled => { AppState.set-flag(root.index, FlagField.fill-background, self.checked); }
+    }
+
+    if root.params.fill-background: FormField {
+        label: @tr("Background color");
+        ColorInput {
+            value: root.params.background;
+            edited(value) => { AppState.set-color(root.index, ColorField.background, value); }
+        }
+    }
+
+    if AppState.background-downloading: Text {
+        text: @tr("Downloading the background tool… {}%", Math.round(AppState.background-download-progress * 100));
+        color: Theme.text;
+        font-size: 14px;
+        wrap: word-wrap;
+    }
+
+    Text {
+        text: root.params.fill-background
+            ? @tr("Finds the people or things in front with artificial intelligence and fills everything behind them.")
+            : @tr("Finds the people or things in front with artificial intelligence and makes everything behind them see-through. Save as PNG to keep it see-through.");
+        color: Theme.placeholder;
+        font-size: 13px;
+        wrap: word-wrap;
+    }
+}

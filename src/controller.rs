@@ -13,7 +13,7 @@ use grandshop::io::{default_save_file_name, format_file_size, load_image, save_p
 use grandshop::pipeline::{self, available_borders, Dimensions, Modification};
 use grandshop::resample::resize_exact;
 use grandshop::settings::Settings;
-use grandshop::{faces, upscale};
+use grandshop::{background, faces, upscale};
 use grandshop::view::{Region, ViewTransform};
 use grandshop::worker::{Document, RenderOutput, Worker};
 use image::{Rgba, RgbaImage};
@@ -180,6 +180,7 @@ impl Controller {
                 FlagField::MirrorVertical => p.mirror_vertical = on,
                 FlagField::Enlarge => p.enlarge = on,
                 FlagField::BestQuality => p.best_quality = on,
+                FlagField::FillBackground => p.fill_background = on,
             })
         });
         on!(on_set_text, |this, index, text| this.edit_card(index as usize, |p| p.text = text));
@@ -359,6 +360,9 @@ impl Controller {
         if kind == ModKind::ImproveFaces {
             self.install_ai_tool(AiTool::Faces);
         }
+        if kind == ModKind::RemoveBackground {
+            self.install_ai_tool(AiTool::Background);
+        }
 
         // The new card works on the current result until the next render reports its size
         self.with_state(|s| {
@@ -382,11 +386,13 @@ impl Controller {
         self.with_state(|s| match tool {
             AiTool::Enlarge(_) => s.set_upscaler_download_progress(0.0),
             AiTool::Faces => s.set_faces_download_progress(0.0),
+            AiTool::Background => s.set_background_download_progress(0.0),
         });
         self.notify(ToastKind::Info, |s| match tool {
             AiTool::Enlarge(upscale::Quality::Fast) => s.get_upscaler_downloading(),
             AiTool::Enlarge(upscale::Quality::Best) => s.get_upscaler_best_downloading(),
             AiTool::Faces => s.get_faces_downloading(),
+            AiTool::Background => s.get_background_downloading(),
         });
         let this = self.clone();
         let _ = slint::spawn_local(async move {
@@ -398,6 +404,7 @@ impl Controller {
                         match tool {
                             AiTool::Enlarge(_) => state.set_upscaler_download_progress(fraction),
                             AiTool::Faces => state.set_faces_download_progress(fraction),
+                            AiTool::Background => state.set_background_download_progress(fraction),
                         }
                     });
                 })
@@ -411,6 +418,7 @@ impl Controller {
                     this.notify(ToastKind::Success, |s| match tool {
                         AiTool::Enlarge(_) => s.get_upscaler_ready(),
                         AiTool::Faces => s.get_faces_ready(),
+                        AiTool::Background => s.get_background_ready(),
                     });
                     // The cards now really change the image
                     this.cards_changed();
@@ -420,6 +428,7 @@ impl Controller {
                     this.notify(ToastKind::Error, |s| match tool {
                         AiTool::Enlarge(_) => s.get_upscaler_failed(),
                         AiTool::Faces => s.get_faces_failed(),
+                        AiTool::Background => s.get_background_failed(),
                     });
                 }
             }
@@ -430,9 +439,11 @@ impl Controller {
         let downloads = self.ai_downloads.borrow();
         let enlarging = downloads.iter().any(|t| matches!(t, AiTool::Enlarge(_)));
         let faces = downloads.contains(&AiTool::Faces);
+        let background = downloads.contains(&AiTool::Background);
         self.with_state(|s| {
             s.set_upscaler_downloading(enlarging);
             s.set_faces_downloading(faces);
+            s.set_background_downloading(background);
         });
     }
 
@@ -630,6 +641,7 @@ fn default_params(kind: ModKind, image_width: i32, image_height: i32) -> ModPara
         ModKind::Sepia | ModKind::Mirror | ModKind::Greyscale => {}
         ModKind::Upscale => params.upscale_factor = 2.0,
         ModKind::ImproveFaces => params.strength = 80.0,
+        ModKind::RemoveBackground => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Rotate | ModKind::Crop => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Resize => params.size = image_width.max(image_height).min(10_000) as f32,
         ModKind::Annotate => {
@@ -692,6 +704,10 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
         // Leaves the image as is until the models are downloaded
         ModKind::ImproveFaces if !faces::is_installed() => Modification::ImproveFaces { strength: 0.0 },
         ModKind::ImproveFaces => Modification::ImproveFaces { strength: (p.strength / 100.0).clamp(0.0, 1.0) },
+        ModKind::RemoveBackground => Modification::RemoveBackground {
+            fill: p.fill_background.then(|| rgba(p.background)),
+            downloaded: background::is_installed(),
+        },
         ModKind::Upscale => {
             let wanted = if p.best_quality { upscale::Quality::Best } else { upscale::Quality::Fast };
             // Uses the fast model while the best one downloads, and leaves the image as is
@@ -732,6 +748,7 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
 enum AiTool {
     Enlarge(upscale::Quality),
     Faces,
+    Background,
 }
 
 impl AiTool {
@@ -739,6 +756,7 @@ impl AiTool {
         match self {
             AiTool::Enlarge(quality) => upscale::is_installed(quality),
             AiTool::Faces => faces::is_installed(),
+            AiTool::Background => background::is_installed(),
         }
     }
 
@@ -746,6 +764,7 @@ impl AiTool {
         match self {
             AiTool::Enlarge(quality) => upscale::install(quality, progress),
             AiTool::Faces => faces::install(progress),
+            AiTool::Background => background::install(progress),
         }
     }
 }

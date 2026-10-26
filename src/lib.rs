@@ -1,6 +1,7 @@
 //! Image editing core of Grandshop, independent of the Slint UI.
 
 pub mod ai;
+pub mod background;
 pub mod color;
 pub mod faces;
 pub mod io;
