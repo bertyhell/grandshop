@@ -209,6 +209,8 @@ export component MainPreview inherits Rectangle {
             Text {
                 text: AppState.loading ? @tr("The image is being opened")
                     : AppState.saving ? @tr("The image is being saved")
+                    : AppState.render-progress >= 0
+                    ? @tr("Image is being updated... {}%", Math.round(AppState.render-progress * 100))
                     : @tr("Image is being updated...");
                 font-size: 10px;
                 horizontal-alignment: center;

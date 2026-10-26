@@ -18,6 +18,9 @@ pub struct Settings {
     /// Folder of the last saved image, where the save dialog starts
     #[serde(default)]
     pub last_save_folder: Option<PathBuf>,
+    /// Runs the AI models on the CPU only, for when a graphics driver misbehaves
+    #[serde(default)]
+    pub no_gpu: bool,
 }
 
 impl Settings {
@@ -95,6 +98,7 @@ mod tests {
             language: Some("nl".into()),
             last_open_folder: Some("/photos".into()),
             last_save_folder: Some("/exports".into()),
+            no_gpu: true,
         };
         settings.save(&path).unwrap();
         assert_eq!(Settings::load(&path), settings);

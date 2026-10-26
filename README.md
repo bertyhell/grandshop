@@ -13,6 +13,8 @@ Current features:
 * Crop, freely or to a square, 4:3, 3:2 or 16:9
 * Rotate by any angle, filling or cutting off the corners
 * Mirror horizontally or vertically
+* Enlarge with AI
+* Improve faces with AI
 
 Download: https://github.com/bertyhell/grandshop/releases
 
@@ -27,6 +29,7 @@ Grandshop is a native app written in [Rust](https://www.rust-lang.org) with the
 | --- | --- |
 | `ui/` | The Slint UI: views, components and the controls for each modification |
 | `src/pipeline/` | The image modifications |
+| `src/ai/` | Downloading the AI models and running them with ONNX Runtime, in tiles |
 | `src/worker.rs` | Background rendering of the preview, with a cache per modification |
 | `src/controller.rs` | Connects the UI to the image code: cards, open/save, zoom detail |
 | `translations/` | Translations as gettext `.po` files |
@@ -62,6 +65,29 @@ cargo test
 
 The golden tests compare every modification with the output of the earlier sharp based
 version; `tests/golden/params.json` lists the exact parameters.
+
+### AI models
+
+The AI operations run with [ONNX Runtime](https://onnxruntime.ai) through the `ort` crate,
+which links a prebuilt library at build time. They use the graphics card where possible:
+DirectML on Windows and Core ML on macOS. Linux runs them on the CPU. The setting "Use the
+graphics card for AI operations" switches this off.
+
+The models are not part of the installers. Each one is downloaded the first time it is
+needed, checked against its SHA-256 and kept in the app's data folder (on Linux
+`~/.local/share/grandshop/models/`). They come from
+[facefusion's ONNX exports](https://huggingface.co/facefusion/models-3.0.0):
+
+| Model | Used for | Licence |
+| --- | --- | --- |
+| 4x-ClearRealityV1 | Enlarge, fast | CC BY-NC-SA 4.0 (non-commercial) |
+| Real-ESRGAN x4plus, x2plus | Enlarge, best quality | BSD-3-Clause |
+| SCRFD 2.5G (InsightFace) | Improve faces: finding them | Non-commercial research use |
+| GFPGAN 1.4 | Improve faces: restoring them | Apache-2.0 |
+
+To try the models: `cargo test --release upscale -- --ignored --nocapture` on the test image,
+and `GRANDSHOP_FACES_PHOTO=photo.jpg cargo test --release faces -- --ignored --nocapture` on a
+photo of your own.
 
 ### Translations
 

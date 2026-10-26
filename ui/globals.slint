@@ -21,7 +21,7 @@ export global Theme {
     out property <color> crop-handle-shadow: #00000080;
 }
 
-export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale }
+export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale, improve-faces }
 
 // Union of the parameters of every modification kind; each kind uses a few of them.
 // Pixel values are in original-image pixels. Border thickness, border width and font size
@@ -52,7 +52,7 @@ export struct ModParams {
     upscale-factor: float,
     // Enlarge card uses the large, slow network
     best-quality: bool,
-    // Sepia and black and white, in percent
+    // Sepia, black and white, and "Improve faces" (how much of the restored face), in percent
     strength: float,
     saturation: float,
     // Rotate card cuts off the corners instead of filling them with `background`
@@ -106,6 +106,8 @@ export global AppState {
     in property <bool> rendering: false;
     in property <bool> saving: false;
     out property <bool> busy: loading || rendering || saving;
+    // Fraction done of a long (AI) modification in the current render; -1 when there is none
+    in property <float> render-progress: -1;
 
     // The card list, and the full resolution size of the image that goes into each card
     in property <[ModEntry]> modifications;
@@ -116,8 +118,12 @@ export global AppState {
     // Estimated size of the saved PNG, for the "Reduce image" card
     in property <string> estimated-file-size;
     in property <image> color-wheel;
-    // The AI model for "Enlarge image" is being downloaded
+    // The AI model for "Enlarge image" is being downloaded, and the fraction done
     in property <bool> upscaler-downloading: false;
+    in property <float> upscaler-download-progress: 0;
+    // The AI models for "Improve faces" are being downloaded, and the fraction done
+    in property <bool> faces-downloading: false;
+    in property <float> faces-download-progress: 0;
     // Longest side an enlarged image may get
     in property <int> upscale-max-edge;
     // Clicking the preview picks a colour for the open cards with a colour picker
@@ -184,7 +190,13 @@ export global AppState {
     in-out property <bool> settings-open: false;
     in property <[string]> languages;
     in property <int> language-index: 0;
-    callback save-settings(int);
+    // Run the AI models on the graphics card
+    in property <bool> use-gpu: true;
+    // Space taken by the downloaded AI models, e.g. "75 MB"
+    in property <string> ai-models-size;
+    // Language index and whether to use the graphics card
+    callback save-settings(int, bool);
+    callback delete-ai-models();
 
     callback open-image();
     callback save-image();
@@ -201,8 +213,11 @@ export global Strings {
     out property <string> save-dialog-title: @tr("Choose the location and name to save your image");
     out property <string> pictures: @tr("Pictures");
     out property <string> all-files: @tr("All files");
-    out property <string> upscaler-downloading: @tr("Downloading the enlarging tool (10 MB)…");
-    out property <string> upscaler-best-downloading: @tr("Downloading the best quality enlarging tool (64 MB)…");
+    out property <string> upscaler-downloading: @tr("Downloading the enlarging tool (2 MB)…");
+    out property <string> upscaler-best-downloading: @tr("Downloading the best quality enlarging tool (140 MB)…");
     out property <string> upscaler-ready: @tr("The enlarging tool is ready");
+    out property <string> faces-downloading: @tr("Downloading the face tool (345 MB)…");
+    out property <string> faces-ready: @tr("The face tool is ready");
+    out property <string> faces-failed: @tr("Downloading the face tool failed. Check the internet connection and add the operation again.");
     out property <string> upscaler-failed: @tr("Downloading the enlarging tool failed. Check the internet connection and add the operation again.");
 }

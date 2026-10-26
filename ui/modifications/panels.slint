@@ -388,7 +388,7 @@ export component UpscaleControls inherits Panel {
     }
 
     if AppState.upscaler-downloading: Text {
-        text: @tr("Downloading the enlarging tool…");
+        text: @tr("Downloading the enlarging tool… {}%", Math.round(AppState.upscaler-download-progress * 100));
         color: Theme.text;
         font-size: 14px;
         wrap: word-wrap;
@@ -398,6 +398,36 @@ export component UpscaleControls inherits Panel {
         text: root.params.best-quality
             ? @tr("Best quality can take several minutes, even for small images.")
             : @tr("Enlarging uses artificial intelligence and can take a minute for large images.");
+        color: Theme.placeholder;
+        font-size: 13px;
+        wrap: word-wrap;
+    }
+}
+
+export component ImproveFacesControls inherits Panel {
+    in property <int> index;
+    in property <ModParams> params;
+    spacing: 10px;
+
+    FormField {
+        label: @tr("Strength (%)");
+        RangeInput {
+            minimum: 0;
+            maximum: 100;
+            value: root.params.strength;
+            edited(value) => { AppState.set-number(root.index, ModField.strength, value); }
+        }
+    }
+
+    if AppState.faces-downloading: Text {
+        text: @tr("Downloading the face tool… {}%", Math.round(AppState.faces-download-progress * 100));
+        color: Theme.text;
+        font-size: 14px;
+        wrap: word-wrap;
+    }
+
+    Text {
+        text: @tr("Finds the faces in the photo and makes them sharper with artificial intelligence. Takes about a second per face.");
         color: Theme.placeholder;
         font-size: 13px;
         wrap: word-wrap;

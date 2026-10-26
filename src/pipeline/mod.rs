@@ -21,6 +21,8 @@ mod srgb;
 use anyhow::Result;
 use image::{Rgba, RgbaImage};
 
+use crate::ai::Feedback;
+
 pub use annotate::TextEffect;
 pub use image_border::available_borders;
 
@@ -46,6 +48,9 @@ pub enum Modification {
     /// Enlarges `factor` times with the AI model; 1 leaves the image as is (model not
     /// downloaded yet).
     Upscale { factor: u32, quality: crate::upscale::Quality },
+    /// Restores the faces with the AI model; `strength` 0 to 1 blends from the original to the
+    /// restored face, and 0 leaves the image as is (model not downloaded yet).
+    ImproveFaces { strength: f32 },
     /// Text, one line per `\n`, centred on a point given in percent of the image size. The font
     /// size is a percentage of the shorter side.
     Annotate { text: String, font_percent: f32, x_percent: f32, y_percent: f32, color: Rgba<u8>, effect: TextEffect },
@@ -78,12 +83,14 @@ fn scale_px(value: u32, scale: f32) -> u32 {
     (value as f32 * scale).round() as u32
 }
 
-/// Applies one modification. Returns the new image and its logical size.
+/// Applies one modification. Returns the new image and its logical size. The AI
+/// modifications report progress to `feedback` and stop early when it says so.
 pub fn apply_step(
     image: &RgbaImage,
     logical: Dimensions,
     modification: &Modification,
     scale: f32,
+    feedback: &Feedback,
 ) -> Result<(RgbaImage, Dimensions)> {
     match modification {
         Modification::AddBorder { percent, color } => {
@@ -132,7 +139,11 @@ pub fn apply_step(
                     crate::upscale::MAX_RESULT_EDGE
                 );
             }
-            Ok((crate::upscale::upscale(image, *factor, *quality)?, logical))
+            Ok((crate::upscale::upscale(image, *factor, *quality, feedback)?, logical))
+        }
+        Modification::ImproveFaces { strength } if *strength <= 0.0 => Ok((image.clone(), logical)),
+        Modification::ImproveFaces { strength } => {
+            Ok((crate::faces::improve_faces(image, strength.min(1.0), feedback)?, logical))
         }
         Modification::Annotate { text, font_percent, x_percent, y_percent, color, effect } => Ok((
             annotate::annotate(
@@ -190,7 +201,7 @@ pub fn apply(
     let mut logical = original;
     let mut errors = Vec::new();
     for (index, modification) in modifications.iter().enumerate() {
-        match apply_step(&image, logical, modification, scale) {
+        match apply_step(&image, logical, modification, scale, &Feedback::NONE) {
             Ok((next, next_logical)) => {
                 image = next;
                 logical = next_logical;

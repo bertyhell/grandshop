@@ -4,6 +4,7 @@
 
 use std::path::Path;
 
+use grandshop::ai::Feedback;
 use grandshop::io::load_image;
 use grandshop::pipeline::{apply_step, parse_hex_color, Dimensions, Modification};
 use image::RgbaImage;
@@ -40,7 +41,7 @@ fn diff(expected: &RgbaImage, actual: &RgbaImage) -> Diff {
 fn check(file: &str, modification: Modification, max_mean: f64, max_outliers: f64) {
     let original = load_image(&Path::new(GOLDEN).join("original.png")).unwrap();
     let expected = load_image(&Path::new(GOLDEN).join(file)).unwrap();
-    let (actual, logical) = apply_step(&original, Dimensions::of(&original), &modification, 1.0).unwrap();
+    let (actual, logical) = apply_step(&original, Dimensions::of(&original), &modification, 1.0, &Feedback::NONE).unwrap();
     assert_eq!(Dimensions::of(&actual), logical);
     let d = diff(&expected, &actual);
     println!("{file}: mean {:.3}, outliers {:.4}%", d.mean, d.outliers * 100.0);

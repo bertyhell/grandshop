@@ -27,8 +27,16 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 directories = "6"
 sys-locale = "0.3"
-candle-core = "0.9"
+# ONNX Runtime for the AI operations; the prebuilt library is linked statically at build time
+ort = { version = "=2.0.0-rc.15", default-features = false, features = ["std", "download-binaries", "tls-rustls", "api-31"] }
 sha2 = "0.10"
+
+# Run the AI models on the graphics card: DirectX 12 on Windows, Core ML on macOS
+[target.'cfg(windows)'.dependencies]
+ort = { version = "=2.0.0-rc.15", default-features = false, features = ["directml"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+ort = { version = "=2.0.0-rc.15", default-features = false, features = ["coreml"] }
 
 [dev-dependencies]
 tempfile = "3"
@@ -58,7 +66,7 @@ icons = ["assets/icons/icon.png", "assets/icons/icon.ico"]
 formats = ["nsis", "app", "dmg", "deb", "appimage"]
 
 [package.metadata.packager.deb]
-depends = ["libfontconfig1", "libxkbcommon0"]
+depends = ["libfontconfig1", "libxkbcommon0", "libstdc++6"]
 
 [package.metadata.packager.nsis]
 installer-mode = "currentUser"

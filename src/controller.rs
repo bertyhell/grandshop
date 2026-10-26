@@ -14,7 +14,7 @@ use grandshop::io::{default_save_file_name, format_file_size, load_image, save_p
 use grandshop::pipeline::{self, available_borders, Dimensions, Modification, TextEffect};
 use grandshop::resample::resize_exact;
 use grandshop::settings::Settings;
-use grandshop::upscale;
+use grandshop::{faces, upscale};
 use grandshop::view::{Region, ViewTransform};
 use grandshop::worker::{Document, RenderOutput, Worker};
 use image::{Rgba, RgbaImage};
@@ -93,8 +93,8 @@ pub struct Controller {
     detail_timer: slint::Timer,
     /// Generation of the last full resolution render that was asked for
     detail_requested: Cell<u64>,
-    /// The AI models for "Enlarge image" that are being downloaded
-    upscaler_downloads: RefCell<Vec<upscale::Quality>>,
+    /// The AI operations whose models are being downloaded
+    ai_downloads: RefCell<Vec<AiTool>>,
     state: RefCell<State>,
     cards: Rc<VecModel<ModEntry>>,
     borders: Vec<String>,
@@ -105,6 +105,12 @@ impl Controller {
     pub fn new(ui: &AppWindow) -> Rc<Self> {
         let shared = Arc::new(RenderShared::default());
         let worker = Worker::new(result_handler(ui.as_weak(), shared.clone()));
+        {
+            let ui = ui.as_weak();
+            worker.on_progress(move |_, fraction| {
+                let _ = ui.upgrade_in_event_loop(move |ui| ui.global::<AppState>().set_render_progress(fraction));
+            });
+        }
         let detail_worker = Worker::with_step_cache(false, detail_handler(ui.as_weak(), shared.clone()));
         let cards = Rc::new(VecModel::default());
         let borders = available_borders();
@@ -144,7 +150,7 @@ impl Controller {
             detail_worker,
             detail_timer: slint::Timer::default(),
             detail_requested: Cell::new(0),
-            upscaler_downloads: RefCell::default(),
+            ai_downloads: RefCell::default(),
             state: RefCell::default(),
             cards,
             borders,
@@ -181,7 +187,7 @@ impl Controller {
         });
         on!(on_set_flag, |this, index, field, on| {
             if field == FlagField::BestQuality && on {
-                this.install_upscaler(upscale::Quality::Best);
+                this.install_ai_tool(AiTool::Enlarge(upscale::Quality::Best));
             }
             this.edit_card(index as usize, |p| match field {
                 FlagField::MirrorHorizontal => p.mirror_horizontal = on,
@@ -367,7 +373,10 @@ impl Controller {
         }
         self.cards.push(ModEntry { kind, number, open: true, params: default_params(kind, width, height) });
         if kind == ModKind::Upscale {
-            self.install_upscaler(upscale::Quality::Fast);
+            self.install_ai_tool(AiTool::Enlarge(upscale::Quality::Fast));
+        }
+        if kind == ModKind::ImproveFaces {
+            self.install_ai_tool(AiTool::Faces);
         }
 
         // The new card works on the current result until the next render reports its size
@@ -380,36 +389,69 @@ impl Controller {
         self.cards_changed();
     }
 
-    /// Downloads the AI model for `quality` the first time it is asked for: the fast one when
-    /// an "Enlarge image" card is added, the best one when that switch is turned on. Until
-    /// it is there, the card falls back to the fast model or leaves the image as is.
-    fn install_upscaler(self: &Rc<Self>, quality: upscale::Quality) {
-        if upscale::is_installed(quality) || self.upscaler_downloads.borrow().contains(&quality) {
+    /// Downloads the models of an AI operation the first time it is asked for: when its card
+    /// is added, or for the best enlarging quality when that switch is turned on. Until they
+    /// are there, the card falls back to the fast enlarging model or leaves the image as is.
+    fn install_ai_tool(self: &Rc<Self>, tool: AiTool) {
+        if tool.is_installed() || self.ai_downloads.borrow().contains(&tool) {
             return;
         }
-        self.upscaler_downloads.borrow_mut().push(quality);
-        self.with_state(|s| s.set_upscaler_downloading(true));
-        self.notify(ToastKind::Info, |s| match quality {
-            upscale::Quality::Fast => s.get_upscaler_downloading(),
-            upscale::Quality::Best => s.get_upscaler_best_downloading(),
+        self.ai_downloads.borrow_mut().push(tool);
+        self.show_downloads();
+        self.with_state(|s| match tool {
+            AiTool::Enlarge(_) => s.set_upscaler_download_progress(0.0),
+            AiTool::Faces => s.set_faces_download_progress(0.0),
+        });
+        self.notify(ToastKind::Info, |s| match tool {
+            AiTool::Enlarge(upscale::Quality::Fast) => s.get_upscaler_downloading(),
+            AiTool::Enlarge(upscale::Quality::Best) => s.get_upscaler_best_downloading(),
+            AiTool::Faces => s.get_faces_downloading(),
         });
         let this = self.clone();
         let _ = slint::spawn_local(async move {
-            let installed = run_in_background(move || upscale::install(quality)).await;
-            this.upscaler_downloads.borrow_mut().retain(|q| *q != quality);
-            let downloading = !this.upscaler_downloads.borrow().is_empty();
-            this.with_state(|s| s.set_upscaler_downloading(downloading));
+            let ui = this.ui.clone();
+            let installed = run_in_background(move || {
+                tool.install(&|fraction| {
+                    let _ = ui.upgrade_in_event_loop(move |ui| {
+                        let state = ui.global::<AppState>();
+                        match tool {
+                            AiTool::Enlarge(_) => state.set_upscaler_download_progress(fraction),
+                            AiTool::Faces => state.set_faces_download_progress(fraction),
+                        }
+                    });
+                })
+            })
+            .await;
+            this.ai_downloads.borrow_mut().retain(|t| *t != tool);
+            this.show_downloads();
+            this.with_state(crate::show_ai_models_size);
             match installed {
                 Ok(()) => {
-                    this.notify(ToastKind::Success, |s| s.get_upscaler_ready());
-                    // The cards now turn into real enlargements
+                    this.notify(ToastKind::Success, |s| match tool {
+                        AiTool::Enlarge(_) => s.get_upscaler_ready(),
+                        AiTool::Faces => s.get_faces_ready(),
+                    });
+                    // The cards now really change the image
                     this.cards_changed();
                 }
                 Err(err) => {
                     eprintln!("{err:#}");
-                    this.notify(ToastKind::Error, |s| s.get_upscaler_failed());
+                    this.notify(ToastKind::Error, |s| match tool {
+                        AiTool::Enlarge(_) => s.get_upscaler_failed(),
+                        AiTool::Faces => s.get_faces_failed(),
+                    });
                 }
             }
+        });
+    }
+
+    fn show_downloads(&self) {
+        let downloads = self.ai_downloads.borrow();
+        let enlarging = downloads.iter().any(|t| matches!(t, AiTool::Enlarge(_)));
+        let faces = downloads.contains(&AiTool::Faces);
+        self.with_state(|s| {
+            s.set_upscaler_downloading(enlarging);
+            s.set_faces_downloading(faces);
         });
     }
 
@@ -614,6 +656,7 @@ impl Controller {
             let has_modifications = !state.modifications.is_empty();
             self.with_state(|s| {
                 s.set_rendering(!shown.is_empty());
+                s.set_render_progress(-1.0);
                 s.set_has_modified_image(has_modifications);
             });
         }
@@ -641,6 +684,7 @@ fn default_params(kind: ModKind, image_width: i32, image_height: i32) -> ModPara
         ModKind::Sepia | ModKind::Greyscale => params.strength = 100.0,
         ModKind::Mirror => {}
         ModKind::Upscale => params.upscale_factor = 2.0,
+        ModKind::ImproveFaces => params.strength = 80.0,
         ModKind::Rotate | ModKind::Crop => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Resize => params.size = image_width.max(image_height).min(10_000) as f32,
         ModKind::Annotate => {
@@ -713,6 +757,9 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
             Modification::Rotate { angle: p.angle, background: rgba(p.background), fill: p.rotate_fill }
         }
         ModKind::Mirror => Modification::Mirror { horizontal: p.mirror_horizontal, vertical: p.mirror_vertical },
+        // Leaves the image as is until the models are downloaded
+        ModKind::ImproveFaces if !faces::is_installed() => Modification::ImproveFaces { strength: 0.0 },
+        ModKind::ImproveFaces => Modification::ImproveFaces { strength: (p.strength / 100.0).clamp(0.0, 1.0) },
         ModKind::Upscale => {
             let wanted = if p.best_quality { upscale::Quality::Best } else { upscale::Quality::Fast };
             // Uses the fast model while the best one downloads, and leaves the image as is
@@ -750,6 +797,29 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
             bottom: px(p.bottom),
             left: px(p.left),
         },
+    }
+}
+
+/// An AI operation, for downloading its models
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum AiTool {
+    Enlarge(upscale::Quality),
+    Faces,
+}
+
+impl AiTool {
+    fn is_installed(self) -> bool {
+        match self {
+            AiTool::Enlarge(quality) => upscale::is_installed(quality),
+            AiTool::Faces => faces::is_installed(),
+        }
+    }
+
+    fn install(self, progress: &dyn Fn(f32)) -> anyhow::Result<()> {
+        match self {
+            AiTool::Enlarge(quality) => upscale::install(quality, progress),
+            AiTool::Faces => faces::install(progress),
+        }
     }
 }
 
@@ -811,6 +881,7 @@ fn result_handler(
             }
             state.set_input_sizes(ModelRc::new(VecModel::from(sizes)));
             state.set_rendering(false);
+            state.set_render_progress(-1.0);
             update_crop_frame(&ui, *shared.transform.lock().unwrap());
         });
     }
