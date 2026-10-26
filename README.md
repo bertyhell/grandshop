@@ -21,7 +21,7 @@ Download: https://gitlab.com/bertyhell/grandshop/-/releases
 ## Developer docs
 
 Grandshop is a native app written in [Rust](https://www.rust-lang.org) with the
-[Slint](https://slint.dev) UI toolkit. The code lives in [`grandshop-slint/`](grandshop-slint):
+[Slint](https://slint.dev) UI toolkit:
 
 | Path | What |
 | --- | --- |
@@ -48,16 +48,15 @@ sudo apt install libfontconfig1-dev libxkbcommon-dev
 Then:
 
 ```bash
-cd grandshop-slint
-cargo run --release
+./run.sh
 ```
 
-`cargo run --release -- photo.jpg` opens a photo right away.
+`./run.sh photo.jpg` opens a photo right away. `./build.sh` only builds the program, into
+`target/release/grandshop`.
 
 ### Tests
 
 ```bash
-cd grandshop-slint
 cargo test
 ```
 
@@ -71,7 +70,6 @@ UI texts are marked with `@tr("English text")` in the `.slint` files. The Dutch 
 that every text is translated:
 
 ```bash
-cd grandshop-slint
 python3 -I scripts/check-translations.py
 ```
 
@@ -89,9 +87,8 @@ cargo install cargo-packager --locked
 Then, on each operating system:
 
 ```bash
-cd grandshop-slint
-cargo packager --release
+./build.sh --package
 ```
 
-The installers end up in `grandshop-slint/target/packages`: an NSIS setup `.exe` on Windows,
+The installers end up in `target/packages`: an NSIS setup `.exe` on Windows,
 an `.app` and `.dmg` on macOS, and a `.deb` and AppImage on Linux.
