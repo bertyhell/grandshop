@@ -235,6 +235,30 @@ msgstr "Beste kwaliteit (veel trager)"
 msgid "Best quality can take several minutes, even for small images."
 msgstr "Beste kwaliteit kan enkele minuten duren, zelfs voor kleine afbeeldingen."
 
+msgid "Improve faces (AI)"
+msgstr "Gezichten verbeteren (AI)"
+
+msgid "Improve faces {}"
+msgstr "Gezichten verbeteren {}"
+
+msgid "Strength (%)"
+msgstr "Sterkte (%)"
+
+msgid "Downloading the face tool… {}%"
+msgstr "Het gezichtsprogramma wordt gedownload… {}%"
+
+msgid "Finds the faces in the photo and makes them sharper with artificial intelligence. Takes about a second per face."
+msgstr "Zoekt de gezichten in de foto en maakt ze scherper met artificiële intelligentie. Duurt ongeveer een seconde per gezicht."
+
+msgid "Downloading the face tool (345 MB)…"
+msgstr "Het gezichtsprogramma wordt gedownload (345 MB)…"
+
+msgid "The face tool is ready"
+msgstr "Het gezichtsprogramma is klaar"
+
+msgid "Downloading the face tool failed. Check the internet connection and add the operation again."
+msgstr "Het downloaden van het gezichtsprogramma is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."
+
 msgid "Enlarge times"
 msgstr "Aantal keer vergroten"
 

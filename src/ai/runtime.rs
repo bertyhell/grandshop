@@ -1,14 +1,15 @@
 //! ONNX Runtime sessions, on the graphics card where the platform has a driver for it
 //! (DirectX 12 on Windows, Core ML on macOS), else on the CPU.
 
+use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 
 use anyhow::{anyhow, ensure, Context, Result};
 use ort::environment::Environment;
-use ort::session::Session;
-use ort::value::Tensor;
+use ort::session::{Session, SessionInputValue};
+use ort::value::{DynValue, Tensor};
 
 static USE_GPU: AtomicBool = AtomicBool::new(true);
 
@@ -77,10 +78,29 @@ fn load(path: &Path) -> Result<Session> {
 pub fn run_image(session: &SharedSession, input: Vec<f32>, size: u32) -> Result<(Vec<usize>, Vec<f32>)> {
     let size = size as usize;
     ensure!(input.len() == 3 * size * size, "input has {} values, not 3×{size}×{size}", input.len());
+    let tensor = Tensor::from_array(([1usize, 3, size, size], input))?.into_dyn();
+    let mut outputs = run(session, tensor, Vec::new())?;
+    Ok(outputs.swap_remove(0))
+}
+
+/// Runs a network on `input` (its first input) plus `extra` inputs by name, and returns every
+/// float output in order, as shape and values.
+pub fn run(
+    session: &SharedSession,
+    input: DynValue,
+    extra: Vec<(&str, DynValue)>,
+) -> Result<Vec<(Vec<usize>, Vec<f32>)>> {
     let mut session = session.lock().unwrap();
     let name = session.inputs()[0].name().to_owned();
-    let tensor = Tensor::from_array(([1usize, 3, size, size], input))?;
-    let outputs = session.run(ort::inputs![name => tensor])?;
-    let (shape, data) = outputs[0].try_extract_tensor::<f32>()?;
-    Ok((shape.iter().map(|&d| d as usize).collect(), data.to_vec()))
+    let mut inputs: Vec<(Cow<str>, SessionInputValue)> = vec![(name.into(), input.into())];
+    inputs.extend(extra.into_iter().map(|(name, value)| (Cow::Owned(name.to_owned()), value.into())));
+    let outputs = session.run(inputs)?;
+    let mut result = Vec::new();
+    for (_, value) in outputs.iter() {
+        if let Ok((shape, data)) = value.try_extract_tensor::<f32>() {
+            result.push((shape.iter().map(|&d| d as usize).collect(), data.to_vec()));
+        }
+    }
+    ensure!(!result.is_empty(), "the model gave no float output");
+    Ok(result)
 }

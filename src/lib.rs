@@ -2,6 +2,7 @@
 
 pub mod ai;
 pub mod color;
+pub mod faces;
 pub mod io;
 pub mod pipeline;
 pub mod proxy;

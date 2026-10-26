@@ -40,14 +40,14 @@ export component ControlsSidebar inherits Rectangle {
             property <[ModKind]> kinds: [
                 ModKind.add-border, ModKind.add-image-border, ModKind.brightness, ModKind.sepia,
                 ModKind.resize, ModKind.annotate, ModKind.crop, ModKind.rotate, ModKind.mirror,
-                ModKind.greyscale, ModKind.upscale,
+                ModKind.greyscale, ModKind.upscale, ModKind.improve-faces,
             ];
             options: [
                 @tr("Add a colored border"), @tr("Add image border"),
                 @tr("Adjust the brightness and contrast"), @tr("Add a sepia effect"),
                 @tr("Reduce image (file size)"), @tr("Add text"), @tr("Crop image"),
                 @tr("Rotate image"), @tr("Mirror image"), @tr("Black and White image"),
-                @tr("Enlarge image (AI)"),
+                @tr("Enlarge image (AI)"), @tr("Improve faces (AI)"),
             ];
             placeholder: AppState.modifications.length > 0
                 ? @tr("Choose another operation") : @tr("Select an operation");

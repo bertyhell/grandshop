@@ -14,6 +14,7 @@ Current features:
 * Rotate by any angle
 * Mirror horizontally or vertically
 * Enlarge with AI
+* Improve faces with AI
 
 Download: https://github.com/bertyhell/grandshop/releases
 
@@ -81,8 +82,12 @@ needed, checked against its SHA-256 and kept in the app's data folder (on Linux
 | --- | --- | --- |
 | 4x-ClearRealityV1 | Enlarge, fast | CC BY-NC-SA 4.0 (non-commercial) |
 | Real-ESRGAN x4plus, x2plus | Enlarge, best quality | BSD-3-Clause |
+| SCRFD 2.5G (InsightFace) | Improve faces: finding them | Non-commercial research use |
+| GFPGAN 1.4 | Improve faces: restoring them | Apache-2.0 |
 
-To try the models on the test image: `cargo test --release upscale -- --ignored --nocapture`.
+To try the models: `cargo test --release upscale -- --ignored --nocapture` on the test image,
+and `GRANDSHOP_FACES_PHOTO=photo.jpg cargo test --release faces -- --ignored --nocapture` on a
+photo of your own.
 
 ### Translations
 
