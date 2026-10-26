@@ -56,11 +56,11 @@ fn load(path: &Path) -> Result<Session> {
         #[cfg(windows)]
         {
             // DirectML needs these off
-            builder = builder.with_memory_pattern(false).map_err(ort::Error::from)?;
-            builder = builder.with_parallel_execution(false).map_err(ort::Error::from)?;
+            builder = builder.with_memory_pattern(false).map_err(ort::Error::<()>::from)?;
+            builder = builder.with_parallel_execution(false).map_err(ort::Error::<()>::from)?;
             builder = builder
                 .with_execution_providers([ort::ep::DirectML::default().build()])
-                .map_err(ort::Error::from)?;
+                .map_err(ort::Error::<()>::from)?;
         }
         #[cfg(target_os = "macos")]
         {
@@ -68,7 +68,7 @@ fn load(path: &Path) -> Result<Session> {
             if let Some(cache) = super::models::models_dir().map(|dir| dir.join("coreml-cache")) {
                 coreml = coreml.with_model_cache_dir(cache.display());
             }
-            builder = builder.with_execution_providers([coreml.build()]).map_err(ort::Error::from)?;
+            builder = builder.with_execution_providers([coreml.build()]).map_err(ort::Error::<()>::from)?;
         }
     }
     Ok(builder.commit_from_file(path)?)
