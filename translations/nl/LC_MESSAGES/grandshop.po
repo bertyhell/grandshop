@@ -28,8 +28,6 @@ msgstr "Het toepassen van de laatste bewerking is mislukt"
 msgid "Border style"
 msgstr "Randstijl"
 
-msgid "Border width"
-msgstr "Randbreedte"
 
 msgid "Border {}"
 msgstr "Rand {}"
@@ -145,8 +143,6 @@ msgstr "Verkleinen {}"
 msgid "Text"
 msgstr "Tekst"
 
-msgid "Text size"
-msgstr "Tekst grootte"
 
 msgid "The image is being opened"
 msgstr "De afbeelding wordt geopend"
@@ -157,8 +153,6 @@ msgstr "De afbeelding wordt opgeslagen"
 msgid "The value must be a valid number"
 msgstr "De waarde moet een geldig getal zijn"
 
-msgid "Thickness"
-msgstr "Dikte"
 
 msgid "Top"
 msgstr "Bovenkant"
@@ -291,3 +285,12 @@ msgstr "Rand"
 
 msgid "Shadow"
 msgstr "Schaduw"
+
+msgid "Thickness (%)"
+msgstr "Dikte (%)"
+
+msgid "Border width (%)"
+msgstr "Randbreedte (%)"
+
+msgid "Text size (%)"
+msgstr "Tekstgrootte (%)"

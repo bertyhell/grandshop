@@ -26,10 +26,11 @@ pub use image_border::available_borders;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Modification {
-    /// Solid border around the image, `thickness` pixels on every side.
-    AddBorder { thickness: u32, color: Rgba<u8> },
-    /// Decorative border drawn over the edges of the image. `None` until a style is picked.
-    AddImageBorder { border: Option<String>, width: u32 },
+    /// Solid border around the image on every side, `percent` of its shorter side thick.
+    AddBorder { percent: f32, color: Rgba<u8> },
+    /// Decorative border drawn over the edges of the image, its corners `percent` of the
+    /// shorter side wide. `None` until a style is picked.
+    AddImageBorder { border: Option<String>, percent: f32 },
     /// Multiplies the lightness and the colour intensity, then stretches the contrast; 1.0
     /// leaves the image unchanged.
     Brightness { factor: f32, contrast: f32, saturation: f32 },
@@ -45,8 +46,9 @@ pub enum Modification {
     /// Enlarges `factor` times with the AI model; 1 leaves the image as is (model not
     /// downloaded yet).
     Upscale { factor: u32, quality: crate::upscale::Quality },
-    /// Text, one line per `\n`, centred on a point given in percent of the image size.
-    Annotate { text: String, font_size: f32, x_percent: f32, y_percent: f32, color: Rgba<u8>, effect: TextEffect },
+    /// Text, one line per `\n`, centred on a point given in percent of the image size. The font
+    /// size is a percentage of the shorter side.
+    Annotate { text: String, font_percent: f32, x_percent: f32, y_percent: f32, color: Rgba<u8>, effect: TextEffect },
     /// Removes the given number of pixels from each side.
     Crop { top: u32, right: u32, bottom: u32, left: u32 },
     /// Adds the given number of pixels of `background` to each side.
@@ -66,6 +68,11 @@ impl Dimensions {
     }
 }
 
+/// Length in original-image pixels of `percent` of the shorter side.
+fn percent_of_shorter_side(percent: f32, logical: Dimensions) -> f32 {
+    logical.width.min(logical.height) as f32 * percent / 100.0
+}
+
 /// Converts a length in original-image pixels to working-image pixels.
 fn scale_px(value: u32, scale: f32) -> u32 {
     (value as f32 * scale).round() as u32
@@ -79,7 +86,8 @@ pub fn apply_step(
     scale: f32,
 ) -> Result<(RgbaImage, Dimensions)> {
     match modification {
-        Modification::AddBorder { thickness, color } => {
+        Modification::AddBorder { percent, color } => {
+            let thickness = &(percent_of_shorter_side(*percent, logical).round().max(0.0) as u32);
             let logical = Dimensions {
                 width: logical.width + 2 * thickness,
                 height: logical.height + 2 * thickness,
@@ -87,8 +95,8 @@ pub fn apply_step(
             Ok((add_border::add_border(image, scale_px(*thickness, scale), *color), logical))
         }
         Modification::AddImageBorder { border: None, .. } => Ok((image.clone(), logical)),
-        Modification::AddImageBorder { border: Some(name), width } => {
-            let border_width = (*width as f32 * scale).max(1.0);
+        Modification::AddImageBorder { border: Some(name), percent } => {
+            let border_width = (percent_of_shorter_side(*percent, logical).round() * scale).max(1.0);
             Ok((image_border::add_image_border(image, name, border_width)?, logical))
         }
         Modification::Brightness { factor, contrast, saturation } => {
@@ -126,8 +134,16 @@ pub fn apply_step(
             }
             Ok((crate::upscale::upscale(image, *factor, *quality)?, logical))
         }
-        Modification::Annotate { text, font_size, x_percent, y_percent, color, effect } => Ok((
-            annotate::annotate(image, text, font_size * scale, *x_percent, *y_percent, *color, *effect),
+        Modification::Annotate { text, font_percent, x_percent, y_percent, color, effect } => Ok((
+            annotate::annotate(
+                image,
+                text,
+                percent_of_shorter_side(*font_percent, logical) * scale,
+                *x_percent,
+                *y_percent,
+                *color,
+                *effect,
+            ),
             logical,
         )),
         Modification::Crop { top, right, bottom, left } => {
@@ -233,7 +249,7 @@ mod tests {
             &image,
             Dimensions::of(&image),
             &[
-                Modification::AddBorder { thickness: 50, color: Rgba([0, 0, 0, 255]) },
+                Modification::AddBorder { percent: 10.0, color: Rgba([0, 0, 0, 255]) },
                 Modification::Crop { top: 10, right: 20, bottom: 30, left: 40 },
                 Modification::Resize { size: 520 },
                 Modification::Rotate { angle: 90.0, background: Rgba([0, 0, 0, 255]), fill: false },
@@ -253,7 +269,7 @@ mod tests {
             Dimensions::of(&image),
             &[
                 Modification::Crop { top: 60, right: 0, bottom: 60, left: 0 },
-                Modification::AddBorder { thickness: 5, color: Rgba([0, 0, 0, 255]) },
+                Modification::AddBorder { percent: 5.0, color: Rgba([0, 0, 0, 255]) },
             ],
             1.0,
         );
@@ -284,7 +300,7 @@ mod tests {
             &proxy.image,
             Dimensions::of(&original),
             &[
-                Modification::AddBorder { thickness: 300, color: Rgba([255, 0, 0, 255]) },
+                Modification::AddBorder { percent: 7.5, color: Rgba([255, 0, 0, 255]) },
                 Modification::Crop { top: 100, right: 200, bottom: 300, left: 400 },
             ],
             proxy.scale,
@@ -304,10 +320,10 @@ mod tests {
         let proxy = make_proxy(&original);
         let stack = [
             Modification::Brightness { factor: 1.3, contrast: 1.2, saturation: 1.1 },
-            Modification::AddBorder { thickness: 120, color: Rgba([34, 94, 255, 255]) },
+            Modification::AddBorder { percent: 120.0 / 21.6, color: Rgba([34, 94, 255, 255]) },
             Modification::Crop { top: 40, right: 80, bottom: 120, left: 160 },
             Modification::Sepia { strength: 1.0 },
-            Modification::AddImageBorder { border: Some("floral_curly".into()), width: 200 },
+            Modification::AddImageBorder { border: Some("floral_curly".into()), percent: 200.0 / 21.6 },
             Modification::Rotate { angle: 12.5, background: Rgba([255, 255, 255, 255]), fill: false },
             Modification::Mirror { horizontal: true, vertical: false },
             Modification::Greyscale { strength: 1.0 },

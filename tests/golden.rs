@@ -10,6 +10,11 @@ use image::RgbaImage;
 
 const GOLDEN: &str = "tests/golden";
 
+/// The goldens were made with pixel sizes; `original.png` is 1920 × 1080
+fn percent(pixels: f32) -> f32 {
+    pixels / 1080.0 * 100.0
+}
+
 struct Diff {
     /// Mean absolute difference per colour channel, 0–255
     mean: f64,
@@ -55,9 +60,9 @@ fn rust_jpeg_decoding_matches_sharp() {
 #[test]
 fn add_border() {
     let color = parse_hex_color("#225eff").unwrap();
-    check("addBorder-100-225eff.png", Modification::AddBorder { thickness: 100, color }, 0.0, 0.0);
+    check("addBorder-100-225eff.png", Modification::AddBorder { percent: percent(100.0), color }, 0.0, 0.0);
     let black = parse_hex_color("#000000").unwrap();
-    check("addBorder-0-000000.png", Modification::AddBorder { thickness: 0, color: black }, 0.0, 0.0);
+    check("addBorder-0-000000.png", Modification::AddBorder { percent: 0.0, color: black }, 0.0, 0.0);
 }
 
 #[test]
@@ -88,7 +93,7 @@ fn crop() {
 fn annotate() {
     let modification = Modification::Annotate {
         text: "Hello\nWorld".into(),
-        font_size: 30.0,
+        font_percent: percent(30.0),
         x_percent: 50.0,
         y_percent: 95.0,
         color: image::Rgba([0, 0, 0, 255]),
@@ -101,6 +106,6 @@ fn annotate() {
 /// Rust version uses the split files (corner 187 px), so allow small geometric differences.
 #[test]
 fn add_image_border() {
-    let modification = Modification::AddImageBorder { border: Some("floral_curly".into()), width: 133 };
+    let modification = Modification::AddImageBorder { border: Some("floral_curly".into()), percent: percent(133.0) };
     check("addImageBorder-floral_curly-133.png", modification, 6.0, 0.05);
 }

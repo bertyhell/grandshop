@@ -24,7 +24,8 @@ export global Theme {
 export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale }
 
 // Union of the parameters of every modification kind; each kind uses a few of them.
-// Pixel values are in original-image pixels.
+// Pixel values are in original-image pixels. Border thickness, border width and font size
+// are percentages of the shorter side.
 export struct ModParams {
     thickness: float,
     color: color,

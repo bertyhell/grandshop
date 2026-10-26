@@ -18,10 +18,11 @@ export component AddBorderControls inherits Panel {
     in property <ModParams> params;
 
     FormField {
-        label: @tr("Thickness");
+        label: @tr("Thickness (%)");
         RangeInput {
             minimum: 0;
-            maximum: 2000;
+            maximum: 25;
+            step: 0.1;
             value: root.params.thickness;
             edited(value) => { AppState.set-number(root.index, ModField.thickness, value); }
         }
@@ -50,10 +51,11 @@ export component AddImageBorderControls inherits Panel {
     }
 
     FormField {
-        label: @tr("Border width");
+        label: @tr("Border width (%)");
         RangeInput {
-            minimum: 5;
-            maximum: 500;
+            minimum: 1;
+            maximum: 25;
+            step: 0.1;
             value: root.params.border-width;
             edited(value) => { AppState.set-number(root.index, ModField.border-width, value); }
         }
@@ -151,10 +153,11 @@ export component AnnotateControls inherits Panel {
     }
 
     FormField {
-        label: @tr("Text size");
+        label: @tr("Text size (%)");
         RangeInput {
-            minimum: 0;
-            maximum: 200;
+            minimum: 0.5;
+            maximum: 30;
+            step: 0.1;
             value: root.params.font-size;
             edited(value) => { AppState.set-number(root.index, ModField.font-size, value); }
         }

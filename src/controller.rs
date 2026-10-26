@@ -580,10 +580,10 @@ fn default_params(kind: ModKind, image_width: i32, image_height: i32) -> ModPara
     let mut params = ModParams { border_index: -1, ..Default::default() };
     match kind {
         ModKind::AddBorder => {
-            params.thickness = 100.0;
+            params.thickness = 5.0;
             params.color = Color::from_rgb_u8(0x22, 0x5e, 0xff);
         }
-        ModKind::AddImageBorder => params.border_width = 100.0,
+        ModKind::AddImageBorder => params.border_width = 5.0,
         ModKind::Brightness => {
             params.factor = 1.1;
             params.contrast = 1.1;
@@ -595,7 +595,7 @@ fn default_params(kind: ModKind, image_width: i32, image_height: i32) -> ModPara
         ModKind::Rotate | ModKind::Crop => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Resize => params.size = image_width.max(image_height).min(10_000) as f32,
         ModKind::Annotate => {
-            params.font_size = 30.0;
+            params.font_size = 4.0;
             params.x_percent = 50.0;
             params.y_percent = 95.0;
             params.text_color = Color::from_rgb_u8(0, 0, 0);
@@ -640,12 +640,12 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
     let rgba = |color: Color| Rgba([color.red(), color.green(), color.blue(), 255]);
     match card.kind {
         ModKind::AddBorder => Modification::AddBorder {
-            thickness: px(p.thickness),
+            percent: p.thickness.max(0.0),
             color: rgba(p.color),
         },
         ModKind::AddImageBorder => Modification::AddImageBorder {
             border: usize::try_from(p.border_index).ok().and_then(|i| borders.get(i)).cloned(),
-            width: px(p.border_width),
+            percent: p.border_width.max(0.0),
         },
         ModKind::Brightness => {
             Modification::Brightness { factor: p.factor, contrast: p.contrast, saturation: p.saturation }
@@ -670,7 +670,7 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
         ModKind::Resize => Modification::Resize { size: px(p.size) },
         ModKind::Annotate => Modification::Annotate {
             text: p.text.to_string(),
-            font_size: p.font_size,
+            font_percent: p.font_size,
             x_percent: p.x_percent,
             y_percent: p.y_percent,
             color: rgba(p.text_color),
