@@ -57,6 +57,9 @@ pub enum Modification {
     /// Colours a black-and-white photo with the AI model; `strength` 0 to 1 goes from grey to
     /// the full guessed colours, and 0 leaves the image as is (model not downloaded yet).
     Colourise { strength: f32 },
+    /// Fills in the parts under the brush marks (x, y, radius in original-image pixels) with
+    /// the AI model. Leaves the image as is while `downloaded` is false.
+    RemoveObjects { dabs: Vec<[f32; 3]>, downloaded: bool },
     /// Text, one line per `\n`, centred on a point given in percent of the image size. The font
     /// size is a percentage of the shorter side.
     Annotate { text: String, font_percent: f32, x_percent: f32, y_percent: f32, color: Rgba<u8>, effect: TextEffect },
@@ -154,6 +157,11 @@ pub fn apply_step(
         Modification::RemoveBackground { downloaded: false, .. } => Ok((image.clone(), logical)),
         Modification::RemoveBackground { fill, .. } => {
             Ok((crate::background::remove_background(image, *fill, feedback)?, logical))
+        }
+        Modification::RemoveObjects { downloaded: false, .. } => Ok((image.clone(), logical)),
+        Modification::RemoveObjects { dabs, .. } => {
+            let dabs: Vec<[f32; 3]> = dabs.iter().map(|d| d.map(|v| v * scale)).collect();
+            Ok((crate::inpaint::remove_objects(image, &dabs, feedback)?, logical))
         }
         Modification::Colourise { strength } if *strength <= 0.0 => Ok((image.clone(), logical)),
         Modification::Colourise { strength } => {

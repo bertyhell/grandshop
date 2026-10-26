@@ -41,7 +41,7 @@ export component ControlsSidebar inherits Rectangle {
                 ModKind.add-border, ModKind.add-image-border, ModKind.brightness, ModKind.sepia,
                 ModKind.resize, ModKind.annotate, ModKind.crop, ModKind.rotate, ModKind.mirror,
                 ModKind.greyscale, ModKind.upscale, ModKind.improve-faces,
-                ModKind.remove-background, ModKind.colourise,
+                ModKind.remove-background, ModKind.colourise, ModKind.remove-objects,
             ];
             options: [
                 @tr("Add a colored border"), @tr("Add image border"),
@@ -50,6 +50,7 @@ export component ControlsSidebar inherits Rectangle {
                 @tr("Rotate image"), @tr("Mirror image"), @tr("Black and White image"),
                 @tr("Enlarge image (AI)"), @tr("Improve faces (AI)"),
                 @tr("Remove background (AI)"), @tr("Colour a black and white photo (AI)"),
+                @tr("Remove objects or scratches (AI)"),
             ];
             placeholder: AppState.modifications.length > 0
                 ? @tr("Choose another operation") : @tr("Select an operation");

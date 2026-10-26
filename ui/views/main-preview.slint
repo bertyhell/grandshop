@@ -103,6 +103,17 @@ export component MainPreview inherits Rectangle {
             accessible-role: none;
         }
 
+        // The marks painted for an open "Remove objects" card
+        if AppState.brush-active: Image {
+            x: picture.x;
+            y: picture.y;
+            width: picture.width;
+            height: picture.height;
+            source: AppState.mask-overlay;
+            image-fit: fill;
+            accessible-role: none;
+        }
+
         TouchArea {
             x: picture.x;
             y: picture.y;
@@ -131,6 +142,47 @@ export component MainPreview inherits Rectangle {
         view-y: self.margin;
         view-width: flick.width;
         view-height: flick.height;
+    }
+
+    // Painting for an open "Remove objects" card. Over the Flickable rather than in it, so
+    // dragging paints instead of scrolling.
+    if AppState.has-image && AppState.brush-active: brush := TouchArea {
+        property <length> image-x: flick.content-x + picture.x;
+        property <length> image-y: flick.content-y + picture.y;
+        property <length> radius: AppState.brush-radius * max(picture.width, picture.height);
+        x: flick.x;
+        y: flick.y;
+        width: flick.width;
+        height: flick.height;
+        mouse-cursor: MouseCursor.crosshair;
+
+        pointer-event(event) => {
+            if (event.kind == PointerEventKind.down && event.button == PointerEventButton.left) {
+                AppState.brush-painted((self.mouse-x - self.image-x) / picture.width,
+                    (self.mouse-y - self.image-y) / picture.height, true);
+            }
+            if (event.kind == PointerEventKind.up && event.button == PointerEventButton.left) {
+                AppState.brush-released();
+            }
+        }
+        moved => {
+            if (self.pressed) {
+                AppState.brush-painted((self.mouse-x - self.image-x) / picture.width,
+                    (self.mouse-y - self.image-y) / picture.height, false);
+            }
+        }
+
+        // The brush outline under the mouse
+        if brush.has-hover: Rectangle {
+            x: brush.mouse-x - brush.radius;
+            y: brush.mouse-y - brush.radius;
+            width: 2 * brush.radius;
+            height: 2 * brush.radius;
+            border-radius: brush.radius;
+            border-width: 2px;
+            border-color: #ffffff;
+            background: #ff282840;
+        }
     }
 
     if AppState.has-image && AppState.text-active: TextHandle {

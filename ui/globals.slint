@@ -21,7 +21,7 @@ export global Theme {
     out property <color> crop-handle-shadow: #00000080;
 }
 
-export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale, improve-faces, remove-background, colourise }
+export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop, rotate, mirror, greyscale, upscale, improve-faces, remove-background, colourise, remove-objects }
 
 // Union of the parameters of every modification kind; each kind uses a few of them.
 // Pixel values are in original-image pixels. Border thickness, border width and font size
@@ -58,6 +58,15 @@ export struct ModParams {
     // "Remove background" card fills the background with `background` instead of making it
     // transparent
     fill-background: bool,
+    // "Remove objects" card: brush diameter in percent of the image's longer side, and the
+    // painted marks as x, y, radius triplets in pixels of the image going into the card, with
+    // the index of the first mark of every stroke
+    brush-size: float,
+    mask-dabs: [float],
+    mask-strokes: [int],
+    // How many of the marks have been applied: only those are filled in, the rest still show
+    // in red
+    applied-dabs: int,
     saturation: float,
     // Rotate card cuts off the corners instead of filling them with `background`
     rotate-fill: bool,
@@ -70,7 +79,7 @@ export struct ModParams {
 // Numeric parameters that a slider can change
 export enum ModField {
     thickness, border-width, factor, contrast, size, font-size, x-percent, y-percent, top, right,
-    bottom, left, angle, upscale-factor, strength,
+    bottom, left, angle, upscale-factor, strength, brush-size,
     saturation,
 }
 
@@ -134,6 +143,9 @@ export global AppState {
     // The AI model for "Colourise" is being downloaded, and the fraction done
     in property <bool> colourise-downloading: false;
     in property <float> colourise-download-progress: 0;
+    // The AI model for "Remove objects" is being downloaded, and the fraction done
+    in property <bool> objects-downloading: false;
+    in property <float> objects-download-progress: 0;
     // Longest side an enlarged image may get
     in property <int> upscale-max-edge;
     // Clicking the preview picks a colour for the open cards with a colour picker
@@ -165,6 +177,12 @@ export global AppState {
     in property <float> text-x;
     in property <float> text-y;
 
+    // An open "Remove objects" card: the preview stops after it, and the marks not applied yet
+    // show over it. The brush radius is a fraction of the shown image's longer side.
+    in property <bool> brush-active: false;
+    in property <float> brush-radius;
+    in property <image> mask-overlay;
+
     // Notifications in the bottom left corner, oldest first
     in property <[Toast]> toasts;
 
@@ -185,6 +203,14 @@ export global AppState {
     callback crop-dragged(float, float, float, float);
     // The text grip was dragged: the new position in fractions of the shown image
     callback text-dragged(float, float);
+    // Painting with the brush: position in fractions of the shown image, and whether this
+    // starts a new stroke
+    callback brush-painted(float, float, bool);
+    // The mouse was let go: the stroke is added to the card
+    callback brush-released();
+    // Fill in everything painted on the card so far
+    callback apply-mask(int);
+    callback undo-stroke(int);
     // Viewer: rotate and flip are view-only and never saved
     callback rotate-left();
     callback rotate-right();
@@ -226,6 +252,9 @@ export global Strings {
     out property <string> upscaler-downloading: @tr("Downloading the enlarging tool (2 MB)…");
     out property <string> upscaler-best-downloading: @tr("Downloading the best quality enlarging tool (140 MB)…");
     out property <string> upscaler-ready: @tr("The enlarging tool is ready");
+    out property <string> objects-downloading: @tr("Downloading the object removal tool (210 MB)…");
+    out property <string> objects-ready: @tr("The object removal tool is ready");
+    out property <string> objects-failed: @tr("Downloading the object removal tool failed. Check the internet connection and add the operation again.");
     out property <string> colourise-downloading: @tr("Downloading the colouring tool (980 MB)…");
     out property <string> colourise-ready: @tr("The colouring tool is ready");
     out property <string> colourise-failed: @tr("Downloading the colouring tool failed. Check the internet connection and add the operation again.");

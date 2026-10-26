@@ -304,6 +304,39 @@ msgstr "Het inkleurprogramma is klaar"
 msgid "Downloading the colouring tool failed. Check the internet connection and add the operation again."
 msgstr "Het downloaden van het inkleurprogramma is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."
 
+msgid "Remove objects or scratches (AI)"
+msgstr "Voorwerpen of krassen verwijderen (AI)"
+
+msgid "Remove objects {}"
+msgstr "Voorwerpen verwijderen {}"
+
+msgid "Paint over what should disappear: an object, a person, scratches or spots. Then press the button below."
+msgstr "Schilder over wat moet verdwijnen: een voorwerp, een persoon, krassen of vlekken. Druk daarna op de knop hieronder."
+
+msgid "Remove painted parts"
+msgstr "Geschilderde delen verwijderen"
+
+msgid "Brush size"
+msgstr "Grootte van het penseel"
+
+msgid "Undo last stroke"
+msgstr "Laatste streep ongedaan maken"
+
+msgid "Downloading the object removal tool… {}%"
+msgstr "Het programma om voorwerpen te verwijderen wordt gedownload… {}%"
+
+msgid "Artificial intelligence fills in the painted parts from what is around them."
+msgstr "Artificiële intelligentie vult de geschilderde delen op met wat errond staat."
+
+msgid "Downloading the object removal tool (210 MB)…"
+msgstr "Het programma om voorwerpen te verwijderen wordt gedownload (210 MB)…"
+
+msgid "The object removal tool is ready"
+msgstr "Het programma om voorwerpen te verwijderen is klaar"
+
+msgid "Downloading the object removal tool failed. Check the internet connection and add the operation again."
+msgstr "Het downloaden van het programma om voorwerpen te verwijderen is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."
+
 msgid "Enlarge times"
 msgstr "Aantal keer vergroten"
 
@@ -342,9 +375,6 @@ msgstr "Het vergrotingsprogramma is klaar"
 
 msgid "Downloading the enlarging tool failed. Check the internet connection and add the operation again."
 msgstr "Het downloaden van het vergrotingsprogramma is mislukt. Controleer de internetverbinding en voeg de bewerking opnieuw toe."
-
-msgid "Strength (%)"
-msgstr "Sterkte (%)"
 
 msgid "Color intensity"
 msgstr "Kleurintensiteit"

@@ -6,6 +6,7 @@ pub mod color;
 pub mod colourise;
 pub mod crop_aspect;
 pub mod faces;
+pub mod inpaint;
 pub mod io;
 pub mod pipeline;
 pub mod proxy;

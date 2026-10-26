@@ -14,7 +14,7 @@ use grandshop::io::{default_save_file_name, format_file_size, load_image, save_p
 use grandshop::pipeline::{self, available_borders, Dimensions, Modification, TextEffect};
 use grandshop::resample::resize_exact;
 use grandshop::settings::Settings;
-use grandshop::{background, colourise, faces, upscale};
+use grandshop::{background, colourise, faces, inpaint, upscale};
 use grandshop::view::{Region, ViewTransform};
 use grandshop::worker::{Document, RenderOutput, Worker};
 use image::{Rgba, RgbaImage};
@@ -95,6 +95,9 @@ pub struct Controller {
     detail_requested: Cell<u64>,
     /// The AI operations whose models are being downloaded
     ai_downloads: RefCell<Vec<AiTool>>,
+    /// The brush stroke being painted, as x, y, radius triplets in pixels of the image going
+    /// into the card
+    stroke: RefCell<Vec<f32>>,
     state: RefCell<State>,
     cards: Rc<VecModel<ModEntry>>,
     borders: Vec<String>,
@@ -151,6 +154,7 @@ impl Controller {
             detail_timer: slint::Timer::default(),
             detail_requested: Cell::new(0),
             ai_downloads: RefCell::default(),
+            stroke: RefCell::default(),
             state: RefCell::default(),
             cards,
             borders,
@@ -215,6 +219,22 @@ impl Controller {
             this.drag_crop(Region { left, top, right, bottom })
         });
         on!(on_text_dragged, |this, x, y| this.drag_text(x, y));
+        on!(on_brush_painted, |this, x, y, start| this.paint(x, y, start));
+        on!(on_brush_released, |this| this.finish_stroke());
+        on!(on_apply_mask, |this, index| {
+            this.edit_card(index as usize, |p| p.applied_dabs = (p.mask_dabs.row_count() / 3) as i32)
+        });
+        on!(on_undo_stroke, |this, index| {
+            this.edit_card(index as usize, |p| {
+                let mut strokes: Vec<i32> = p.mask_strokes.iter().collect();
+                let start = strokes.pop().unwrap_or(0).max(0) as usize;
+                let dabs: Vec<f32> = p.mask_dabs.iter().take(start * 3).collect();
+                p.mask_strokes = ModelRc::new(VecModel::from(strokes));
+                p.mask_dabs = ModelRc::new(VecModel::from(dabs));
+                // Undoing an applied stroke brings that part back
+                p.applied_dabs = p.applied_dabs.min(start as i32);
+            })
+        });
         on!(on_view_changed, |this, left, top, right, bottom, width, _height| {
             *this.shared.view.lock().unwrap() =
                 ViewState { region: Region { left, top, right, bottom }, shown_width: width };
@@ -385,6 +405,9 @@ impl Controller {
         if kind == ModKind::Colourise {
             self.install_ai_tool(AiTool::Colourise);
         }
+        if kind == ModKind::RemoveObjects {
+            self.install_ai_tool(AiTool::Objects);
+        }
 
         // The new card works on the current result until the next render reports its size
         self.with_state(|s| {
@@ -410,6 +433,7 @@ impl Controller {
             AiTool::Faces => s.set_faces_download_progress(0.0),
             AiTool::Background => s.set_background_download_progress(0.0),
             AiTool::Colourise => s.set_colourise_download_progress(0.0),
+            AiTool::Objects => s.set_objects_download_progress(0.0),
         });
         self.notify(ToastKind::Info, |s| match tool {
             AiTool::Enlarge(upscale::Quality::Fast) => s.get_upscaler_downloading(),
@@ -417,6 +441,7 @@ impl Controller {
             AiTool::Faces => s.get_faces_downloading(),
             AiTool::Background => s.get_background_downloading(),
             AiTool::Colourise => s.get_colourise_downloading(),
+            AiTool::Objects => s.get_objects_downloading(),
         });
         let this = self.clone();
         let _ = slint::spawn_local(async move {
@@ -430,6 +455,7 @@ impl Controller {
                             AiTool::Faces => state.set_faces_download_progress(fraction),
                             AiTool::Background => state.set_background_download_progress(fraction),
                             AiTool::Colourise => state.set_colourise_download_progress(fraction),
+                            AiTool::Objects => state.set_objects_download_progress(fraction),
                         }
                     });
                 })
@@ -445,6 +471,7 @@ impl Controller {
                         AiTool::Faces => s.get_faces_ready(),
                         AiTool::Background => s.get_background_ready(),
                         AiTool::Colourise => s.get_colourise_ready(),
+                        AiTool::Objects => s.get_objects_ready(),
                     });
                     // The cards now really change the image
                     this.cards_changed();
@@ -456,6 +483,7 @@ impl Controller {
                         AiTool::Faces => s.get_faces_failed(),
                         AiTool::Background => s.get_background_failed(),
                         AiTool::Colourise => s.get_colourise_failed(),
+                        AiTool::Objects => s.get_objects_failed(),
                     });
                 }
             }
@@ -468,11 +496,13 @@ impl Controller {
         let faces = downloads.contains(&AiTool::Faces);
         let background = downloads.contains(&AiTool::Background);
         let colourise = downloads.contains(&AiTool::Colourise);
+        let objects = downloads.contains(&AiTool::Objects);
         self.with_state(|s| {
             s.set_upscaler_downloading(enlarging);
             s.set_faces_downloading(faces);
             s.set_background_downloading(background);
             s.set_colourise_downloading(colourise);
+            s.set_objects_downloading(objects);
         });
     }
 
@@ -575,6 +605,52 @@ impl Controller {
             if let Some(ratio) = crop_aspect::ratio(preset, size.width as u32, size.height as u32) {
                 set_crop_box(p, crop_aspect::largest_centred(width, height, ratio), width, height);
             }
+        });
+    }
+
+    /// Painting for the open "Remove objects" card: `x` and `y` in fractions of the shown
+    /// preview, `start` for the first point of a stroke.
+    /// Strokes only show in red until "Remove painted parts" is pressed, so the slow filling
+    /// in runs once for all of them.
+    fn paint(self: &Rc<Self>, x: f32, y: f32, start: bool) {
+        let Some(index) = painted_card(&*self.cards) else { return };
+        let Some(card) = self.cards.row_data(index) else { return };
+        let Some(size) = self.with_state(|s| s.get_input_sizes().row_data(index)).flatten() else { return };
+        let transform = *self.shared.transform.lock().unwrap();
+        let (u, v) = transform.to_source((x, y));
+        if !(-0.05..=1.05).contains(&u) || !(-0.05..=1.05).contains(&v) {
+            return;
+        }
+        let (width, height) = (size.width.max(1) as f32, size.height.max(1) as f32);
+        let point = (u * width, v * height);
+        let radius = card.params.brush_size / 200.0 * width.max(height);
+        let mut stroke = self.stroke.borrow_mut();
+        if start {
+            stroke.clear();
+        }
+        let last = stroke.as_chunks::<3>().0.last().map(|d| (d[0], d[1]));
+        stroke.extend(stroke_dabs(last, point, radius));
+        let mut marks = pending_marks(&card.params);
+        marks.extend_from_slice(&stroke);
+        let overlay = draw_marks(width, height, &marks, transform);
+        self.with_state(|s| s.set_mask_overlay(overlay));
+    }
+
+    /// The mouse was let go: the stroke goes into the card, to be filled in with the others
+    /// when "Remove painted parts" is pressed.
+    fn finish_stroke(self: &Rc<Self>) {
+        let stroke = std::mem::take(&mut *self.stroke.borrow_mut());
+        let Some(index) = painted_card(&*self.cards) else { return };
+        if stroke.is_empty() {
+            return;
+        }
+        self.edit_card(index, |p| {
+            let mut dabs: Vec<f32> = p.mask_dabs.iter().collect();
+            let mut strokes: Vec<i32> = p.mask_strokes.iter().collect();
+            strokes.push((dabs.len() / 3) as i32);
+            dabs.extend(stroke);
+            p.mask_strokes = ModelRc::new(VecModel::from(strokes));
+            p.mask_dabs = ModelRc::new(VecModel::from(dabs));
         });
     }
 
@@ -707,6 +783,7 @@ fn default_params(kind: ModKind, image_width: i32, image_height: i32) -> ModPara
         ModKind::Upscale => params.upscale_factor = 2.0,
         ModKind::ImproveFaces => params.strength = 80.0,
         ModKind::Colourise => params.strength = 100.0,
+        ModKind::RemoveObjects => params.brush_size = 4.0,
         ModKind::RemoveBackground => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Rotate | ModKind::Crop => params.background = Color::from_rgb_u8(255, 255, 255),
         ModKind::Resize => params.size = image_width.max(image_height).min(10_000) as f32,
@@ -729,6 +806,7 @@ fn set_field(params: &mut ModParams, field: ModField, value: f32) {
         ModField::Angle => &mut params.angle,
         ModField::UpscaleFactor => &mut params.upscale_factor,
         ModField::Strength => &mut params.strength,
+        ModField::BrushSize => &mut params.brush_size,
         ModField::Saturation => &mut params.saturation,
         ModField::Size => &mut params.size,
         ModField::FontSize => &mut params.font_size,
@@ -783,6 +861,10 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
         // Leaves the image as is until the models are downloaded
         ModKind::ImproveFaces if !faces::is_installed() => Modification::ImproveFaces { strength: 0.0 },
         ModKind::ImproveFaces => Modification::ImproveFaces { strength: (p.strength / 100.0).clamp(0.0, 1.0) },
+        ModKind::RemoveObjects => Modification::RemoveObjects {
+            dabs: p.mask_dabs.iter().take(p.applied_dabs.max(0) as usize * 3).collect::<Vec<f32>>().as_chunks::<3>().0.to_vec(),
+            downloaded: inpaint::is_installed(),
+        },
         ModKind::Colourise if !colourise::is_installed() => Modification::Colourise { strength: 0.0 },
         ModKind::Colourise => Modification::Colourise { strength: (p.strength / 100.0).clamp(0.0, 1.0) },
         ModKind::RemoveBackground => Modification::RemoveBackground {
@@ -836,6 +918,7 @@ enum AiTool {
     Faces,
     Background,
     Colourise,
+    Objects,
 }
 
 impl AiTool {
@@ -845,6 +928,7 @@ impl AiTool {
             AiTool::Faces => faces::is_installed(),
             AiTool::Background => background::is_installed(),
             AiTool::Colourise => colourise::is_installed(),
+            AiTool::Objects => inpaint::is_installed(),
         }
     }
 
@@ -854,6 +938,7 @@ impl AiTool {
             AiTool::Faces => faces::install(progress),
             AiTool::Background => background::install(progress),
             AiTool::Colourise => colourise::install(progress),
+            AiTool::Objects => inpaint::install(progress),
         }
     }
 }
@@ -932,12 +1017,74 @@ fn editing_text(cards: &impl Model<Data = ModEntry>) -> Option<usize> {
     cards.iter().position(|card| card.open && card.kind == ModKind::Annotate)
 }
 
+/// The first open "Remove objects" card, painted on over the preview
+fn editing_objects(cards: &impl Model<Data = ModEntry>) -> Option<usize> {
+    cards.iter().position(|card| card.open && card.kind == ModKind::RemoveObjects)
+}
+
+/// The open "Remove objects" card, when the preview shows its result: painting on it lines up
+/// with the image
+fn painted_card(cards: &impl Model<Data = ModEntry>) -> Option<usize> {
+    editing_objects(cards).filter(|&index| index + 1 == shown_end(cards))
+}
+
 /// How many cards the preview shows: up to an open crop card, or up to and including an
-/// open text card
+/// open text or "Remove objects" card
 fn shown_end(cards: &impl Model<Data = ModEntry>) -> usize {
     let crop = editing_crop(cards).unwrap_or(usize::MAX);
+    let objects = editing_objects(cards).map_or(usize::MAX, |index| index + 1);
     let text = editing_text(cards).map_or(usize::MAX, |index| index + 1);
-    crop.min(text).min(cards.row_count())
+    crop.min(objects).min(text).min(cards.row_count())
+}
+
+/// Brush marks from `last` to `point`, close enough together to make a solid line, as x, y,
+/// radius triplets. Without `last` it is a single mark.
+fn stroke_dabs(last: Option<(f32, f32)>, point: (f32, f32), radius: f32) -> Vec<f32> {
+    let (lx, ly) = last.unwrap_or(point);
+    let distance = (point.0 - lx).hypot(point.1 - ly);
+    let steps = (distance / (radius / 3.0).max(0.5)).ceil().max(1.0) as usize;
+    (1..=steps)
+        .flat_map(|step| {
+            let t = step as f32 / steps as f32;
+            [lx + (point.0 - lx) * t, ly + (point.1 - ly) * t, radius]
+        })
+        .collect()
+}
+
+/// Longest side of the image that shows the painted marks
+const OVERLAY_SIZE: f32 = 1024.0;
+
+/// Turns the brush on while a "Remove objects" card can be painted on, and shows the marks
+/// that are not applied yet.
+fn update_brush(ui: &AppWindow, transform: ViewTransform) {
+    let state = ui.global::<AppState>();
+    let cards = state.get_modifications();
+    let painted = painted_card(&cards)
+        .and_then(|index| Some((cards.row_data(index)?.params, state.get_input_sizes().row_data(index)?)));
+    state.set_brush_active(painted.is_some());
+    let Some((params, size)) = painted else { return };
+    state.set_brush_radius(params.brush_size / 200.0);
+    let (width, height) = (size.width.max(1) as f32, size.height.max(1) as f32);
+    state.set_mask_overlay(draw_marks(width, height, &pending_marks(&params), transform));
+}
+
+/// The marks of a "Remove objects" card that are not filled in yet
+fn pending_marks(params: &ModParams) -> Vec<f32> {
+    params.mask_dabs.iter().skip(params.applied_dabs.max(0) as usize * 3).collect()
+}
+
+/// The brush marks `dabs` (in pixels of a `width` × `height` image) in red, to show over the
+/// preview.
+fn draw_marks(width: f32, height: f32, dabs: &[f32], transform: ViewTransform) -> Image {
+    // A small copy is enough to show where was painted
+    let scale = (OVERLAY_SIZE / width.max(height)).min(1.0);
+    let mut overlay = RgbaImage::new(((width * scale).round() as u32).max(1), ((height * scale).round() as u32).max(1));
+    for dab in dabs.as_chunks::<3>().0 {
+        let centre = ((dab[0] * scale).round() as i32, (dab[1] * scale).round() as i32);
+        let radius = ((dab[2] * scale).round() as i32).max(1);
+        imageproc::drawing::draw_filled_circle_mut(&mut overlay, centre, radius, Rgba([255, 40, 40, 150]));
+    }
+    to_slint_image(&transform.apply(&overlay))
 }
 
 /// Shows the frame of the crop card being edited and the grip of the text card being edited,
@@ -989,6 +1136,8 @@ fn update_crop_frame(ui: &AppWindow, transform: ViewTransform) {
         state.set_text_x(point.left);
         state.set_text_y(point.top);
     }
+
+    update_brush(ui, transform);
 }
 
 /// Runs on the full resolution worker thread: keeps the result and shows the sharp tile.
@@ -1116,4 +1265,20 @@ async fn run_in_background<T: Send + 'static>(work: impl FnOnce() -> T + Send + 
         let _ = sender.send(work());
     });
     receiver.await.expect("background work panicked")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_stroke_is_a_solid_line_of_marks() {
+        assert_eq!(stroke_dabs(None, (10.0, 20.0), 6.0), vec![10.0, 20.0, 6.0]);
+        let dabs = stroke_dabs(Some((0.0, 0.0)), (60.0, 0.0), 6.0);
+        let marks = dabs.as_chunks::<3>().0;
+        // At most a third of the radius apart, ending on the new point
+        assert_eq!(marks.len(), 30);
+        assert!(marks.windows(2).all(|w| w[1][0] - w[0][0] <= 2.0 + 1e-4));
+        assert_eq!(marks.last(), Some(&[60.0, 0.0, 6.0]));
+    }
 }
