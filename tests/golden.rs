@@ -92,6 +92,7 @@ fn annotate() {
         x_percent: 50.0,
         y_percent: 95.0,
         color: image::Rgba([0, 0, 0, 255]),
+        effect: grandshop::pipeline::TextEffect::None,
     };
     check("annotate-hello-world-30-50-95.png", modification, 0.5, 0.002);
 }

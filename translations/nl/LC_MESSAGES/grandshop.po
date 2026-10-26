@@ -279,3 +279,15 @@ msgstr "Naar links"
 
 msgid "Turn right"
 msgstr "Naar rechts"
+
+msgid "Make the text stand out"
+msgstr "Laat de tekst opvallen"
+
+msgid "No"
+msgstr "Nee"
+
+msgid "Outline"
+msgstr "Rand"
+
+msgid "Shadow"
+msgstr "Schaduw"

@@ -189,6 +189,15 @@ export component AnnotateControls inherits Panel {
             edited(value) => { AppState.set-color(root.index, ColorField.text-color, value); }
         }
     }
+
+    FormField {
+        label: @tr("Make the text stand out");
+        Select {
+            options: [@tr("No"), @tr("Outline"), @tr("Shadow")];
+            current-index: root.params.text-effect;
+            selected(effect) => { AppState.set-text-effect(root.index, effect); }
+        }
+    }
 }
 
 export component CropControls inherits Panel {

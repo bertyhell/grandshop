@@ -7,7 +7,7 @@
 //! resolution. The UI uses it for slider ranges.
 
 mod add_border;
-mod annotate;
+pub mod annotate;
 mod brightness;
 mod crop;
 mod greyscale;
@@ -21,6 +21,7 @@ mod srgb;
 use anyhow::Result;
 use image::{Rgba, RgbaImage};
 
+pub use annotate::TextEffect;
 pub use image_border::available_borders;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -45,7 +46,7 @@ pub enum Modification {
     /// downloaded yet).
     Upscale { factor: u32, quality: crate::upscale::Quality },
     /// Text, one line per `\n`, centred on a point given in percent of the image size.
-    Annotate { text: String, font_size: f32, x_percent: f32, y_percent: f32, color: Rgba<u8> },
+    Annotate { text: String, font_size: f32, x_percent: f32, y_percent: f32, color: Rgba<u8>, effect: TextEffect },
     /// Removes the given number of pixels from each side.
     Crop { top: u32, right: u32, bottom: u32, left: u32 },
     /// Adds the given number of pixels of `background` to each side.
@@ -125,8 +126,8 @@ pub fn apply_step(
             }
             Ok((crate::upscale::upscale(image, *factor, *quality)?, logical))
         }
-        Modification::Annotate { text, font_size, x_percent, y_percent, color } => Ok((
-            annotate::annotate(image, text, font_size * scale, *x_percent, *y_percent, *color),
+        Modification::Annotate { text, font_size, x_percent, y_percent, color, effect } => Ok((
+            annotate::annotate(image, text, font_size * scale, *x_percent, *y_percent, *color, *effect),
             logical,
         )),
         Modification::Crop { top, right, bottom, left } => {

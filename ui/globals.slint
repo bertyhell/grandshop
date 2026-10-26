@@ -56,6 +56,8 @@ export struct ModParams {
     saturation: float,
     // Rotate card cuts off the corners instead of filling them with `background`
     rotate-fill: bool,
+    // Text card: 0 none, 1 outline, 2 shadow
+    text-effect: int,
 }
 
 // Numeric parameters that a slider can change
@@ -147,6 +149,7 @@ export global AppState {
     callback set-flag(int, FlagField, bool);
     callback set-text(int, string);
     callback set-border-style(int, int);
+    callback set-text-effect(int, int);
     callback invalid-number();
     // Position in the shown image, from 0 to 1 on both axes
     callback preview-clicked(float, float);

@@ -10,7 +10,7 @@ use std::time::Duration;
 
 use grandshop::color::{color_wheel, hsv_to_rgb, rgb_to_hsv};
 use grandshop::io::{default_save_file_name, format_file_size, load_image, save_png};
-use grandshop::pipeline::{self, available_borders, Dimensions, Modification};
+use grandshop::pipeline::{self, available_borders, Dimensions, Modification, TextEffect};
 use grandshop::resample::resize_exact;
 use grandshop::settings::Settings;
 use grandshop::upscale;
@@ -180,6 +180,9 @@ impl Controller {
         on!(on_set_text, |this, index, text| this.edit_card(index as usize, |p| p.text = text));
         on!(on_set_border_style, |this, index, style| {
             this.edit_card(index as usize, |p| p.border_index = style)
+        });
+        on!(on_set_text_effect, |this, index, effect| {
+            this.edit_card(index as usize, |p| p.text_effect = effect)
         });
         on!(on_preview_clicked, |this, x, y| this.pick_color(x, y));
         on!(on_rotate_left, |this| this.change_view(ViewTransform::rotate_counter_clockwise));
@@ -671,6 +674,11 @@ fn to_modification(card: &ModEntry, borders: &[String]) -> Modification {
             x_percent: p.x_percent,
             y_percent: p.y_percent,
             color: rgba(p.text_color),
+            effect: match p.text_effect {
+                1 => TextEffect::Outline,
+                2 => TextEffect::Shadow,
+                _ => TextEffect::None,
+            },
         },
         ModKind::Crop if p.enlarge => Modification::Extend {
             top: px(p.top),
