@@ -530,6 +530,8 @@ impl Controller {
     fn delete_card(self: &Rc<Self>, index: usize) {
         if index < self.cards.row_count() {
             self.cards.remove(index);
+            // The indices after it shift, so drop a pending eyedropper pick
+            self.with_state(|s| s.set_eyedropper_index(-1));
             self.cards_changed();
         }
     }
@@ -706,7 +708,17 @@ impl Controller {
         let px = ((x * image.width() as f32) as u32).min(image.width() - 1);
         let py = ((y * image.height() as f32) as u32).min(image.height() - 1);
         let Rgba([r, g, b, _]) = *image.get_pixel(px, py);
-        for (index, field) in self.open_color_cards() {
+        // A pressed eyedropper button picks for its own picker only
+        let target = self.with_state(|s| {
+            let index = s.get_eyedropper_index();
+            s.set_eyedropper_index(-1);
+            (index >= 0).then(|| (index as usize, s.get_eyedropper_field()))
+        });
+        let targets = match target.flatten() {
+            Some(target) => vec![target],
+            None => self.open_color_cards(),
+        };
+        for (index, field) in targets {
             self.edit_card(index, |params| *color_field(params, field) = Color::from_rgb_u8(r, g, b));
         }
     }

@@ -438,3 +438,6 @@ msgstr "Vrij"
 
 msgid "Square"
 msgstr "Vierkant"
+
+msgid "Pick a colour from the image"
+msgstr "Een kleur uit de afbeelding kiezen"

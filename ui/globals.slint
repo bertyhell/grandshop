@@ -153,6 +153,10 @@ export global AppState {
     in property <int> upscale-max-edge;
     // Clicking the preview picks a colour for the open cards with a colour picker
     in property <bool> eyedropper-active: false;
+    // Card and colour that the next preview click picks for, after its eyedropper button was
+    // pressed; -1 when none
+    in-out property <int> eyedropper-index: -1;
+    in-out property <ColorField> eyedropper-field;
 
     // Sharp full resolution tile over part of the preview when zoomed in. The position is
     // in fractions of the shown image.

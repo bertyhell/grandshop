@@ -119,8 +119,8 @@ export component MainPreview inherits Rectangle {
             y: picture.y;
             width: picture.width;
             height: picture.height;
-            enabled: AppState.eyedropper-active;
-            mouse-cursor: AppState.eyedropper-active ? MouseCursor.crosshair : MouseCursor.default;
+            enabled: AppState.eyedropper-active || AppState.eyedropper-index >= 0;
+            mouse-cursor: self.enabled ? MouseCursor.crosshair : MouseCursor.default;
             clicked => {
                 AppState.preview-clicked(self.mouse-x / self.width, self.mouse-y / self.height);
             }

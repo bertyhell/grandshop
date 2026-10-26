@@ -31,6 +31,8 @@ export component AddBorderControls inherits Panel {
     FormField {
         label: @tr("Color");
         ColorInput {
+            index: root.index;
+            field: ColorField.color;
             value: root.params.color;
             edited(value) => { AppState.set-color(root.index, ColorField.color, value); }
         }
@@ -189,6 +191,8 @@ export component AnnotateControls inherits Panel {
     FormField {
         label: @tr("Text color");
         ColorInput {
+            index: root.index;
+            field: ColorField.text-color;
             value: root.params.text-color;
             edited(value) => { AppState.set-color(root.index, ColorField.text-color, value); }
         }
@@ -264,6 +268,8 @@ export component CropControls inherits Panel {
     if root.params.enlarge: FormField {
         label: @tr("Background color");
         ColorInput {
+            index: root.index;
+            field: ColorField.background;
             value: root.params.background;
             edited(value) => { AppState.set-color(root.index, ColorField.background, value); }
         }
@@ -319,6 +325,8 @@ export component RotateControls inherits Panel {
     if !root.params.rotate-fill: FormField {
         label: @tr("Background color");
         ColorInput {
+            index: root.index;
+            field: ColorField.background;
             value: root.params.background;
             edited(value) => { AppState.set-color(root.index, ColorField.background, value); }
         }
@@ -442,6 +450,8 @@ export component RemoveBackgroundControls inherits Panel {
     if root.params.fill-background: FormField {
         label: @tr("Background color");
         ColorInput {
+            index: root.index;
+            field: ColorField.background;
             value: root.params.background;
             edited(value) => { AppState.set-color(root.index, ColorField.background, value); }
         }
