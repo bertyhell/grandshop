@@ -1,61 +1,94 @@
 # Grandshop
 
-A image editing program that is really easy to use.
+An image editing program that is really easy to use.
 
 Current features:
-
-- Upscale images (4x)
-  ![screenshot of upscaled image](screenshots/07-upscale.jpg)
-- Add colored borders
-  ![screenshot of colored border](screenshots/01-border.jpg)
-- Change the brightness
-  ![screenshot of brightness](screenshots/02-brightness.jpg)
-- Add a sepia effect
-  ![screenshot of sepia effect](screenshots/03-sepia.jpg)
-- Resize an image
-  ![screenshot of resized image](screenshots/04-resize.jpg)
-- Add colored text
-  ![screenshot of colored text](screenshots/05-text.jpg)
-- Crop
-  ![screenshot of cropped image](screenshots/06-crop.jpg)
-- Rotate
-  ![screenshot of rotated image](screenshots/08-rotate.jpg)
-- Mirror
-  ![screenshot of vertically mirrored image](screenshots/09-mirror.jpg)
+* Add colored borders
+* Add a decorative image border
+* Change the brightness
+* Add a sepia effect
+* Resize an image
+* Add text to the image
+* Crop
 
 Download: https://gitlab.com/bertyhell/grandshop/-/releases
 
+![screenshot of the ui](screenshot.jpg)
+
 ## Developer docs
 
-### Run the program from the repository:
+Grandshop is a native app written in [Rust](https://www.rust-lang.org) with the
+[Slint](https://slint.dev) UI toolkit. The code lives in [`grandshop-slint/`](grandshop-slint):
 
-Install node v22.12 or newer.
+| Path | What |
+| --- | --- |
+| `ui/` | The Slint UI: views, components and the controls for each modification |
+| `src/pipeline/` | The image modifications |
+| `src/worker.rs` | Background rendering of the preview, with a cache per modification |
+| `src/controller.rs` | Connects the UI to the image code: cards, open/save, zoom detail |
+| `translations/` | Translations as gettext `.po` files |
+| `assets/` | Bundled font, decorative borders and the app icon |
+| `tests/golden/` | Reference images from the earlier Electron/sharp version |
 
-On Windows, `@tensorflow/tfjs-node` is compiled from source during install, so you need the Visual Studio C++ build tools and Python 3.
-If you have an old `msvs_version` or `python` setting in your global `.npmrc`, override it:
+While editing, the modifications run on a copy of at most 2560 px, so sliders react
+immediately. Saving runs them on the full resolution image, and zooming in shows the
+visible part at full resolution.
+
+### Run the program from the repository
+
+Install Rust with [rustup](https://rustup.rs). On Linux, also install:
 
 ```bash
-npm install --msvs_version=2022
+sudo apt install libfontconfig1-dev libxkbcommon-dev
 ```
 
-Run the app in development mode with hot reloading:
+Then:
 
 ```bash
-npm run dev
+cd grandshop-slint
+cargo run --release
 ```
 
-Other useful commands:
+`cargo run --release -- photo.jpg` opens a photo right away.
+
+### Tests
 
 ```bash
-npm run typecheck
-npm run lint
-npm run format
+cd grandshop-slint
+cargo test
 ```
+
+The golden tests compare every modification with the output of the earlier sharp based
+version; `tests/golden/params.json` lists the exact parameters.
+
+### Translations
+
+UI texts are marked with `@tr("English text")` in the `.slint` files. The Dutch texts are in
+`translations/nl/LC_MESSAGES/grandshop.po`, which POEditor can import and export. To check
+that every text is translated:
+
+```bash
+cd grandshop-slint
+python3 -I scripts/check-translations.py
+```
+
+To add a language, add `translations/<code>/LC_MESSAGES/grandshop.po` and an entry in
+`LANGUAGES` in `src/settings.rs`.
 
 ## Build a new release
 
+Install the packaging tool once:
+
 ```bash
-npm run build:win
+cargo install cargo-packager --locked
 ```
 
-The installer is written to the `dist` folder.
+Then, on each operating system:
+
+```bash
+cd grandshop-slint
+cargo packager --release
+```
+
+The installers end up in `grandshop-slint/target/packages`: an NSIS setup `.exe` on Windows,
+an `.app` and `.dmg` on macOS, and a `.deb` and AppImage on Linux.

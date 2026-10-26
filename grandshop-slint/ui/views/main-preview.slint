@@ -1,0 +1,177 @@
+import { AppState, Theme } from "../globals.slint";
+import { Spinner } from "../components/spinner.slint";
+import { Button } from "../components/button.slint";
+
+component ToolbarButton inherits Button {
+    width: 40px;
+}
+
+export component MainPreview inherits Rectangle {
+    background: Theme.preview-background;
+
+    // 1 fits the image in the pane
+    property <float> zoom: 1;
+    property <float> min-zoom: 0.2;
+    property <float> max-zoom: 32;
+    // Point of the image (fractions) to keep in the middle while zooming
+    property <float> focus-u: 0.5;
+    property <float> focus-v: 0.5;
+
+    function set-zoom(new-zoom: float) {
+        root.focus-u = (flick.width / 2 - flick.content-x - picture.x) / picture.width;
+        root.focus-v = (flick.height / 2 - flick.content-y - picture.y) / picture.height;
+        root.zoom = clamp(new-zoom, root.min-zoom, root.max-zoom);
+        flick.content-x = clamp(flick.width / 2 - picture.x - root.focus-u * picture.width, flick.width - flick.content-width, 0);
+        flick.content-y = clamp(flick.height / 2 - picture.y - root.focus-v * picture.height, flick.height - flick.content-height, 0);
+        root.report-view();
+    }
+
+    function report-view() {
+        if (!AppState.has-image || picture.width <= 0 || picture.height <= 0) {
+            return;
+        }
+        AppState.view-changed(
+            max(0, (-flick.content-x - picture.x) / picture.width),
+            max(0, (-flick.content-y - picture.y) / picture.height),
+            min(1, (flick.width - flick.content-x - picture.x) / picture.width),
+            min(1, (flick.height - flick.content-y - picture.y) / picture.height),
+            picture.width / 1px,
+            picture.height / 1px);
+    }
+
+    flick := Flickable {
+        x: 20px;
+        y: 20px;
+        width: parent.width - 40px;
+        height: parent.height - 40px - toolbar.height - 20px;
+        visible: AppState.has-image;
+
+        // Scale that fits the image in the pane
+        property <float> fit: AppState.preview-image.width > 0
+            ? min(self.width / (AppState.preview-image.width * 1px), self.height / (AppState.preview-image.height * 1px)) : 1;
+
+        content-width: max(self.width, picture.width);
+        content-height: max(self.height, picture.height);
+
+        changed content-x => { root.report-view(); }
+        changed content-y => { root.report-view(); }
+        changed width => { root.report-view(); }
+        changed height => { root.report-view(); }
+
+        picture := Image {
+            width: AppState.preview-image.width * 1px * flick.fit * root.zoom;
+            height: AppState.preview-image.height * 1px * flick.fit * root.zoom;
+            x: (flick.content-width - self.width) / 2;
+            y: (flick.content-height - self.height) / 2;
+            source: AppState.preview-image;
+            image-fit: fill;
+            accessible-role: image;
+            accessible-label: @tr("A preview of the edited image");
+
+            changed width => { root.report-view(); }
+        }
+
+        if AppState.detail-visible: Image {
+            x: picture.x + AppState.detail-left * picture.width;
+            y: picture.y + AppState.detail-top * picture.height;
+            width: (AppState.detail-right - AppState.detail-left) * picture.width;
+            height: (AppState.detail-bottom - AppState.detail-top) * picture.height;
+            source: AppState.detail-image;
+            image-fit: fill;
+            accessible-role: none;
+        }
+
+        TouchArea {
+            x: picture.x;
+            y: picture.y;
+            width: picture.width;
+            height: picture.height;
+            enabled: AppState.eyedropper-active;
+            mouse-cursor: AppState.eyedropper-active ? MouseCursor.crosshair : MouseCursor.default;
+            clicked => {
+                AppState.preview-clicked(self.mouse-x / self.width, self.mouse-y / self.height);
+            }
+        }
+    }
+
+    toolbar := HorizontalLayout {
+        y: parent.height - self.height - 20px;
+        height: 40px;
+        alignment: center;
+        spacing: 10px;
+        visible: AppState.has-image;
+
+        ToolbarButton {
+            icon: @image-url("../icons/search-plus.svg");
+            accessible-label: @tr("Zoom in");
+            clicked => { root.set-zoom(root.zoom * 1.25); }
+        }
+        ToolbarButton {
+            icon: @image-url("../icons/search-minus.svg");
+            accessible-label: @tr("Zoom out");
+            clicked => { root.set-zoom(root.zoom / 1.25); }
+        }
+        ToolbarButton {
+            icon: @image-url("../icons/compress.svg");
+            accessible-label: @tr("Reset");
+            clicked => {
+                root.zoom = 1;
+                flick.content-x = 0;
+                flick.content-y = 0;
+                AppState.reset-view();
+                root.report-view();
+            }
+        }
+        ToolbarButton {
+            icon: @image-url("../icons/undo.svg");
+            accessible-label: @tr("Rotate left");
+            clicked => { AppState.rotate-left(); }
+        }
+        ToolbarButton {
+            icon: @image-url("../icons/redo.svg");
+            accessible-label: @tr("Rotate right");
+            clicked => { AppState.rotate-right(); }
+        }
+        ToolbarButton {
+            icon: @image-url("../icons/arrows-alt-h.svg");
+            accessible-label: @tr("Flip horizontally");
+            clicked => { AppState.flip-horizontal(); }
+        }
+        ToolbarButton {
+            icon: @image-url("../icons/arrows-alt-v.svg");
+            accessible-label: @tr("Flip vertically");
+            clicked => { AppState.flip-vertical(); }
+        }
+    }
+
+    if AppState.busy: Rectangle {
+        // Small box in the middle of the preview, sized to its content
+        width: self.preferred-width;
+        height: self.preferred-height;
+        x: (parent.width - self.width) / 2;
+        y: (parent.height - self.height) / 2;
+        background: #ffffffe6;
+        border-radius: 4px;
+
+        VerticalLayout {
+            padding: 40px;
+            padding-bottom: 35px;
+            spacing: 10px;
+            alignment: center;
+
+            HorizontalLayout {
+                alignment: center;
+                Spinner { }
+            }
+
+            Text {
+                text: AppState.loading ? @tr("The image is being opened")
+                    : AppState.saving ? @tr("The image is being saved")
+                    : @tr("Image is being updated...");
+                font-size: 10px;
+                horizontal-alignment: center;
+                color: Theme.text;
+            }
+        }
+    }
+}

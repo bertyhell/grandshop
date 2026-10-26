@@ -1,0 +1,260 @@
+//! The modification stack: an ordered list of parameterised operations that is always
+//! re-applied to the original (or its proxy).
+//!
+//! Pixel parameters are expressed in original-image pixels, which is what the UI shows.
+//! When running on the proxy, `scale` converts them to proxy pixels. Alongside the real
+//! image, the pipeline tracks the *logical* size: the size the result would have at full
+//! resolution. The UI uses it for slider ranges.
+
+mod add_border;
+mod annotate;
+mod brightness;
+mod crop;
+pub mod image_border;
+mod resize;
+mod sepia;
+
+use anyhow::Result;
+use image::{Rgba, RgbaImage};
+
+pub use image_border::available_borders;
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Modification {
+    /// Solid border around the image, `thickness` pixels on every side.
+    AddBorder { thickness: u32, color: Rgba<u8> },
+    /// Decorative border drawn over the edges of the image. `None` until a style is picked.
+    AddImageBorder { border: Option<String>, width: u32 },
+    /// Multiplies the lightness, 1.0 leaves the image unchanged.
+    Brightness { factor: f32 },
+    Sepia,
+    /// Shrinks the image to fit inside `size` × `size`.
+    Resize { size: u32 },
+    /// Black text, one line per `\n`, centred on a point given in percent of the image size.
+    Annotate { text: String, font_size: f32, x_percent: f32, y_percent: f32 },
+    /// Removes the given number of pixels from each side.
+    Crop { top: u32, right: u32, bottom: u32, left: u32 },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Dimensions {
+    pub width: u32,
+    pub height: u32,
+}
+
+impl Dimensions {
+    pub fn of(image: &RgbaImage) -> Self {
+        let (width, height) = image.dimensions();
+        Self { width, height }
+    }
+}
+
+/// Converts a length in original-image pixels to working-image pixels.
+fn scale_px(value: u32, scale: f32) -> u32 {
+    (value as f32 * scale).round() as u32
+}
+
+/// Applies one modification. Returns the new image and its logical size.
+pub fn apply_step(
+    image: &RgbaImage,
+    logical: Dimensions,
+    modification: &Modification,
+    scale: f32,
+) -> Result<(RgbaImage, Dimensions)> {
+    match modification {
+        Modification::AddBorder { thickness, color } => {
+            let logical = Dimensions {
+                width: logical.width + 2 * thickness,
+                height: logical.height + 2 * thickness,
+            };
+            Ok((add_border::add_border(image, scale_px(*thickness, scale), *color), logical))
+        }
+        Modification::AddImageBorder { border: None, .. } => Ok((image.clone(), logical)),
+        Modification::AddImageBorder { border: Some(name), width } => {
+            let border_width = (*width as f32 * scale).max(1.0);
+            Ok((image_border::add_image_border(image, name, border_width)?, logical))
+        }
+        Modification::Brightness { factor } => Ok((brightness::brightness(image, *factor), logical)),
+        Modification::Sepia => Ok((sepia::sepia(image), logical)),
+        Modification::Resize { size } => {
+            let (width, height) =
+                crate::resample::fit_inside(logical.width, logical.height, (*size).max(1));
+            let target = scale_px(*size, scale).max(1);
+            Ok((resize::resize(image, target), Dimensions { width, height }))
+        }
+        Modification::Annotate { text, font_size, x_percent, y_percent } => Ok((
+            annotate::annotate(image, text, font_size * scale, *x_percent, *y_percent),
+            logical,
+        )),
+        Modification::Crop { top, right, bottom, left } => {
+            if left + right >= logical.width || top + bottom >= logical.height {
+                anyhow::bail!(
+                    "crop of {top}/{right}/{bottom}/{left} leaves nothing of a {}×{} image",
+                    logical.width,
+                    logical.height
+                );
+            }
+            let logical = Dimensions {
+                width: logical.width - left - right,
+                height: logical.height - top - bottom,
+            };
+            let edges = [top, right, bottom, left].map(|v| scale_px(*v, scale));
+            Ok((crop::crop(image, edges[0], edges[1], edges[2], edges[3]), logical))
+        }
+    }
+}
+
+pub struct PipelineOutput {
+    pub image: RgbaImage,
+    pub logical: Dimensions,
+    /// Modifications that failed, by index. They are skipped and the rest still applies.
+    pub errors: Vec<(usize, anyhow::Error)>,
+}
+
+/// Applies the whole stack to `source`, whose original (full resolution) size is `original`.
+pub fn apply(
+    source: &RgbaImage,
+    original: Dimensions,
+    modifications: &[Modification],
+    scale: f32,
+) -> PipelineOutput {
+    let mut image = source.clone();
+    let mut logical = original;
+    let mut errors = Vec::new();
+    for (index, modification) in modifications.iter().enumerate() {
+        match apply_step(&image, logical, modification, scale) {
+            Ok((next, next_logical)) => {
+                image = next;
+                logical = next_logical;
+            }
+            Err(err) => errors.push((index, err)),
+        }
+    }
+    PipelineOutput { image, logical, errors }
+}
+
+/// Parses `#rgb`, `#rrggbb` or `#rrggbbaa`.
+pub fn parse_hex_color(hex: &str) -> Option<Rgba<u8>> {
+    let hex = hex.strip_prefix('#')?;
+    let channel = |i: usize| u8::from_str_radix(hex.get(i..i + 2)?, 16).ok();
+    match hex.len() {
+        3 => {
+            let short = |i: usize| u8::from_str_radix(hex.get(i..i + 1)?, 16).ok().map(|v| v * 17);
+            Some(Rgba([short(0)?, short(1)?, short(2)?, 255]))
+        }
+        6 => Some(Rgba([channel(0)?, channel(2)?, channel(4)?, 255])),
+        8 => Some(Rgba([channel(0)?, channel(2)?, channel(4)?, channel(6)?])),
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{io::load_image, proxy::make_proxy, resample::resize_exact};
+
+    fn fixture() -> RgbaImage {
+        load_image(std::path::Path::new("tests/fixtures/paint.jpg")).unwrap()
+    }
+
+    #[test]
+    fn parses_hex_colors() {
+        assert_eq!(parse_hex_color("#225eff"), Some(Rgba([0x22, 0x5e, 0xff, 255])));
+        assert_eq!(parse_hex_color("#fff"), Some(Rgba([255, 255, 255, 255])));
+        assert_eq!(parse_hex_color("#00000080"), Some(Rgba([0, 0, 0, 128])));
+        assert_eq!(parse_hex_color("225eff"), None);
+        assert_eq!(parse_hex_color("#22zz00"), None);
+    }
+
+    #[test]
+    fn empty_stack_returns_source() {
+        let image = RgbaImage::from_pixel(4, 4, Rgba([1, 2, 3, 255]));
+        let output = apply(&image, Dimensions::of(&image), &[], 1.0);
+        assert_eq!(output.image, image);
+        assert!(output.errors.is_empty());
+    }
+
+    #[test]
+    fn tracks_logical_dimensions_through_the_stack() {
+        let image = RgbaImage::new(1000, 500);
+        let output = apply(
+            &image,
+            Dimensions::of(&image),
+            &[
+                Modification::AddBorder { thickness: 50, color: Rgba([0, 0, 0, 255]) },
+                Modification::Crop { top: 10, right: 20, bottom: 30, left: 40 },
+                Modification::Resize { size: 520 },
+            ],
+            1.0,
+        );
+        // 1000×500 → border 1100×600 → crop 1040×560 → fit in 520
+        assert_eq!(output.logical, Dimensions { width: 520, height: 280 });
+        assert_eq!(Dimensions::of(&output.image), output.logical);
+    }
+
+    #[test]
+    fn failing_modification_is_skipped_and_reported() {
+        let image = RgbaImage::new(100, 100);
+        let output = apply(
+            &image,
+            Dimensions::of(&image),
+            &[
+                Modification::Crop { top: 60, right: 0, bottom: 60, left: 0 },
+                Modification::AddBorder { thickness: 5, color: Rgba([0, 0, 0, 255]) },
+            ],
+            1.0,
+        );
+        assert_eq!(output.errors.len(), 1);
+        assert_eq!(output.errors[0].0, 0);
+        assert_eq!(Dimensions::of(&output.image), Dimensions { width: 110, height: 110 });
+    }
+
+    #[test]
+    fn proxy_and_logical_sizes_agree() {
+        let original = RgbaImage::from_pixel(6000, 4000, Rgba([90, 120, 150, 255]));
+        let proxy = make_proxy(&original);
+        let output = apply(
+            &proxy.image,
+            Dimensions::of(&original),
+            &[
+                Modification::AddBorder { thickness: 300, color: Rgba([255, 0, 0, 255]) },
+                Modification::Crop { top: 100, right: 200, bottom: 300, left: 400 },
+            ],
+            proxy.scale,
+        );
+        assert_eq!(output.logical, Dimensions { width: 6000, height: 4200 });
+        let expected = (6000.0 * proxy.scale, 4200.0 * proxy.scale);
+        let actual = output.image.dimensions();
+        assert!((actual.0 as f32 - expected.0).abs() <= 2.0, "{actual:?} vs {expected:?}");
+        assert!((actual.1 as f32 - expected.1).abs() <= 2.0, "{actual:?} vs {expected:?}");
+    }
+
+    /// Running the stack on the proxy must look like running it at full resolution and
+    /// downscaling the result.
+    #[test]
+    fn proxy_preview_matches_downscaled_full_render() {
+        let original = resize_exact(&fixture(), 3840, 2160);
+        let proxy = make_proxy(&original);
+        let stack = [
+            Modification::Brightness { factor: 1.3 },
+            Modification::AddBorder { thickness: 120, color: Rgba([34, 94, 255, 255]) },
+            Modification::Crop { top: 40, right: 80, bottom: 120, left: 160 },
+            Modification::Sepia,
+            Modification::AddImageBorder { border: Some("floral_curly".into()), width: 200 },
+        ];
+        let full = apply(&original, Dimensions::of(&original), &stack, 1.0);
+        let preview = apply(&proxy.image, Dimensions::of(&original), &stack, proxy.scale);
+        assert!(full.errors.is_empty() && preview.errors.is_empty());
+
+        let (w, h) = preview.image.dimensions();
+        let downscaled = resize_exact(&full.image, w, h);
+        let total: u64 = downscaled
+            .as_raw()
+            .iter()
+            .zip(preview.image.as_raw())
+            .map(|(a, b)| a.abs_diff(*b) as u64)
+            .sum();
+        let mean = total as f64 / downscaled.as_raw().len() as f64;
+        assert!(mean < 4.0, "mean absolute difference {mean}");
+    }
+}

@@ -1,0 +1,20 @@
+import { Theme } from "../globals.slint";
+
+// A label above a control
+export component FormField {
+    in property <string> label;
+
+    VerticalLayout {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        spacing: 5px;
+
+        Text {
+            text: root.label;
+            color: Theme.text;
+            font-size: 14px;
+        }
+
+        @children
+    }
+}

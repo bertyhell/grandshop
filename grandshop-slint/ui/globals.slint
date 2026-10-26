@@ -1,0 +1,141 @@
+// Colours taken from the SCSS of the Electron version
+export global Theme {
+    out property <color> preview-background: #888888;
+    out property <color> sidebar-background: #eeeeee;
+    out property <color> splitter-background: #e0e0e0;
+    out property <color> splitter-grip: #666666;
+    out property <color> primary: #223b82;
+    out property <color> primary-border: #182347;
+    out property <color> secondary: #eaeaea;
+    out property <color> secondary-border: #acacac;
+    out property <color> text: #333333;
+    out property <color> placeholder: #808080;
+    out property <color> card-border: #aaaaaa;
+    out property <color> input-border: #aaaaaa;
+    out property <color> focus: #2684ff;
+    out property <color> range-filled: #149cb8; // hsl(190, 80%, 40%)
+    out property <color> range-empty: #c4c4c4;
+}
+
+export enum ModKind { add-border, add-image-border, brightness, sepia, resize, annotate, crop }
+
+// Union of the parameters of every modification kind; each kind uses a few of them.
+// Pixel values are in original-image pixels.
+export struct ModParams {
+    thickness: float,
+    color: color,
+    border-index: int,
+    border-width: float,
+    factor: float,
+    size: float,
+    text: string,
+    font-size: float,
+    x-percent: float,
+    y-percent: float,
+    top: float,
+    right: float,
+    bottom: float,
+    left: float,
+}
+
+// Numeric parameters that a slider can change
+export enum ModField {
+    thickness, border-width, factor, size, font-size, x-percent, y-percent, top, right, bottom, left,
+}
+
+export struct ModEntry {
+    kind: ModKind,
+    // "Border 2": how many of this kind existed when it was added, plus one
+    number: int,
+    open: bool,
+    params: ModParams,
+}
+
+export enum ToastKind { info, success, warning, error }
+
+export struct Toast { id: int, kind: ToastKind, message: string }
+
+export struct ImageSize { width: int, height: int }
+
+// Hue in degrees, saturation and value from 0 to 1
+export struct Hsv { hue: float, saturation: float, value: float }
+
+// State and actions shared between the UI and the Rust controller
+export global AppState {
+    in property <image> preview-image;
+    in property <bool> has-image: false;
+    in property <bool> has-modified-image: false;
+    // Size of the current result at full resolution
+    in property <int> image-width;
+    in property <int> image-height;
+
+    in property <bool> loading: false;
+    in property <bool> rendering: false;
+    in property <bool> saving: false;
+    out property <bool> busy: loading || rendering || saving;
+
+    // The card list, and the full resolution size of the image that goes into each card
+    in property <[ModEntry]> modifications;
+    in property <[ImageSize]> input-sizes;
+    in property <[string]> border-styles;
+    // Estimated size of the saved PNG, for the "Reduce image" card
+    in property <string> estimated-file-size;
+    in property <image> color-wheel;
+    // Clicking the preview picks a colour for the open border cards
+    in property <bool> eyedropper-active: false;
+
+    // Sharp full resolution tile over part of the preview when zoomed in. The position is
+    // in fractions of the shown image.
+    in property <image> detail-image;
+    in property <bool> detail-visible: false;
+    in property <float> detail-left;
+    in property <float> detail-top;
+    in property <float> detail-right;
+    in property <float> detail-bottom;
+
+    // Notifications in the bottom left corner, oldest first
+    in property <[Toast]> toasts;
+
+    callback add-modification(ModKind);
+    callback toggle-modification(int);
+    callback delete-modification(int);
+    callback set-number(int, ModField, float);
+    callback set-color(int, color);
+    callback set-text(int, string);
+    callback set-border-style(int, int);
+    callback invalid-number();
+    // Position in the shown image, from 0 to 1 on both axes
+    callback preview-clicked(float, float);
+    // Viewer: rotate and flip are view-only and never saved
+    callback rotate-left();
+    callback rotate-right();
+    callback flip-horizontal();
+    callback flip-vertical();
+    callback reset-view();
+    // Visible part of the shown image (fractions) and its size on screen in logical pixels
+    callback view-changed(float, float, float, float, float, float);
+    pure callback hsv-to-color(Hsv) -> color;
+    pure callback color-to-hsv(color) -> Hsv;
+
+    // Settings dialog
+    in-out property <bool> settings-open: false;
+    in property <[string]> languages;
+    in property <int> language-index: 0;
+    callback save-settings(int);
+
+    callback open-image();
+    callback save-image();
+}
+
+// Texts shown by the Rust side (notifications, file dialogs), so they use the same translations
+export global Strings {
+    out property <string> open-failed: @tr("Failed to open the image");
+    out property <string> saved: @tr("Image has been saved");
+    out property <string> save-failed: @tr("Saving the image failed");
+    out property <string> apply-failed: @tr("Applying the last operation failed");
+    out property <string> invalid-number: @tr("The value must be a valid number");
+    out property <string> open-dialog-title: @tr("Select the image that you want to edit");
+    out property <string> save-dialog-title: @tr("Choose the location and name to save your image");
+    out property <string> pictures: @tr("Pictures");
+    out property <string> all-files: @tr("All files");
+}

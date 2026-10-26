@@ -1,0 +1,127 @@
+import { LineEdit } from "std-widgets.slint";
+import { AppState, Theme } from "../globals.slint";
+
+// Slider with a number box next to it. The value is controlled from outside: user changes
+// are reported through `edited` and only show once `value` is updated.
+export component RangeInput {
+    in property <float> value;
+    in property <float> minimum: 0;
+    in property <float> maximum: 100;
+    in property <float> step: 1;
+
+    callback edited(value: float);
+
+    property <float> fraction: root.maximum > root.minimum
+        ? clamp((root.value - root.minimum) / (root.maximum - root.minimum), 0, 1) : 0;
+    property <length> thumb-size: 20px;
+
+    function snap(raw: float) -> float {
+        clamp(round(raw / root.step) * root.step, root.minimum, root.maximum)
+    }
+
+    function set-from-position(x: length) {
+        root.edited(root.snap(root.minimum
+            + clamp((x - root.thumb-size / 2) / (track.width - root.thumb-size), 0, 1)
+            * (root.maximum - root.minimum)));
+    }
+
+    // Two decimals for fractional steps, whole numbers otherwise
+    function format(v: float) -> string {
+        root.step < 1 ? "\{round(v * 100) / 100}" : "\{round(v)}"
+    }
+
+    changed value => {
+        if (!input.has-focus) {
+            input.text = root.format(root.value);
+        }
+    }
+
+    init => {
+        input.text = root.format(root.value);
+    }
+
+    HorizontalLayout {
+        spacing: 20px;
+
+        track := Rectangle {
+            height: 40px;
+            horizontal-stretch: 1;
+
+            accessible-role: slider;
+            accessible-value: root.format(root.value);
+            accessible-value-minimum: root.minimum;
+            accessible-value-maximum: root.maximum;
+            accessible-value-step: root.step;
+            accessible-action-increment => { root.edited(root.snap(root.value + root.step)); }
+            accessible-action-decrement => { root.edited(root.snap(root.value - root.step)); }
+
+            Rectangle {
+                y: (parent.height - self.height) / 2;
+                height: 8px;
+                border-radius: 4px;
+                background: Theme.range-empty;
+            }
+
+            Rectangle {
+                x: 0;
+                y: (parent.height - self.height) / 2;
+                width: thumb.x + thumb.width / 2;
+                height: 8px;
+                border-radius: 4px;
+                background: Theme.range-filled;
+            }
+
+            thumb := Rectangle {
+                x: root.fraction * (parent.width - self.width);
+                y: (parent.height - self.height) / 2;
+                width: root.thumb-size;
+                height: root.thumb-size;
+                border-radius: self.width / 2;
+                border-width: 1px;
+                border-color: grey;
+                background: @linear-gradient(180deg, #fafafa 0%, #f4f4f4 49%, #f0f0f0 51%, #fefefe 100%);
+            }
+
+            TouchArea {
+                mouse-cursor: pointer;
+                pointer-event(event) => {
+                    if (event.kind == PointerEventKind.down && event.button == PointerEventButton.left) {
+                        root.set-from-position(self.mouse-x);
+                    }
+                }
+                moved => {
+                    if (self.pressed) {
+                        root.set-from-position(self.mouse-x);
+                    }
+                }
+            }
+        }
+
+        input := LineEdit {
+            width: 70px;
+            y: (parent.height - self.height) / 2;
+            input-type: InputType.decimal;
+            edited(text) => {
+                if (text.is-float()) {
+                    // Wait with out of range values until the user is done typing
+                    if (text.to-float() >= root.minimum && text.to-float() <= root.maximum) {
+                        root.edited(root.snap(text.to-float()));
+                    }
+                } else if (text != "" && text != "-") {
+                    AppState.invalid-number();
+                }
+            }
+            accepted(text) => {
+                if (text.is-float()) {
+                    root.edited(root.snap(text.to-float()));
+                }
+                self.text = root.format(root.value);
+            }
+            changed has-focus => {
+                if (!self.has-focus) {
+                    self.text = root.format(root.value);
+                }
+            }
+        }
+    }
+}

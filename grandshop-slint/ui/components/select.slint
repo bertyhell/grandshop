@@ -1,0 +1,116 @@
+import { Theme } from "../globals.slint";
+
+// Dropdown with a placeholder, styled like react-select in the Electron version
+export component Select inherits Rectangle {
+    in property <[string]> options;
+    // -1 shows the placeholder
+    in property <int> current-index: -1;
+    in property <string> placeholder;
+
+    callback selected(index: int);
+
+    property <bool> has-value: root.current-index >= 0 && root.current-index < root.options.length;
+
+    height: 38px;
+    background: white;
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: touch.has-hover || focus.has-focus ? Theme.focus : Theme.input-border;
+
+    accessible-role: combobox;
+    accessible-value: root.has-value ? root.options[root.current-index] : root.placeholder;
+    accessible-action-default => { popup.show(); }
+
+    focus := FocusScope {
+        key-pressed(event) => {
+            if (event.text == " " || event.text == Key.Return || event.text == Key.DownArrow) {
+                popup.show();
+                return accept;
+            }
+            reject
+        }
+    }
+
+    touch := TouchArea {
+        mouse-cursor: pointer;
+        clicked => {
+            focus.focus();
+            popup.show();
+        }
+    }
+
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 10px;
+        spacing: 8px;
+
+        Text {
+            text: root.has-value ? root.options[root.current-index] : root.placeholder;
+            color: root.has-value ? Theme.text : Theme.placeholder;
+            font-size: 14px;
+            vertical-alignment: center;
+            overflow: elide;
+            horizontal-stretch: 1;
+        }
+
+        Rectangle {
+            width: 1px;
+            height: 20px;
+            y: (parent.height - self.height) / 2;
+            background: #cccccc;
+        }
+
+        // Chevron
+        Path {
+            width: 12px;
+            height: 7px;
+            y: (parent.height - self.height) / 2;
+            commands: "M 1 1 L 6 6 L 11 1";
+            viewbox-width: 12;
+            viewbox-height: 7;
+            stroke: Theme.placeholder;
+            stroke-width: 2px;
+        }
+    }
+
+    popup := PopupWindow {
+        x: 0;
+        y: root.height + 4px;
+        width: root.width;
+
+        Rectangle {
+            background: white;
+            border-radius: 4px;
+            border-width: 1px;
+            border-color: Theme.input-border;
+            drop-shadow-blur: 8px;
+            drop-shadow-color: #00000033;
+
+            VerticalLayout {
+                padding-top: 4px;
+                padding-bottom: 4px;
+
+                for option[index] in root.options: Rectangle {
+                    height: 38px;
+                    background: index == root.current-index ? #2684ff : option-touch.has-hover ? #deebff : transparent;
+
+                    option-touch := TouchArea {
+                        mouse-cursor: pointer;
+                        clicked => { root.selected(index); }
+                    }
+
+                    Text {
+                        x: 12px;
+                        width: parent.width - 24px;
+                        height: parent.height;
+                        text: option;
+                        font-size: 14px;
+                        color: index == root.current-index ? white : Theme.text;
+                        vertical-alignment: center;
+                        overflow: elide;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,93 @@
+import { AppState, ImageSize, ModEntry, ModKind, Theme } from "../globals.slint";
+import { Button, ButtonKind } from "button.slint";
+import {
+    AddBorderControls, AddImageBorderControls, AnnotateControls, BrightnessControls,
+    CropControls, ResizeControls,
+} from "../modifications/panels.slint";
+
+// Collapsible card for one modification in the stack
+export component ModificationCard inherits Rectangle {
+    in property <ModEntry> entry;
+    in property <int> index;
+    in property <ImageSize> input-size;
+
+    property <string> title:
+        entry.kind == ModKind.add-border ? @tr("Border {}", entry.number)
+        : entry.kind == ModKind.add-image-border ? @tr("Image border {}", entry.number)
+        : entry.kind == ModKind.brightness ? @tr("Brightness {}", entry.number)
+        : entry.kind == ModKind.sepia ? @tr("Sepia {}", entry.number)
+        : entry.kind == ModKind.resize ? @tr("Shrink {}", entry.number)
+        : entry.kind == ModKind.annotate ? @tr("Caption {}", entry.number)
+        : @tr("Crop {}", entry.number);
+    property <bool> has-controls: entry.kind != ModKind.sepia;
+
+    background: white;
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: Theme.card-border;
+
+    VerticalLayout {
+        Rectangle {
+            height: 42px;
+
+            TouchArea {
+                mouse-cursor: pointer;
+                clicked => { AppState.toggle-modification(root.index); }
+            }
+
+            HorizontalLayout {
+                padding-left: 10px;
+                spacing: 10px;
+
+                Text {
+                    text: root.title;
+                    color: black;
+                    font-size: 15px;
+                    font-weight: 500;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                    accessible-role: none;
+                }
+
+                Button {
+                    label: @tr("Delete");
+                    kind: ButtonKind.secondary;
+                    height: parent.height;
+                    clicked => { AppState.delete-modification(root.index); }
+                }
+            }
+        }
+
+        if root.entry.open && root.has-controls: Rectangle {
+            height: 1px;
+            background: Theme.card-border;
+        }
+
+        if root.entry.open && root.entry.kind == ModKind.add-border: AddBorderControls {
+            index: root.index;
+            params: root.entry.params;
+        }
+        if root.entry.open && root.entry.kind == ModKind.add-image-border: AddImageBorderControls {
+            index: root.index;
+            params: root.entry.params;
+        }
+        if root.entry.open && root.entry.kind == ModKind.brightness: BrightnessControls {
+            index: root.index;
+            params: root.entry.params;
+        }
+        if root.entry.open && root.entry.kind == ModKind.resize: ResizeControls {
+            index: root.index;
+            params: root.entry.params;
+            input-size: root.input-size;
+        }
+        if root.entry.open && root.entry.kind == ModKind.annotate: AnnotateControls {
+            index: root.index;
+            params: root.entry.params;
+        }
+        if root.entry.open && root.entry.kind == ModKind.crop: CropControls {
+            index: root.index;
+            params: root.entry.params;
+            input-size: root.input-size;
+        }
+    }
+}
