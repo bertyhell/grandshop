@@ -12,3 +12,35 @@
     }
   }
 }
+
+.c-crop-preview {
+  position: relative;
+  margin: 10px 0;
+  user-select: none;
+  overflow: hidden;
+
+  img {
+    display: block;
+    width: 100%;
+  }
+
+  &__area {
+    position: absolute;
+    border: 1px dashed #fff;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+  }
+
+  &__handle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4);
+    cursor: move;
+    touch-action: none;
+  }
+}
