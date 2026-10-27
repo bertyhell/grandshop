@@ -63,7 +63,17 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
+      # Caches made on a tag ref are only visible to that tag, so the cache is
+      # filled from master by cache.yml under the same shared key
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-${{ matrix.name }}
+          save-if: false
+          # ort's downloaded ONNX Runtime binaries
+          cache-directories: |
+            ~/.cache/ort.pyke.io
+            ~/Library/Caches/ort.pyke.io
+            ~/AppData/Local/ort.pyke.io
 
       - uses: taiki-e/install-action@v2
         with:
