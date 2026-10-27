@@ -1,5 +1,0 @@
-[env]
-# ort's prebuilt ONNX Runtime targets macOS 13.4+, and its CoreML provider's
-# @available checks need ___isPlatformVersionAtLeast (clang_rt), which rustc
-# doesn't link. Targeting 14.0 removes those checks.
-MACOSX_DEPLOYMENT_TARGET = "14.0"

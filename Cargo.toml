@@ -65,9 +65,6 @@ out-dir = "target/packages"
 icons = ["assets/icons/icon.png", "assets/icons/icon.ico"]
 formats = ["nsis", "app", "dmg", "deb", "appimage"]
 
-[package.metadata.packager.macos]
-minimum-system-version = "14.0"
-
 [package.metadata.packager.deb]
 depends = ["libfontconfig1", "libxkbcommon0", "libstdc++6"]
 
