@@ -1,0 +1,48 @@
+# Fills the build cache that release.yml restores. Caches saved on a tag ref
+# can't be read by later tags, but caches saved on master can.
+name: Cache
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Cache ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-latest
+          - name: macOS
+            os: macos-latest
+          - name: Windows
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfontconfig1-dev libxkbcommon-dev
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      # Keep in sync with the rust-cache step in release.yml
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: release-${{ matrix.name }}
+          cache-directories: |
+            ~/.cache/ort.pyke.io
+            ~/Library/Caches/ort.pyke.io
+            ~/AppData/Local/ort.pyke.io
+
+      - name: Build
+        run: |
+          cargo test --release --no-run
+          cargo build --release
