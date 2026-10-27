@@ -1,5 +1,5 @@
 # Builds the installers for Linux, macOS and Windows and publishes them as a GitHub release
-# when a version tag (v1.2.3) is pushed for a commit on master.
+# when a version tag (v1.2.3) is pushed for a commit on the release branch.
 name: Release
 
 on:
@@ -19,11 +19,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Tag must point at a commit on master
+      - name: Tag must point at a commit on release
         run: |
-          git fetch origin master
-          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/master; then
-            echo "::error::$GITHUB_REF_NAME is not on master, not releasing"
+          git fetch origin release
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/release; then
+            echo "::error::$GITHUB_REF_NAME is not on release, not releasing"
             exit 1
           fi
 
